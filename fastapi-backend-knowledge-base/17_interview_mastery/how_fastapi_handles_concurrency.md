@@ -10,27 +10,13 @@ Understanding FastAPI's concurrency model is crucial for interviews and building
 HTTP Request → ASGI Server (Uvicorn) → FastAPI App → Your Code
 ```
 
-**Key difference from WSGI:**
-- **WSGI (Flask, Django)**: Synchronous, one request per thread
-- **ASGI (FastAPI)**: Asynchronous, handles many requests concurrently
+**Key difference from WSGI:** **WSGI (Flask, Django)** is synchronous, one request per thread. **ASGI (FastAPI)** is asynchronous, handles many requests concurrently.
 
 ## Understanding the Event Loop
 
-**What is an event loop?**
-A single thread that manages all async operations by switching between tasks.
+**What is an event loop?** A single thread that manages all async operations by switching between tasks.
 
-**How it works:**
-```python
-# Event loop timeline
-Time 0ms:  Request 1 arrives → Starts DB query (waits for DB)
-Time 1ms:  Request 2 arrives → Starts DB query (waits for DB)
-Time 2ms:  Request 3 arrives → Starts DB query (waits for DB)
-Time 50ms: Request 1's DB responds → Process response → Send to client
-Time 51ms: Request 2's DB responds → Process response → Send to client
-Time 52ms: Request 3's DB responds → Process response → Send to client
-```
-
-All handled by ONE thread switching between tasks!
+**How it works:** Event loop timeline: Request 1 arrives → Starts DB query (waits for DB), Request 2 arrives → Starts DB query (waits for DB), Request 3 arrives → Starts DB query (waits for DB), then when DB responds, processes each response in turn. All handled by ONE thread switching between tasks!
 
 ## Step-by-Step: Request Processing
 
@@ -47,18 +33,15 @@ Let's trace a request through FastAPI:
 ### 2. FastAPI Route Handler
 
 ```python
+# async def: Creates coroutine that can be paused/resumed by event loop.
 @app.get("/users/{user_id}")
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    # This function is a coroutine
-    # Event loop can pause and resume it
-    user = await db.get(User, user_id)  # ← Yields control here
+    # This function is a coroutine: Event loop can pause and resume it.
+    user = await db.get(User, user_id)  # ← Yields control here (waits for DB)
     return user  # ← Resumes here when DB responds
 ```
 
-**What happens:**
-- `await db.get(...)` yields control to event loop
-- Event loop handles other requests
-- When DB responds, this function resumes
+**What happens:** `await db.get(...)` yields control to event loop, event loop handles other requests, and when DB responds, this function resumes.
 
 ### 3. Concurrent Request Handling
 
@@ -129,14 +112,14 @@ async def sequential():
     result3 = await slow_operation("Task 3", 1.0)
     # Total time: 3 seconds
 
-# Concurrent (fast)
+# Concurrent (fast): asyncio.gather runs all tasks in parallel.
 async def concurrent():
     results = await asyncio.gather(
         slow_operation("Task 1", 1.0),
         slow_operation("Task 2", 1.0),
         slow_operation("Task 3", 1.0)
     )
-    # Total time: 1 second (all run in parallel)
+    # Total time: 1 second (all run in parallel, not sequentially)
 ```
 
 ## Gunicorn + Uvicorn Workers
@@ -179,12 +162,7 @@ Total: 4 workers × 1000s requests = massive concurrency
 
 ## Summary
 
-FastAPI concurrency:
-- ✅ Event loop manages all async operations
-- ✅ Single thread handles thousands of requests
-- ✅ Non-blocking I/O operations
-- ✅ Efficient resource usage
-- ✅ Gunicorn workers for multi-core utilization
+**FastAPI concurrency:** Event loop manages all async operations, single thread handles thousands of requests, non-blocking I/O operations, efficient resource usage, and Gunicorn workers for multi-core utilization.
 
 Understanding this helps you build and explain scalable applications!
 

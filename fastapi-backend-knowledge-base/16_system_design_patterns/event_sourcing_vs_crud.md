@@ -4,8 +4,7 @@ Event Sourcing stores changes as a sequence of events rather than updating state
 
 ## Understanding CRUD (Traditional Approach)
 
-**What is CRUD?**
-Create, Read, Update, Delete - the traditional approach to data management.
+**What is CRUD?** Create, Read, Update, Delete - the traditional approach to data management. Stores current state only, overwrites previous state on updates.
 
 **How CRUD works:**
 ```
@@ -22,17 +21,14 @@ Operations:
     Delete → DELETE FROM users WHERE id = 1
 ```
 
-**Key characteristics:**
-- Stores current state only
-- Updates overwrite previous state
-- History is lost (unless explicitly tracked)
-- Simple and familiar pattern
+**Key characteristics:** Stores current state only, updates overwrite previous state, history is lost (unless explicitly tracked), and simple and familiar pattern.
 
 ### CRUD Example
 
 ```python
 # Traditional CRUD approach
 class UserRepository:
+    # create_user: Stores current state directly (no history).
     async def create_user(self, user_data: dict) -> User:
         """Create user - stores current state."""
         user = User(
@@ -44,14 +40,16 @@ class UserRepository:
         await db.commit()
         return user
     
+    # update_user: Overwrites previous state (previous values lost).
     async def update_user(self, user_id: int, updates: dict) -> User:
         """Update user - overwrites previous state."""
         user = await db.get(User, user_id)
-        user.email = updates.get("email", user.email)
-        user.name = updates.get("name", user.name)
+        user.email = updates.get("email", user.email)  # Old email overwritten
+        user.name = updates.get("name", user.name)  # Old name overwritten
         await db.commit()
         return user
     
+    # get_user: Returns current state only (no history).
     async def get_user(self, user_id: int) -> User:
         """Get user - returns current state."""
         return await db.get(User, user_id)
@@ -71,8 +69,7 @@ CREATE TABLE users (
 
 ## Understanding Event Sourcing
 
-**What is Event Sourcing?**
-Store all changes as a sequence of events. Reconstruct current state by replaying events.
+**What is Event Sourcing?** Store all changes as a sequence of events. Reconstruct current state by replaying events. Complete audit trail, time-travel capability.
 
 **How Event Sourcing works:**
 ```
@@ -91,11 +88,7 @@ Event-Based Storage:
     └─────────────┘
 ```
 
-**Key characteristics:**
-- Stores all events (changes)
-- Rebuilds state by replaying events
-- Complete audit trail
-- Time-travel capability
+**Key characteristics:** Stores all events (changes), rebuilds state by replaying events, complete audit trail, and time-travel capability.
 
 ### Event Sourcing Example
 
@@ -157,28 +150,31 @@ class User:
         self.status = None
         self.version = 0
     
+    # apply_event: Rebuilds state by applying events in sequence.
     def apply_event(self, event: dict):
         """Apply event to rebuild state."""
         event_type = event["event_type"]
         event_data = json.loads(event["event_data"])
         
+        # Apply events to rebuild current state.
         if event_type == "UserCreatedEvent":
             self.name = event_data["name"]
             self.email = event_data["email"]
             self.status = "active"
         elif event_type == "UserEmailChangedEvent":
-            self.email = event_data["new_email"]
+            self.email = event_data["new_email"]  # Update email from event
         elif event_type == "UserStatusChangedEvent":
-            self.status = event_data["new_status"]
+            self.status = event_data["new_status"]  # Update status from event
         
-        self.version = event["version"]
+        self.version = event["version"]  # Track version for optimistic locking
     
     @classmethod
+    # from_events: Reconstructs aggregate by replaying all events.
     async def from_events(cls, user_id: str, events: List[dict]) -> "User":
         """Rebuild user from events."""
         user = cls(user_id)
         for event in events:
-            user.apply_event(event)
+            user.apply_event(event)  # Replay each event to rebuild state
         return user
 
 # Repository

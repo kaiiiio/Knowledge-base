@@ -4,18 +4,9 @@ LLM APIs can be unreliable. Retry logic and circuit breakers ensure resilience a
 
 ## Understanding the Problem
 
-**Why LLM APIs fail:**
-- Rate limits (API throttling)
-- Network timeouts
-- Service outages
-- Token limit errors
-- Transient errors
+**Why LLM APIs fail:** Rate limits (API throttling), network timeouts, service outages, token limit errors, and transient errors.
 
-**Without resilience:**
-- Single failure breaks entire application
-- Cascading failures
-- Poor user experience
-- Unpredictable behavior
+**Without resilience:** Single failure breaks entire application, cascading failures, poor user experience, and unpredictable behavior.
 
 ## Step 1: Basic Retry Logic
 
@@ -34,11 +25,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Retry decorator: Automatically retries on transient errors with exponential backoff.
 @retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    retry=retry_if_exception_type((openai.RateLimitError, openai.APITimeoutError)),
-    before_sleep=before_sleep_log(logger, logging.WARNING)
+    stop=stop_after_attempt(3),  # Maximum 3 attempts (1 initial + 2 retries)
+    wait=wait_exponential(multiplier=1, min=4, max=10),  # Wait 4s, 8s, 16s (capped at 10s)
+    retry=retry_if_exception_type((openai.RateLimitError, openai.APITimeoutError)),  # Only retry on these errors
+    before_sleep=before_sleep_log(logger, logging.WARNING)  # Log before each retry
 )
 async def call_llm_with_retry(prompt: str, model: str = "gpt-4"):
     """
@@ -50,38 +42,32 @@ async def call_llm_with_retry(prompt: str, model: str = "gpt-4"):
     - Connection errors
     """
     try:
+        # Make LLM API call: Standard OpenAI API call with timeout.
         response = await openai_client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
-            timeout=30.0
+            timeout=30.0  # 30 second timeout
         )
         return response
     except openai.RateLimitError as e:
         logger.warning(f"Rate limit hit, retrying... Error: {e}")
-        raise  # Retry with exponential backoff
+        raise  # Retry with exponential backoff: Decorator will handle retry
     except openai.APITimeoutError as e:
         logger.warning(f"Timeout, retrying... Error: {e}")
-        raise
+        raise  # Retry: Network timeout is transient
     except openai.APIError as e:
-        # Don't retry on non-retryable errors
+        # Don't retry on non-retryable errors: Client errors (4xx) shouldn't be retried.
         logger.error(f"Non-retryable API error: {e}")
         raise
 ```
 
 ### Understanding Retry Parameters
 
-**stop_after_attempt(3):**
-- Maximum number of retry attempts
-- Total attempts = 3 (1 initial + 2 retries)
+**stop_after_attempt(3):** Maximum number of retry attempts. Total attempts = 3 (1 initial + 2 retries).
 
-**wait_exponential(multiplier=1, min=4, max=10):**
-- Exponential backoff: 4s, 8s, 16s (capped at 10s)
-- Prevents overwhelming failing service
-- Jitter automatically added
+**wait_exponential(multiplier=1, min=4, max=10):** Exponential backoff: 4s, 8s, 16s (capped at 10s). Prevents overwhelming failing service. Jitter automatically added.
 
-**retry_if_exception_type:**
-- Only retry on specific exceptions
-- Don't retry on client errors (4xx)
+**retry_if_exception_type:** Only retry on specific exceptions. Don't retry on client errors (4xx).
 
 ## Step 2: Advanced Retry Strategies
 
@@ -95,24 +81,25 @@ class ErrorCategory(str, Enum):
     NON_RETRYABLE = "non_retryable"  # Don't retry
     CRITICAL = "critical"  # Stop immediately
 
+# Error classification: Categorize errors to decide if retry is appropriate.
 def classify_error(error: Exception) -> ErrorCategory:
     """Classify error for retry decision."""
     if isinstance(error, openai.RateLimitError):
-        return ErrorCategory.RETRYABLE
+        return ErrorCategory.RETRYABLE  # Rate limits are transient
     elif isinstance(error, openai.APITimeoutError):
-        return ErrorCategory.RETRYABLE
+        return ErrorCategory.RETRYABLE  # Timeouts are transient
     elif isinstance(error, openai.APIConnectionError):
-        return ErrorCategory.RETRYABLE
+        return ErrorCategory.RETRYABLE  # Connection errors are transient
     elif isinstance(error, openai.AuthenticationError):
-        return ErrorCategory.CRITICAL  # Don't retry auth errors
+        return ErrorCategory.CRITICAL  # Don't retry auth errors: Will always fail
     elif isinstance(error, openai.APIError):
-        # Check status code
+        # Check status code: Server errors (5xx) are retryable, client errors (4xx) are not.
         if hasattr(error, 'status_code'):
             if error.status_code >= 500:
-                return ErrorCategory.RETRYABLE  # Server errors
+                return ErrorCategory.RETRYABLE  # Server errors: May be transient
             else:
-                return ErrorCategory.NON_RETRYABLE  # Client errors
-    return ErrorCategory.NON_RETRYABLE
+                return ErrorCategory.NON_RETRYABLE  # Client errors: Won't succeed on retry
+    return ErrorCategory.NON_RETRYABLE  # Unknown errors: Don't retry
 
 @retry(
     stop=stop_after_attempt(3),
@@ -140,10 +127,11 @@ async def call_llm_with_smart_retry(prompt: str):
 ```python
 from tenacity import wait_exponential, stop_after_delay
 
+# Rate limit handling: Longer backoff for rate limits (they take time to reset).
 @retry(
-    stop=stop_after_delay(300),  # Stop after 5 minutes total
-    wait=wait_exponential(multiplier=2, min=10, max=120),
-    retry=retry_if_exception_type(openai.RateLimitError)
+    stop=stop_after_delay(300),  # Stop after 5 minutes total: Don't wait forever
+    wait=wait_exponential(multiplier=2, min=10, max=120),  # Wait 10s, 20s, 40s... up to 120s
+    retry=retry_if_exception_type(openai.RateLimitError)  # Only retry on rate limits
 )
 async def call_llm_with_rate_limit_handling(prompt: str):
     """
@@ -151,6 +139,7 @@ async def call_llm_with_rate_limit_handling(prompt: str):
     
     Rate limits typically require longer waits.
     """
+    # Make API call: Standard call, retry decorator handles rate limits.
     response = await openai_client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
@@ -161,13 +150,15 @@ async def call_llm_with_rate_limit_handling(prompt: str):
 ### Token Limit Handling
 
 ```python
+# Token limit handling: Don't retry token errors (they won't succeed on retry).
 @retry(
-    stop=stop_after_attempt(1),  # Don't retry token errors
-    retry=retry_if_exception_type()  # Never retry
+    stop=stop_after_attempt(1),  # Don't retry token errors: Only one attempt
+    retry=retry_if_exception_type()  # Never retry: Token errors are permanent
 )
 async def call_llm_with_token_check(prompt: str, max_tokens: int = 1000):
     """Handle token limit errors without retry."""
     try:
+        # Make API call: Standard call with max_tokens limit.
         response = await openai_client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
@@ -175,10 +166,11 @@ async def call_llm_with_token_check(prompt: str, max_tokens: int = 1000):
         )
         return response
     except openai.APIError as e:
+        # Check for token errors: Token/length errors are permanent, don't retry.
         if "token" in str(e).lower() or "length" in str(e).lower():
             logger.error(f"Token limit error: {e}")
-            # Reduce prompt or max_tokens
-            # Don't retry - will fail again
+            # Reduce prompt or max_tokens: User must fix the input
+            # Don't retry - will fail again: Token errors won't resolve on retry
             raise ValueError(f"Token limit exceeded: {e}")
         raise
 ```
@@ -187,13 +179,9 @@ async def call_llm_with_token_check(prompt: str, max_tokens: int = 1000):
 
 ### Basic Circuit Breaker
 
-**What is a circuit breaker?**
-A pattern that prevents cascading failures by "opening" the circuit after too many failures, failing fast instead of retrying.
+**What is a circuit breaker?** A pattern that prevents cascading failures by "opening" the circuit after too many failures, failing fast instead of retrying.
 
-**States:**
-- **Closed**: Normal operation, requests pass through
-- **Open**: Too many failures, requests fail fast
-- **Half-Open**: Testing if service recovered
+**States:** **Closed** is normal operation (requests pass through), **Open** means too many failures (requests fail fast), and **Half-Open** is testing if service recovered.
 
 ### Circuit Breaker Implementation
 

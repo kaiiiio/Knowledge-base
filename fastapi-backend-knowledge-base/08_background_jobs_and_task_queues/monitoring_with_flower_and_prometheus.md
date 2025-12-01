@@ -4,23 +4,13 @@ Monitoring is essential for production Celery deployments. This comprehensive gu
 
 ## Why Monitor Celery?
 
-**What you need to know:**
-- Are workers healthy and processing tasks?
-- How long are tasks taking?
-- Which tasks are failing?
-- Are there bottlenecks?
-- Is the queue backing up?
+**What you need to know:** Are workers healthy and processing tasks? How long are tasks taking? Which tasks are failing? Are there bottlenecks? Is the queue backing up?
 
-**Monitoring helps:**
-- Detect issues before they become critical
-- Optimize performance
-- Understand system behavior
-- Debug problems quickly
+**Monitoring helps:** Detect issues before they become critical, optimize performance, understand system behavior, and debug problems quickly.
 
 ## Part 1: Flower - Web-Based Monitoring
 
-**What is Flower?**
-A real-time web-based tool for monitoring and administrating Celery workers.
+**What is Flower?** A real-time web-based tool for monitoring and administrating Celery workers.
 
 ### Installation and Basic Setup
 
@@ -55,28 +45,13 @@ celery -A celery_app flower --conf=flowerconfig.py
 
 ### Flower Features Overview
 
-**1. Workers Tab**
-- List all active workers
-- CPU usage, memory usage
-- Active tasks count
-- Uptime, status
+**1. Workers Tab:** List all active workers, CPU usage, memory usage, active tasks count, uptime, and status.
 
-**2. Tasks Tab**
-- Recent tasks with status
-- Task details (args, kwargs, result)
-- Task duration, traceback
-- Filter by status, worker, task name
+**2. Tasks Tab:** Recent tasks with status, task details (args, kwargs, result), task duration, traceback, and filter by status, worker, task name.
 
-**3. Monitor Tab**
-- Real-time task rate
-- Success/failure rates
-- Task duration graphs
-- Worker statistics
+**3. Monitor Tab:** Real-time task rate, success/failure rates, task duration graphs, and worker statistics.
 
-**4. Broker Tab**
-- Queue lengths
-- Message rates
-- Broker connection status
+**4. Broker Tab:** Queue lengths, message rates, and broker connection status.
 
 ### Accessing Flower
 
@@ -94,8 +69,7 @@ http://localhost:5555
 
 ## Part 2: Prometheus Metrics
 
-**What is Prometheus?**
-A time-series database and monitoring system. Collect metrics, query them, and create alerts.
+**What is Prometheus?** A time-series database and monitoring system. Collect metrics, query them, and create alerts.
 
 ### Setting Up Prometheus Metrics
 
@@ -112,36 +86,36 @@ pip install prometheus-client
 from prometheus_client import Counter, Histogram, Gauge, start_http_server
 import time
 
-# Task execution metrics
+# Task execution metrics: Track task counts and durations.
 celery_tasks_total = Counter(
     'celery_tasks_total',
     'Total number of tasks executed',
-    ['task_name', 'status']  # Labels for filtering
+    ['task_name', 'status']  # Labels for filtering: Group by task name and status
 )
 
 celery_task_duration = Histogram(
     'celery_task_duration_seconds',
     'Task execution duration in seconds',
     ['task_name'],
-    buckets=(0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0, float('inf'))
+    buckets=(0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0, float('inf'))  # Duration buckets for percentiles
 )
 
 celery_task_queue_time = Histogram(
     'celery_task_queue_time_seconds',
     'Time task spent in queue before execution',
-    ['task_name']
+    ['task_name']  # Track queue wait time per task type
 )
 
-# Worker metrics
+# Worker metrics: Track worker status and active tasks.
 celery_active_tasks = Gauge(
     'celery_active_tasks',
     'Number of tasks currently being executed',
-    ['worker_name']
+    ['worker_name']  # Track per worker
 )
 
 celery_workers_online = Gauge(
     'celery_workers_online',
-    'Number of online workers'
+    'Number of online workers'  # Total online workers
 )
 ```
 

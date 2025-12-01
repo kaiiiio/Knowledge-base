@@ -4,23 +4,11 @@ State machines manage complex workflows with clear state transitions, preventing
 
 ## Understanding State Machines
 
-**What is a state machine?**
-A computational model that defines:
-- **States**: The possible conditions of a system
-- **Transitions**: Rules for moving between states
-- **Actions**: What happens during transitions
+**What is a state machine?** A computational model that defines: **States** are the possible conditions of a system. **Transitions** are rules for moving between states. **Actions** are what happens during transitions.
 
-**Real-world analogy:**
-Think of a traffic light:
-- **States**: Red, Yellow, Green
-- **Transitions**: Red → Green (never Red → Yellow directly!)
-- **Actions**: Turn on light, start timer
+**Real-world analogy:** Think of a traffic light. **States** are Red, Yellow, Green. **Transitions** are Red → Green (never Red → Yellow directly!). **Actions** are turn on light, start timer.
 
-**Why use state machines?**
-- Prevent invalid state transitions
-- Make workflow logic explicit
-- Easier to reason about system behavior
-- Better error handling
+**Why use state machines?** Prevent invalid state transitions, make workflow logic explicit, easier to reason about system behavior, and better error handling.
 
 ## Visual State Machine: Order Processing
 
@@ -53,6 +41,7 @@ Think of a traffic light:
 ```python
 from enum import Enum
 
+# State enum: Define all possible states.
 class OrderStatus(str, Enum):
     """
     Order status states.
@@ -63,18 +52,18 @@ class OrderStatus(str, Enum):
     PROCESSING = "processing"     # Payment being processed
     PAID = "paid"                 # Payment successful
     SHIPPED = "shipped"           # Order shipped to customer
-    DELIVERED = "delivered"       # Order delivered (terminal)
-    CANCELLED = "cancelled"       # Order cancelled (terminal)
+    DELIVERED = "delivered"       # Order delivered (terminal: no more transitions)
+    CANCELLED = "cancelled"       # Order cancelled (terminal: no more transitions)
     
     @classmethod
     def get_terminal_states(cls):
         """Get states that cannot transition to other states."""
-        return {cls.DELIVERED, cls.CANCELLED}
+        return {cls.DELIVERED, cls.CANCELLED}  # Terminal states
     
     @classmethod
     def get_active_states(cls):
         """Get states that are still in progress."""
-        return {cls.PENDING, cls.PROCESSING, cls.PAID, cls.SHIPPED}
+        return {cls.PENDING, cls.PROCESSING, cls.PAID, cls.SHIPPED}  # Active states
 ```
 
 ## Step 2: Define Valid Transitions
@@ -89,7 +78,7 @@ class OrderStateMachine:
     Transition matrix defines what states can transition to which other states.
     """
     
-    # Define valid transitions (from_state -> set of allowed to_states)
+    # Define valid transitions: Transition matrix (from_state -> set of allowed to_states).
     TRANSITIONS: Dict[OrderStatus, Set[OrderStatus]] = {
         OrderStatus.PENDING: {
             OrderStatus.PROCESSING,  # Customer confirms, start payment
@@ -107,9 +96,9 @@ class OrderStateMachine:
             OrderStatus.DELIVERED,   # Delivery confirmed
             OrderStatus.CANCELLED    # Return requested
         },
-        # Terminal states have no transitions
-        OrderStatus.DELIVERED: set(),   # Cannot leave this state
-        OrderStatus.CANCELLED: set(),   # Cannot leave this state
+        # Terminal states have no transitions: Empty sets mean no transitions allowed.
+        OrderStatus.DELIVERED: set(),   # Cannot leave this state: Terminal
+        OrderStatus.CANCELLED: set(),   # Cannot leave this state: Terminal
     }
     
     @classmethod
@@ -128,8 +117,9 @@ class OrderStateMachine:
         Returns:
             True if transition is valid, False otherwise
         """
-        allowed_transitions = cls.TRANSITIONS.get(from_state, set())
-        return to_state in allowed_transitions
+        # Check transition: Look up allowed transitions for current state.
+        allowed_transitions = cls.TRANSITIONS.get(from_state, set())  # Get allowed next states
+        return to_state in allowed_transitions  # Check if target state is allowed
     
     @classmethod
     def get_allowed_transitions(cls, current_state: OrderStatus) -> Set[OrderStatus]:

@@ -4,20 +4,13 @@ Understanding relationships is crucial for database design. This guide explains 
 
 ## What Are Relationships?
 
-**In simple terms:**
-A relationship connects two tables. It's like saying "this record in table A is related to that record in table B."
+**In simple terms:** A relationship connects two tables. It's like saying "this record in table A is related to that record in table B."
 
-**Real-world analogy:**
-- A **User** places **Orders** (one user, many orders)
-- An **Order** contains **OrderItems** (one order, many items)
-- An **OrderItem** references a **Product** (many items, one product)
+**Real-world analogy:** A **User** places **Orders** (one user, many orders), an **Order** contains **OrderItems** (one order, many items), and an **OrderItem** references a **Product** (many items, one product).
 
 ## Types of Relationships
 
-There are three main types:
-1. **One-to-Many** - Most common (e.g., one user has many orders)
-2. **Many-to-Many** - Less common (e.g., products can be in many orders, orders have many products)
-3. **One-to-One** - Rare (e.g., one user has one profile)
+There are three main types: **One-to-Many** (most common, e.g., one user has many orders), **Many-to-Many** (less common, e.g., products can be in many orders, orders have many products), and **One-to-One** (rare, e.g., one user has one profile).
 
 Let's understand each with our e-commerce example.
 
@@ -64,8 +57,7 @@ class User(Base):
     email = Column(String(255), unique=True)
     full_name = Column(String(200))
     
-    # Relationship: One user has many orders
-    # This lets you do: user.orders to get all orders
+    # Relationship: One user has many orders (allows user.orders access).
     orders = relationship("Order", back_populates="user")
 
 
@@ -78,42 +70,27 @@ class Order(Base):
     
     id = Column(Integer, primary_key=True)
     
-    # Foreign Key: Links to users table
-    # This column stores the user's ID
+    # Foreign Key: Links to users table (stores user's ID in database).
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     
     total_amount = Column(Numeric(10, 2))
     status = Column(String(50))
     
-    # Relationship: Order belongs to one user
-    # This lets you do: order.user to get the user
+    # Relationship: Order belongs to one user (allows order.user access).
     user = relationship("User", back_populates="orders")
 ```
 
 ### Understanding Foreign Keys
 
-**What is a foreign key?**
-- `user_id = ForeignKey("users.id")` means:
-  - This column references the `id` column in the `users` table
-  - Database enforces: you can't create an order with a user_id that doesn't exist
-  - If you try: `Order(user_id=999)` where user 999 doesn't exist → ERROR
+**What is a foreign key?** `user_id = ForeignKey("users.id")` means: this column references the `id` column in the `users` table, database enforces that you can't create an order with a user_id that doesn't exist, and if you try `Order(user_id=999)` where user 999 doesn't exist → ERROR.
 
-**Why use foreign keys?**
-- **Data integrity**: Prevents orphaned records
-- **Relationships**: Database knows tables are connected
-- **Performance**: Can create indexes on foreign keys
+**Why use foreign keys?** Data integrity (prevents orphaned records), relationships (database knows tables are connected), and performance (can create indexes on foreign keys).
 
 ### Understanding `relationship()` and `back_populates`
 
-**What `relationship()` does:**
-- Creates a Python attribute to access related objects
-- Doesn't create a database column (that's the foreign key's job)
-- Allows navigation: `user.orders` or `order.user`
+**What `relationship()` does:** Creates a Python attribute to access related objects, doesn't create a database column (that's the foreign key's job), and allows navigation: `user.orders` or `order.user`.
 
-**What `back_populates` does:**
-- Creates bidirectional link between two relationships
-- `User.orders` and `Order.user` know about each other
-- When you add order to user.orders, order.user is automatically set
+**What `back_populates` does:** Creates bidirectional link between two relationships, `User.orders` and `Order.user` know about each other, and when you add order to user.orders, order.user is automatically set.
 
 **Example:**
 ```python
@@ -146,16 +123,16 @@ async def create_user_with_order():
         session.add(user)
         await session.flush()  # Gets user.id
         
-        # Create order using relationship
+        # Create order using relationship: Set user object, not user_id.
         order = Order(
             total_amount=99.99,
             status="pending",
-            user=user  # Use relationship, not user_id!
+            user=user  # Use relationship, not user_id! (SQLAlchemy handles FK automatically)
         )
         session.add(order)
         
-        # Or add order to user's orders list
-        # user.orders.append(order)  # Alternative way
+        # Or add order to user's orders list (alternative way).
+        # user.orders.append(order)  # Automatically sets order.user_id
         
         await session.commit()
         

@@ -4,20 +4,9 @@ Comprehensive logging helps debug and audit AI operations. This guide covers str
 
 ## Understanding AI Logging Requirements
 
-**Why comprehensive logging?**
-- Debug AI failures and unexpected outputs
-- Audit AI usage and decisions
-- Track costs and performance
-- Comply with regulations
-- Trace requests end-to-end
+**Why comprehensive logging?** Debug AI failures and unexpected outputs, audit AI usage and decisions, track costs and performance, comply with regulations, and trace requests end-to-end.
 
-**What to log:**
-- Input prompts and parameters
-- Model responses and outputs
-- Token usage and costs
-- Latency and performance
-- Errors and failures
-- User interactions
+**What to log:** Input prompts and parameters, model responses and outputs, token usage and costs, latency and performance, errors and failures, and user interactions.
 
 ## Step 1: Structured Logging Setup
 
@@ -74,19 +63,20 @@ class LLMLogger:
         parameters: Optional[Dict[str, Any]] = None
     ):
         """Log LLM request initiation."""
-        # Hash prompt for privacy (optional)
-        prompt_hash = hashlib.md5(prompt.encode()).hexdigest()[:16]
+        # Hash prompt for privacy (optional): Use hash instead of full prompt for privacy.
+        prompt_hash = hashlib.md5(prompt.encode()).hexdigest()[:16]  # MD5 hash, first 16 chars
         
+        # Log request: Structured logging with all relevant context.
         self.logger.info(
             "llm_request_started",
-            model=model,
-            user_id=user_id,
-            endpoint=endpoint,
-            prompt_length=len(prompt),
-            prompt_hash=prompt_hash,  # For deduplication
-            prompt_preview=prompt[:100] + "..." if len(prompt) > 100 else prompt,  # First 100 chars
-            parameters=parameters or {},
-            timestamp=datetime.utcnow().isoformat()
+            model=model,  # Which model is being used
+            user_id=user_id,  # Who made the request
+            endpoint=endpoint,  # Which API endpoint
+            prompt_length=len(prompt),  # Prompt length (for analysis)
+            prompt_hash=prompt_hash,  # For deduplication: Detect duplicate prompts
+            prompt_preview=prompt[:100] + "..." if len(prompt) > 100 else prompt,  # First 100 chars (preview)
+            parameters=parameters or {},  # Model parameters (temperature, etc.)
+            timestamp=datetime.utcnow().isoformat()  # ISO timestamp
         )
     
     async def log_llm_response(
@@ -97,16 +87,17 @@ class LLMLogger:
         usage: Optional[Dict[str, int]] = None
     ):
         """Log LLM response completion."""
+        # Log response: Track completion with performance metrics.
         self.logger.info(
             "llm_request_completed",
-            model=model,
-            duration_ms=duration_ms,
-            tokens_input=usage.get("prompt_tokens") if usage else None,
-            tokens_output=usage.get("completion_tokens") if usage else None,
-            tokens_total=usage.get("total_tokens") if usage else None,
-            response_length=len(response) if isinstance(response, str) else None,
-            response_preview=response[:100] + "..." if isinstance(response, str) and len(response) > 100 else response,
-            timestamp=datetime.utcnow().isoformat()
+            model=model,  # Model used
+            duration_ms=duration_ms,  # How long it took
+            tokens_input=usage.get("prompt_tokens") if usage else None,  # Input tokens
+            tokens_output=usage.get("completion_tokens") if usage else None,  # Output tokens
+            tokens_total=usage.get("total_tokens") if usage else None,  # Total tokens
+            response_length=len(response) if isinstance(response, str) else None,  # Response length
+            response_preview=response[:100] + "..." if isinstance(response, str) and len(response) > 100 else response,  # Preview
+            timestamp=datetime.utcnow().isoformat()  # Completion timestamp
         )
     
     async def log_llm_error(
@@ -116,14 +107,15 @@ class LLMLogger:
         duration_ms: Optional[float] = None
     ):
         """Log LLM request failure."""
+        # Log error: Track failures with full error context.
         self.logger.error(
             "llm_request_failed",
-            model=model,
-            error_type=type(error).__name__,
-            error_message=str(error),
-            duration_ms=duration_ms,
-            timestamp=datetime.utcnow().isoformat(),
-            exc_info=True  # Include stack trace
+            model=model,  # Model that failed
+            error_type=type(error).__name__,  # Error class name
+            error_message=str(error),  # Error message
+            duration_ms=duration_ms,  # How long before failure
+            timestamp=datetime.utcnow().isoformat(),  # Failure timestamp
+            exc_info=True  # Include stack trace: Full exception details
         )
 
 # Usage
@@ -134,7 +126,7 @@ async def call_llm_with_logging(prompt: str, model: str = "gpt-4", user_id: Opti
     start_time = time.time()
     
     try:
-        # Log request
+        # Log request: Log before making API call.
         await llm_logger.log_llm_request(
             prompt=prompt,
             model=model,
@@ -142,7 +134,7 @@ async def call_llm_with_logging(prompt: str, model: str = "gpt-4", user_id: Opti
             endpoint="/chat"
         )
         
-        # Call LLM
+        # Call LLM: Make OpenAI API call.
         response = await openai_client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}]

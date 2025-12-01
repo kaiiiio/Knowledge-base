@@ -4,17 +4,9 @@ Mocking external APIs and AI services makes tests fast, reliable, and independen
 
 ## Understanding Mocking
 
-**Why mock external services?**
-- Tests run faster (no network calls)
-- Tests are reliable (no dependency on external services)
-- Tests are isolated (don't affect external systems)
-- Control responses (test error cases)
+**Why mock external services?** Tests run faster (no network calls), tests are reliable (no dependency on external services), tests are isolated (don't affect external systems), and control responses (test error cases).
 
-**What to mock:**
-- HTTP APIs
-- AI/LLM services
-- Database connections (sometimes)
-- Third-party services
+**What to mock:** HTTP APIs, AI/LLM services, database connections (sometimes), and third-party services.
 
 ## Step 1: Mocking HTTP Clients
 
@@ -28,24 +20,25 @@ import pytest
 @pytest.mark.asyncio
 async def test_external_api_call():
     """Test with mocked HTTP client."""
+    # Mock HTTP client: Replace real HTTP calls with mock responses.
     with patch('httpx.AsyncClient.get') as mock_get:
-        # Setup mock response
+        # Setup mock response: Configure what the mock should return.
         mock_response = AsyncMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "status": "success",
             "data": {"id": 1, "name": "Test"}
         }
-        mock_get.return_value = mock_response
+        mock_get.return_value = mock_response  # Return mock response
         
-        # Execute
+        # Execute: Code under test (uses mock, not real API).
         async with httpx.AsyncClient() as client:
             response = await client.get("https://api.example.com/data")
         
-        # Verify
+        # Verify: Check response and that mock was called.
         assert response.status_code == 200
         assert response.json()["status"] == "success"
-        mock_get.assert_called_once()
+        mock_get.assert_called_once()  # Verify mock was called exactly once
 
 @pytest.mark.asyncio
 async def test_http_error_handling():
@@ -74,18 +67,19 @@ async def test_http_error_handling():
 import responses
 import requests
 
+# responses library: Easy mocking for requests library (synchronous).
 @responses.activate
 def test_external_api_with_responses():
     """Test with responses library (synchronous)."""
-    # Mock GET request
+    # Mock GET request: Register mock response for specific URL.
     responses.add(
         responses.GET,
         "https://api.example.com/users/1",
-        json={"id": 1, "name": "John"},
+        json={"id": 1, "name": "John"},  # Mock JSON response
         status=200
     )
     
-    response = requests.get("https://api.example.com/users/1")
+    response = requests.get("https://api.example.com/users/1")  # Uses mock, not real API
     
     assert response.status_code == 200
     assert response.json()["id"] == 1
@@ -121,19 +115,20 @@ def test_multiple_requests():
 ```python
 from aioresponses import aioresponses
 
+# aioresponses: Mocking library for async HTTP clients (httpx, aiohttp).
 @pytest.mark.asyncio
 async def test_async_http_client():
     """Test async HTTP client with aioresponses."""
     with aioresponses() as m:
-        # Mock GET request
+        # Mock GET request: Register mock for async HTTP calls.
         m.get(
             "https://api.example.com/users/1",
-            payload={"id": 1, "name": "John"},
+            payload={"id": 1, "name": "John"},  # Mock response payload
             status=200
         )
         
         async with httpx.AsyncClient() as client:
-            response = await client.get("https://api.example.com/users/1")
+            response = await client.get("https://api.example.com/users/1")  # Uses mock
         
         assert response.status_code == 200
         assert response.json()["id"] == 1
@@ -188,16 +183,18 @@ def mock_openai_client():
         )
     )
     
+    # Mock OpenAI client: Replace real LLM calls with mock responses.
     client.chat.completions.create = AsyncMock(return_value=mock_response)
     
     return client
 
 @pytest.mark.asyncio
+# test_llm_call_with_mock: Test LLM integration without calling real API.
 async def test_llm_call_with_mock(mock_openai_client):
     """Test LLM call with mocked client."""
     response = await mock_openai_client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": "Test prompt"}]
+        messages=[{"role": "user", "content": "Test prompt"}]  # Mock returns immediately
     )
     
     assert response.choices[0].message.content == "Mocked response"

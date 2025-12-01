@@ -4,12 +4,9 @@ CQRS (Command Query Responsibility Segregation) separates read and write operati
 
 ## Understanding CQRS
 
-**What is CQRS?**
-Separating read operations (queries) from write operations (commands) into different models and databases.
+**What is CQRS?** Separating read operations (queries) from write operations (commands) into different models and databases.
 
-**Key principle:**
-- **Commands**: Change state (writes) - optimized for consistency
-- **Queries**: Read data - optimized for performance
+**Key principle:** **Commands** change state (writes) - optimized for consistency. **Queries** read data - optimized for performance.
 
 **Visual representation:**
 ```
@@ -42,6 +39,7 @@ Read Operations (Fast!)
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric
 from sqlalchemy.orm import relationship
 
+# Write model: Normalized structure for ACID compliance and data integrity.
 class Order(Base):
     """Write model - normalized, ACID-compliant."""
     __tablename__ = "orders"
@@ -51,7 +49,7 @@ class Order(Base):
     status = Column(String(20), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    # Normalized - reference to items table
+    # Normalized: Reference to items table (normalized structure for consistency).
     items = relationship("OrderItem", back_populates="order")
 
 class OrderItem(Base):
@@ -74,29 +72,30 @@ class OrderItem(Base):
 # app/models/read_models.py
 from sqlalchemy import Column, Integer, String, JSON, Index
 
+# Read model: Denormalized structure optimized for fast queries (no joins needed).
 class OrderReadModel(Base):
     """Read model - denormalized for fast queries."""
     __tablename__ = "order_read_models"
     
     id = Column(Integer, primary_key=True)
     
-    # Denormalized fields (duplicated for speed)
+    # Denormalized fields: Duplicated data for speed (no joins needed).
     user_id = Column(Integer, nullable=False, index=True)
-    user_email = Column(String(255), nullable=False, index=True)  # Denormalized
-    user_name = Column(String(255))  # Denormalized
+    user_email = Column(String(255), nullable=False, index=True)  # Denormalized (from users table)
+    user_name = Column(String(255))  # Denormalized (from users table)
     
     status = Column(String(20), nullable=False, index=True)
     total_amount = Column(Numeric(10, 2), nullable=False, index=True)
     
-    # Denormalized items (JSON for fast reads)
-    items = Column(JSON, nullable=False)  # Full item details
+    # Denormalized items: JSON for fast reads (all item details in one field).
+    items = Column(JSON, nullable=False)  # Full item details (no join needed)
     
     created_at = Column(DateTime, nullable=False, index=True)
     
-    # Composite indexes for common queries
+    # Composite indexes: Optimized for common query patterns.
     __table_args__ = (
-        Index('idx_user_status', 'user_id', 'status'),
-        Index('idx_status_created', 'status', 'created_at'),
+        Index('idx_user_status', 'user_id', 'status'),  # Fast queries by user and status
+        Index('idx_status_created', 'status', 'created_at'),  # Fast queries by status and date
     )
 ```
 
@@ -142,8 +141,8 @@ class OrderCommandService:
         
         await self.write_db.commit()
         
-        # Trigger read model update (async)
-        await self._update_read_model(order.id)
+        # Trigger read model update: Update read model asynchronously (doesn't block write).
+        await self._update_read_model(order.id)  # Async update for performance
         
         return order
     
@@ -190,7 +189,7 @@ class OrderQueryService:
         if not read_model:
             return None
         
-        # Already denormalized - no joins needed!
+        # Already denormalized: All data in one row (no joins needed, very fast!).
         return {
             "id": read_model.id,
             "user": {

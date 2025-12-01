@@ -292,10 +292,13 @@ class Document(Base):
 
 ## Summary
 
-- **PostgreSQL**: Structured data, transactions, relationships
-- **MongoDB**: Flexible schema, horizontal scaling, documents
-- **Vector DB**: AI/ML, similarity search, embeddings
-- **Graph DB**: Relationship-heavy, network analysis
+**PostgreSQL:** Structured data, transactions, relationships. Best default choice for most applications.
 
-Most applications benefit from starting with PostgreSQL and adding specialized databases as needed. PostgreSQL's extensions (pgvector, TimescaleDB) make it versatile for many use cases.
+**MongoDB:** Flexible schema, horizontal scaling, documents. Best for content management and rapidly evolving schemas.
+
+**Vector DB:** AI/ML, similarity search, embeddings. Essential for semantic search and RAG applications.
+
+**Graph DB:** Relationship-heavy, network analysis. Best for social networks and complex relationship queries.
+
+**Recommendation:** Most applications benefit from starting with PostgreSQL and adding specialized databases as needed. PostgreSQL's extensions (pgvector, TimescaleDB) make it versatile for many use cases.
 

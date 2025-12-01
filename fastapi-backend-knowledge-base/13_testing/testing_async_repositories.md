@@ -4,17 +4,9 @@ Testing async repositories requires proper async test setup, mocking strategies,
 
 ## Understanding Repository Testing
 
-**What to test:**
-- CRUD operations
-- Query methods
-- Filters and pagination
-- Error handling
-- Edge cases
+**What to test:** CRUD operations, query methods, filters and pagination, error handling, and edge cases.
 
-**Testing approaches:**
-- Unit tests (mocked database)
-- Integration tests (real database)
-- Both (comprehensive coverage)
+**Testing approaches:** Unit tests (mocked database), integration tests (real database), and both (comprehensive coverage).
 
 ## Step 1: Basic Repository Test Structure
 
@@ -25,23 +17,25 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# Mock session fixture: For unit tests (fast, isolated).
 @pytest.fixture
 def mock_db_session() -> AsyncSession:
     """Mock database session for unit tests."""
-    session = AsyncMock(spec=AsyncSession)
+    session = AsyncMock(spec=AsyncSession)  # Mock AsyncSession
     return session
 
+# Real session fixture: For integration tests (real database).
 @pytest.fixture
 async def db_session(test_engine) -> AsyncSession:
     """Real database session for integration tests."""
     async_session_maker = async_sessionmaker(
         test_engine,
         class_=AsyncSession,
-        expire_on_commit=False
+        expire_on_commit=False  # Don't expire objects after commit
     )
     async with async_session_maker() as session:
-        yield session
-        await session.rollback()
+        yield session  # Provide session to test
+        await session.rollback()  # Rollback after test (cleanup)
 ```
 
 ### Basic CRUD Tests
@@ -57,16 +51,18 @@ class TestUserRepository:
         """Test creating a user."""
         repo = UserRepository(db_session)
         
+        # Create user: Test repository create method.
         user = await repo.create(
             email="test@example.com",
             name="Test User"
         )
         
-        assert user.id is not None
+        # Assertions: Verify user was created correctly.
+        assert user.id is not None  # ID should be assigned
         assert user.email == "test@example.com"
         assert user.name == "Test User"
         
-        # Verify in database
+        # Verify in database: Check that user actually exists in DB.
         found = await db_session.get(User, user.id)
         assert found is not None
         assert found.email == user.email

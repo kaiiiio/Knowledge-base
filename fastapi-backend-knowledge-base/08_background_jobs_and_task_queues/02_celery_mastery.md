@@ -4,9 +4,7 @@
 
 **Celery** is the industry standard for Python background tasks. It's powerful, mature, and integrates perfectly with FastAPI.
 
-It requires two things:
-1.  **A Broker**: To send messages (Redis/RabbitMQ).
-2.  **A Backend**: To store results (Redis/Database).
+It requires two things: **A Broker** (to send messages - Redis/RabbitMQ) and **A Backend** (to store results - Redis/Database).
 
 ---
 
@@ -24,20 +22,20 @@ project/
 ```python
 from celery import Celery
 
-# Configure Celery to use Redis as Broker and Backend
+# Configure Celery: Broker sends tasks, Backend stores results.
 celery_app = Celery(
     "worker",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
+    broker="redis://localhost:6379/0",  # Message queue (where tasks are sent)
+    backend="redis://localhost:6379/0"  # Result storage (where results are stored)
 )
 
-# Optional: Configure default task settings
+# Optional: Configure default task settings (JSON serialization, timezone).
 celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
+    task_serializer="json",  # Serialize tasks as JSON
+    accept_content=["json"],  # Only accept JSON
+    result_serializer="json",  # Serialize results as JSON
+    timezone="UTC",  # Use UTC timezone
+    enable_utc=True,  # Enable UTC
 )
 ```
 
@@ -46,9 +44,10 @@ celery_app.conf.update(
 import time
 from .worker import celery_app
 
+# Celery task: Runs in background worker process.
 @celery_app.task(name="send_email_task")
 def send_email_task(email: str, subject: str):
-    # Simulate long running process
+    # Simulate long running process: This runs in worker, not blocking API.
     time.sleep(5)
     return f"Email sent to {email} with subject {subject}"
 ```
@@ -61,10 +60,11 @@ from .tasks import send_email_task
 app = FastAPI()
 
 @app.post("/send-email")
+# .delay(): Pushes task to queue, returns immediately (non-blocking).
 def send_email(email: str):
-    # .delay() is the magic method to push to queue
+    # .delay() is the magic method to push to queue: Returns immediately.
     task = send_email_task.delay(email, "Welcome!")
-    return {"task_id": task.id, "status": "Processing"}
+    return {"task_id": task.id, "status": "Processing"}  # Task runs in background
 ```
 
 ---
@@ -75,13 +75,14 @@ def send_email(email: str):
 Network glitches happen. Celery can auto-retry failed tasks.
 
 ```python
+# Retry task: Automatically retries on failure with exponential backoff.
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=10)
 def unstable_task(self, data):
     try:
-        # Do something risky
+        # Do something risky: Network calls, external APIs, etc.
         process_payment(data)
     except ConnectionError as exc:
-        # Retry in 10s, 20s, 40s (Exponential Backoff)
+        # Retry in 10s, 20s, 40s (Exponential Backoff): Prevents overwhelming failing service.
         raise self.retry(exc=exc, countdown=2 ** self.request.retries)
 ```
 
@@ -93,9 +94,10 @@ Execute tasks in a specific order.
 from celery import chain
 from .tasks import fetch_data, process_data, save_data
 
-# The output of fetch_data is passed as input to process_data, etc.
+# Chain: Execute tasks in sequence (output of one becomes input of next).
 workflow = chain(fetch_data.s(), process_data.s(), save_data.s())
-workflow.apply_async()
+# The output of fetch_data is passed as input to process_data, etc.
+workflow.apply_async()  # Start the chain
 ```
 
 ### Periodic Tasks (Celery Beat)

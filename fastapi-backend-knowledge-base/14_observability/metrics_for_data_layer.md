@@ -4,18 +4,9 @@ Metrics help monitor database performance, identify bottlenecks, and ensure syst
 
 ## Understanding Data Layer Metrics
 
-**What to measure:**
-- Query performance (duration, count)
-- Connection pool usage
-- Transaction metrics
-- Error rates
-- Throughput
+**What to measure:** Query performance (duration, count), connection pool usage, transaction metrics, error rates, and throughput.
 
-**Why metrics matter:**
-- Detect performance degradation early
-- Optimize slow queries
-- Capacity planning
-- SLA monitoring
+**Why metrics matter:** Detect performance degradation early, optimize slow queries, capacity planning, and SLA monitoring.
 
 ## Step 1: Basic Prometheus Metrics
 
@@ -26,24 +17,24 @@ from prometheus_client import Counter, Histogram, Gauge, Summary
 from contextlib import contextmanager
 import time
 
-# Query metrics
+# Query metrics: Track query counts, durations, and errors.
 db_query_count = Counter(
     'db_queries_total',
     'Total database queries',
-    ['operation', 'table', 'status']  # Labels for filtering
+    ['operation', 'table', 'status']  # Labels for filtering: Group by operation type, table, and status
 )
 
 db_query_duration = Histogram(
     'db_query_duration_seconds',
     'Database query duration',
     ['operation', 'table'],
-    buckets=(0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0)  # Duration buckets
+    buckets=(0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0)  # Duration buckets for percentiles
 )
 
 db_query_errors = Counter(
     'db_query_errors_total',
     'Database query errors',
-    ['operation', 'table', 'error_type']
+    ['operation', 'table', 'error_type']  # Track errors by type
 )
 
 # Connection pool metrics
@@ -90,35 +81,38 @@ def track_query(operation: str, table: str):
         with track_query('select', 'users'):
             user = await db.get(User, user_id)
     """
-    start_time = time.time()
-    error_type = None
+    start_time = time.time()  # Start timing
+    error_type = None  # Track error type
     
     try:
-        yield
+        yield  # Execute query
     
     except Exception as e:
+        # Track error: Record error type and increment error counter.
         error_type = type(e).__name__
         db_query_errors.labels(
             operation=operation,
             table=table,
             error_type=error_type
-        ).inc()
-        raise
+        ).inc()  # Increment error counter
+        raise  # Re-raise exception
     
     finally:
+        # Record metrics: Always record duration and count.
         duration = time.time() - start_time
         
-        # Record metrics
+        # Record metrics: Increment query count (success or error).
         db_query_count.labels(
             operation=operation,
             table=table,
-            status='error' if error_type else 'success'
+            status='error' if error_type else 'success'  # Track success/error
         ).inc()
         
+        # Record duration: Observe query duration for histogram.
         db_query_duration.labels(
             operation=operation,
             table=table
-        ).observe(duration)
+        ).observe(duration)  # Record duration in histogram
 ```
 
 ### Repository Integration
@@ -130,15 +124,16 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
     
+    # Repository methods: All wrapped with metrics tracking.
     async def get_by_id(self, user_id: int) -> User:
         """Get user with automatic metrics."""
-        with track_query('select', 'users'):
+        with track_query('select', 'users'):  # Track SELECT operation
             user = await self.session.get(User, user_id)
             return user
     
     async def create(self, user_data: dict) -> User:
         """Create user with metrics."""
-        with track_query('insert', 'users'):
+        with track_query('insert', 'users'):  # Track INSERT operation
             user = User(**user_data)
             self.session.add(user)
             await self.session.commit()
@@ -146,7 +141,7 @@ class UserRepository:
     
     async def update(self, user_id: int, updates: dict) -> User:
         """Update user with metrics."""
-        with track_query('update', 'users'):
+        with track_query('update', 'users'):  # Track UPDATE operation
             user = await self.session.get(User, user_id)
             for key, value in updates.items():
                 setattr(user, key, value)

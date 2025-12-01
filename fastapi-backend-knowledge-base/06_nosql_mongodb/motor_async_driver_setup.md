@@ -4,14 +4,9 @@ Motor is the official async MongoDB driver for Python. This guide teaches you ho
 
 ## Understanding Motor
 
-**What is Motor?**
-Motor is the async version of PyMongo, MongoDB's official Python driver. It provides non-blocking, async database operations.
+**What is Motor?** Motor is the async version of PyMongo, MongoDB's official Python driver. It provides non-blocking, async database operations.
 
-**Why Motor?**
-- Native async/await support
-- Works seamlessly with FastAPI
-- Non-blocking I/O operations
-- High performance
+**Why Motor?** Native async/await support, works seamlessly with FastAPI, non-blocking I/O operations, and high performance.
 
 ## Step 1: Installation and Basic Setup
 
@@ -28,22 +23,19 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure
 import os
 
-# Basic connection
+# Basic connection: AsyncIOMotorClient creates async MongoDB connection.
 client = AsyncIOMotorClient("mongodb://localhost:27017/")
 
-# Test connection
+# Test connection: Ping command verifies connection is working.
 async def test_connection():
     try:
-        await client.admin.command('ping')
+        await client.admin.command('ping')  # Ping MongoDB server
         print("Connected to MongoDB!")
     except ConnectionFailure:
         print("Failed to connect to MongoDB")
 ```
 
-**Understanding the connection:**
-- `AsyncIOMotorClient` - Async MongoDB client
-- Connection string format: `mongodb://host:port/`
-- Connection is lazy (doesn't connect until first operation)
+**Understanding the connection:** `AsyncIOMotorClient` is async MongoDB client, connection string format is `mongodb://host:port/`, and connection is lazy (doesn't connect until first operation).
 
 ## Step 2: Connection Configuration
 
@@ -91,15 +83,16 @@ class MongoDBConfig:
             )
         return f"mongodb://{self.host}:{self.port}/{self.database}"
     
+    # create_client: Creates configured MongoDB client with connection pooling.
     def create_client(self) -> AsyncIOMotorClient:
         """Create configured MongoDB client."""
         return AsyncIOMotorClient(
             self.connection_string,
-            maxPoolSize=self.max_pool_size,
-            minPoolSize=self.min_pool_size,
-            maxIdleTimeMS=self.max_idle_time_ms,
+            maxPoolSize=self.max_pool_size,  # Maximum connections in pool
+            minPoolSize=self.min_pool_size,  # Minimum connections to maintain
+            maxIdleTimeMS=self.max_idle_time_ms,  # Close idle connections after this time
             serverSelectionTimeoutMS=5000,  # Fail fast if can't connect
-            retryWrites=True,  # Retry write operations
+            retryWrites=True,  # Retry write operations on failure
         )
 
 # Usage
@@ -115,11 +108,7 @@ client = config.create_client()
 db = client.ecommerce  # Get database
 ```
 
-**Understanding connection parameters:**
-- `maxPoolSize` - Maximum connections in pool
-- `minPoolSize` - Minimum connections to maintain
-- `maxIdleTimeMS` - Close idle connections after this time
-- `serverSelectionTimeoutMS` - Timeout for initial connection
+**Understanding connection parameters:** `maxPoolSize` is maximum connections in pool, `minPoolSize` is minimum connections to maintain, `maxIdleTimeMS` closes idle connections after this time, and `serverSelectionTimeoutMS` is timeout for initial connection.
 
 ## Step 3: Database and Collection Access
 
@@ -153,10 +142,11 @@ Let's learn CRUD operations step by step:
 ### Create (Insert)
 
 ```python
+# insert_one: Creates single document in MongoDB collection.
 async def create_user(user_data: dict):
     """Create a new user document."""
-    result = await db.users.insert_one(user_data)
-    print(f"Created user with ID: {result.inserted_id}")
+    result = await db.users.insert_one(user_data)  # Insert document, returns result
+    print(f"Created user with ID: {result.inserted_id}")  # MongoDB auto-generates _id
     return result.inserted_id
 
 # Usage
@@ -167,39 +157,44 @@ user_id = await create_user({
 })
 
 # Insert multiple documents
+# insert_many: Creates multiple documents in one operation (more efficient).
 async def create_multiple_users(users: list):
     """Create multiple users at once."""
-    result = await db.users.insert_many(users)
-    return result.inserted_ids
+    result = await db.users.insert_many(users)  # Bulk insert
+    return result.inserted_ids  # Returns list of IDs
 ```
 
 ### Read (Find)
 
 ```python
+# find_one: Returns single document matching query (or None).
 async def get_user_by_id(user_id: str):
     """Get user by ID."""
-    from bson import ObjectId
+    from bson import ObjectId  # MongoDB uses ObjectId, not strings
     
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    user = await db.users.find_one({"_id": ObjectId(user_id)})  # Convert string to ObjectId
     return user
 
+# find_one: Query by field value.
 async def get_user_by_email(email: str):
     """Find user by email."""
-    user = await db.users.find_one({"email": email})
+    user = await db.users.find_one({"email": email})  # Simple equality query
     return user
 
+# find with pagination: skip and limit for pagination.
 async def get_all_users(limit: int = 100, skip: int = 0):
     """Get all users with pagination."""
-    cursor = db.users.find().skip(skip).limit(limit)
-    users = await cursor.to_list(length=limit)
+    cursor = db.users.find().skip(skip).limit(limit)  # Create cursor with pagination
+    users = await cursor.to_list(length=limit)  # Convert cursor to list
     return users
 
+# find with regex: Pattern matching for search.
 async def search_users(query: str):
     """Search users by name (case-insensitive)."""
     cursor = db.users.find({
-        "full_name": {"$regex": query, "$options": "i"}  # Case-insensitive
+        "full_name": {"$regex": query, "$options": "i"}  # Case-insensitive regex search
     })
-    users = await cursor.to_list(length=None)
+    users = await cursor.to_list(length=None)  # Get all results
     return users
 ```
 

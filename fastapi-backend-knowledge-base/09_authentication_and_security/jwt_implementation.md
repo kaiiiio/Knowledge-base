@@ -22,11 +22,7 @@ header.payload.signature
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ```
 
-**Why JWT?**
-- Stateless (no server-side session storage)
-- Scalable (works across multiple servers)
-- Self-contained (user info in token)
-- Standard (works with any language)
+**Why JWT?** Stateless (no server-side session storage), scalable (works across multiple servers), self-contained (user info in token), and standard (works with any language).
 
 ## Step 1: Installing Dependencies
 
@@ -101,18 +97,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
             minutes=settings.access_token_expire_minutes
         )
     
-    # Add standard claims
+    # Add standard claims: JWT standard fields.
     to_encode.update({
-        "exp": expire,  # Expiration time
-        "iat": datetime.utcnow(),  # Issued at
-        "type": "access"  # Token type
+        "exp": expire,  # Expiration time: Token becomes invalid after this.
+        "iat": datetime.utcnow(),  # Issued at: When token was created.
+        "type": "access"  # Token type: Distinguishes access from refresh tokens.
     })
     
-    # Encode and sign token
+    # Encode and sign token: Creates JWT with signature.
     encoded_jwt = jwt.encode(
         to_encode,
-        settings.secret_key,
-        algorithm=settings.algorithm
+        settings.secret_key,  # Secret key signs token, prevents tampering.
+        algorithm=settings.algorithm  # HS256 = symmetric key algorithm.
     )
     
     return encoded_jwt
@@ -142,44 +138,42 @@ def verify_token(token: str) -> Optional[dict]:
         JWTError: If token is invalid, expired, or tampered with
     """
     try:
-        # Decode and verify token
+        # Decode and verify token: Validates signature and expiration automatically.
         payload = jwt.decode(
             token,
-            settings.secret_key,
-            algorithms=[settings.algorithm]
+            settings.secret_key,  # Must match key used to sign.
+            algorithms=[settings.algorithm]  # Must match signing algorithm.
         )
         
-        # Check token type
+        # Check token type: Ensures this is an access token, not refresh token.
         if payload.get("type") != "access":
             raise JWTError("Invalid token type")
         
-        # Check expiration (jwt.decode does this automatically)
+        # Check expiration: jwt.decode does this automatically, raises if expired.
         return payload
     
     except JWTError:
-        return None
+        return None  # Invalid, expired, or tampered token.
 ```
 
-**What verification checks:**
-- Signature is valid (not tampered)
-- Token hasn't expired
-- Algorithm matches
-- Token type is correct
+**What verification checks:** Signature is valid (not tampered), token hasn't expired, algorithm matches, and token type is correct.
 
 ## Step 4: Password Hashing
 
 Before we can authenticate, we need to hash passwords:
 
 ```python
+# hash_password: Creates secure bcrypt hash (one-way, can't reverse).
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt."""
     return pwd_context.hash(password)
 
+# verify_password: Compares plain password with hash (secure comparison).
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
     return pwd_context.verify(plain_password, hashed_password)
 
-# Usage
+# Usage: Never store plain passwords, always hash them.
 hashed = hash_password("my_password")
 is_valid = verify_password("my_password", hashed)  # True
 ```

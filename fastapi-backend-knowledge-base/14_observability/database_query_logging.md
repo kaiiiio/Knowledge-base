@@ -4,19 +4,9 @@ Logging database queries helps debug performance issues, understand data access 
 
 ## Understanding Query Logging
 
-**Why log database queries?**
-- Debug slow endpoints (find N+1 queries)
-- Understand data access patterns
-- Identify missing indexes
-- Track query performance over time
-- Audit data access
+**Why log database queries?** Debug slow endpoints (find N+1 queries), understand data access patterns, identify missing indexes, track query performance over time, and audit data access.
 
-**What to log:**
-- SQL statement
-- Execution time
-- Parameters (sanitized)
-- Query result size
-- Error details
+**What to log:** SQL statement, execution time, parameters (sanitized), query result size, and error details.
 
 ## Step 1: Basic SQLAlchemy Query Logging
 
@@ -25,10 +15,10 @@ Logging database queries helps debug performance issues, understand data access 
 ```python
 from sqlalchemy.ext.asyncio import create_async_engine
 
-# Simple echo logging (development only)
+# Simple echo logging: Development only (too verbose for production).
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True  # Logs all SQL to console
+    echo=True  # Logs all SQL to console (helpful for debugging)
 )
 
 # This logs:
@@ -67,37 +57,35 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Event listener: Hooks into SQLAlchemy's execution lifecycle.
 @event.listens_for(Engine, "before_cursor_execute")
 def receive_before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
     """
-    Called before SQL statement execution.
-    
-    Store start time for duration calculation.
+    Called before SQL statement execution: Store start time for duration calculation.
     """
-    conn.info.setdefault('query_start_time', []).append(time.time())
+    conn.info.setdefault('query_start_time', []).append(time.time())  # Track start time
     
     logger.debug(
         "Executing query",
-        statement=statement[:500],  # First 500 chars
-        parameters=str(parameters)[:200] if parameters else None
+        statement=statement[:500],  # First 500 chars (truncate long queries)
+        parameters=str(parameters)[:200] if parameters else None  # Log parameters (truncated)
     )
 
+# Event listener: Called after query execution (calculate duration).
 @event.listens_for(Engine, "after_cursor_execute")
 def receive_after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
     """
-    Called after SQL statement execution.
-    
-    Calculate duration and log query details.
+    Called after SQL statement execution: Calculate duration and log query details.
     """
-    total = time.time() - conn.info['query_start_time'].pop(-1)
+    total = time.time() - conn.info['query_start_time'].pop(-1)  # Calculate duration
     
-    # Log query details
+    # Log query details: Include statement, duration, parameters, and row count.
     logger.info(
         "Query executed",
         statement=statement[:500],
-        duration_ms=round(total * 1000, 2),
+        duration_ms=round(total * 1000, 2),  # Duration in milliseconds
         parameters=str(parameters)[:200] if parameters else None,
-        rowcount=cursor.rowcount if cursor.rowcount >= 0 else None
+        rowcount=cursor.rowcount if cursor.rowcount >= 0 else None  # Number of rows affected
     )
 ```
 
@@ -115,6 +103,7 @@ class QueryLogger:
         self.logger = logger
         self.slow_query_threshold = slow_query_threshold
     
+    # log_query: Comprehensive query logging with sanitization and log levels.
     def log_query(
         self,
         statement: str,
@@ -124,34 +113,34 @@ class QueryLogger:
         error: Optional[str] = None
     ):
         """Log query with comprehensive details."""
-        # Sanitize statement (remove sensitive data patterns)
+        # Sanitize statement: Remove sensitive data patterns (passwords, tokens).
         sanitized_statement = self._sanitize_query(statement)
         
-        # Determine log level
+        # Determine log level: Error for failures, warning for slow queries, info for normal.
         log_level = self._determine_log_level(duration, error)
         
-        # Build log entry
+        # Build log entry: Structured data for easy parsing and analysis.
         log_data = {
             "query": sanitized_statement[:500],
-            "duration_ms": round(duration * 1000, 2),
-            "duration_s": round(duration, 3),
-            "rowcount": rowcount,
-            "timestamp": datetime.utcnow().isoformat()
+            "duration_ms": round(duration * 1000, 2),  # Milliseconds
+            "duration_s": round(duration, 3),  # Seconds
+            "rowcount": rowcount,  # Rows affected
+            "timestamp": datetime.utcnow().isoformat()  # ISO timestamp
         }
         
         if parameters:
-            log_data["parameters"] = self._sanitize_parameters(parameters)
+            log_data["parameters"] = self._sanitize_parameters(parameters)  # Sanitized params
         
         if error:
-            log_data["error"] = error
+            log_data["error"] = error  # Error details
         
-        # Log based on level
+        # Log based on level: Different levels for different scenarios.
         if log_level == "error":
             self.logger.error("database_query", **log_data)
         elif log_level == "warning":
-            self.logger.warning("slow_query", **log_data)
+            self.logger.warning("slow_query", **log_data)  # Slow query warning
         else:
-            self.logger.info("database_query", **log_data)
+            self.logger.info("database_query", **log_data)  # Normal query
     
     def _sanitize_query(self, statement: str) -> str:
         """Remove sensitive patterns from query."""

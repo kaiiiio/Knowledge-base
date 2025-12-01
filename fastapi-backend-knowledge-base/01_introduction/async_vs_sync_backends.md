@@ -9,36 +9,28 @@ Understanding when and how to use async operations in FastAPI is crucial for bui
 In synchronous code, each operation **blocks** until it completes:
 
 ```python
-# Synchronous - blocks the thread
+# Synchronous - blocks the thread: Thread waits for I/O to complete.
 @app.get("/users/{user_id}")
 def get_user(user_id: int):
     user = db.get_user(user_id)  # Blocks here, thread waiting
     return user  # Only executes after DB call completes
 ```
 
-**Problems:**
-- One request = one thread
-- Thread sits idle waiting for I/O (database, API calls, file reads)
-- Limited concurrency (e.g., 1000 threads = high memory usage)
-- CPU underutilized during I/O waits
+**Problems:** One request = one thread. Thread sits idle waiting for I/O (database, API calls, file reads). Limited concurrency (e.g., 1000 threads = high memory usage). CPU underutilized during I/O waits.
 
 ### Asynchronous (Async) Backends
 
 In asynchronous code, operations can **yield control** during I/O:
 
 ```python
-# Asynchronous - doesn't block
+# Asynchronous - doesn't block: Yields control during I/O, handles other requests.
 @app.get("/users/{user_id}")
 async def get_user(user_id: int):
     user = await db.get_user(user_id)  # Yields control, handles other requests
     return user  # Resumes when DB responds
 ```
 
-**Benefits:**
-- One thread can handle thousands of concurrent requests
-- Thread switches to other tasks during I/O waits
-- Better resource utilization
-- Higher throughput for I/O-bound operations
+**Benefits:** One thread can handle thousands of concurrent requests. Thread switches to other tasks during I/O waits. Better resource utilization. Higher throughput for I/O-bound operations.
 
 ## When to Use Async
 
@@ -60,8 +52,9 @@ async def get_user(user_id: int):
    - Parallel data fetching
 
 ```python
-# Async allows concurrent operations
+# Async allows concurrent operations: Run multiple I/O operations in parallel.
 async def get_user_profile(user_id: int):
+    # asyncio.gather: Executes all operations concurrently, not sequentially.
     user, orders, preferences = await asyncio.gather(
         db.get_user(user_id),
         db.get_orders(user_id),
@@ -69,6 +62,8 @@ async def get_user_profile(user_id: int):
     )
     return combine_profile(user, orders, preferences)
 ```
+
+**Explanation:** `asyncio.gather` runs all operations concurrently. Instead of waiting for each one sequentially (3× wait time), they all execute in parallel (1× wait time).
 
 ### ❌ Don't Use Async For:
 
@@ -83,20 +78,23 @@ async def get_user_profile(user_id: int):
    - Synchronous libraries without async support
 
 ```python
-# CPU-bound - use sync or background tasks
+# CPU-bound - use sync or background tasks: Don't block event loop with CPU work.
 def calculate_statistics(data: List[float]):
-    # Heavy computation - blocks is fine
+    # Heavy computation - blocks is fine (runs in thread pool)
     return complex_math_operation(data)
 
-# Better: Move to background task
+# Better: Move to background task: Don't block response.
 @app.post("/analyze")
 async def analyze_data(data: DataSet):
+    # BackgroundTasks: Runs after response is sent, doesn't block.
     task_id = background_tasks.add_task(
         calculate_statistics, 
         data.values
     )
     return {"task_id": task_id}
 ```
+
+**Explanation:** CPU-bound operations should run in background tasks or thread pools. This prevents blocking the async event loop, which is optimized for I/O operations.
 
 ## FastAPI's Approach
 
@@ -228,11 +226,7 @@ If you have existing sync code:
 
 ## Conclusion
 
-Async is essential for modern, high-performance backends. FastAPI makes it easy:
-- Write async code naturally with `async/await`
-- Mix sync and async as needed
-- Achieve high concurrency with minimal resources
-- Build scalable, efficient APIs
+**Key Points:** Async is essential for modern, high-performance backends. FastAPI makes it easy: write async code naturally with `async/await`, mix sync and async as needed, achieve high concurrency with minimal resources, and build scalable, efficient APIs.
 
-For I/O-bound operations (which most backend APIs are), async provides significant performance improvements with minimal complexity overhead.
+**Best For:** I/O-bound operations (which most backend APIs are). Async provides significant performance improvements with minimal complexity overhead.
 

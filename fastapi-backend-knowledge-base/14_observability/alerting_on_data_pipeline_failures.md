@@ -4,17 +4,9 @@ Alerting on data pipeline failures ensures quick detection and response to issue
 
 ## Understanding the Need for Alerting
 
-**Why alert on pipeline failures?**
-- Data pipelines often run unattended (scheduled jobs)
-- Failures can cascade to downstream systems
-- Early detection prevents data corruption
-- Quick response minimizes business impact
+**Why alert on pipeline failures?** Data pipelines often run unattended (scheduled jobs), failures can cascade to downstream systems, early detection prevents data corruption, and quick response minimizes business impact.
 
-**What to monitor:**
-- Pipeline execution failures
-- Data quality issues
-- Performance degradation
-- Resource exhaustion
+**What to monitor:** Pipeline execution failures, data quality issues, performance degradation, and resource exhaustion.
 
 ## Step 1: Comprehensive Failure Tracking
 
@@ -27,30 +19,30 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Pipeline failure metrics
+# Pipeline failure metrics: Track failures, executions, and performance.
 pipeline_failures_total = Counter(
     'data_pipeline_failures_total',
     'Total pipeline failures',
-    ['pipeline_name', 'stage', 'error_type']
+    ['pipeline_name', 'stage', 'error_type']  # Track by pipeline, stage, and error type
 )
 
 pipeline_executions_total = Counter(
     'data_pipeline_executions_total',
     'Total pipeline executions',
-    ['pipeline_name', 'status']
+    ['pipeline_name', 'status']  # Track by pipeline and status (success/failure)
 )
 
 pipeline_duration_seconds = Histogram(
     'data_pipeline_duration_seconds',
     'Pipeline execution duration',
     ['pipeline_name', 'status'],
-    buckets=(10, 30, 60, 300, 600, 1800, 3600)
+    buckets=(10, 30, 60, 300, 600, 1800, 3600)  # Duration buckets in seconds
 )
 
 pipeline_last_success = Gauge(
     'data_pipeline_last_success_timestamp',
     'Timestamp of last successful pipeline run',
-    ['pipeline_name']
+    ['pipeline_name']  # Track when each pipeline last succeeded
 )
 ```
 

@@ -4,20 +4,11 @@ Proper fixtures make database testing clean, efficient, and isolated. This compr
 
 ## Understanding Test Fixtures
 
-**What are fixtures?**
-Reusable setup/teardown code that prepares test environment and cleans up afterwards.
+**What are fixtures?** Reusable setup/teardown code that prepares test environment and cleans up afterwards.
 
-**Benefits:**
-- DRY (Don't Repeat Yourself)
-- Consistent test environment
-- Automatic cleanup
-- Isolated tests
+**Benefits:** DRY (Don't Repeat Yourself), consistent test environment, automatic cleanup, and isolated tests.
 
-**Fixture scopes:**
-- `function`: New fixture per test (default)
-- `class`: One fixture per test class
-- `module`: One fixture per test module
-- `session`: One fixture per test session
+**Fixture scopes:** `function` (new fixture per test, default), `class` (one fixture per test class), `module` (one fixture per test module), and `session` (one fixture per test session).
 
 ## Step 1: Database Engine Fixture
 
@@ -48,17 +39,17 @@ async def test_engine() -> AsyncEngine:
         echo=False  # Don't echo SQL in tests
     )
     
-    # Create all tables
+    # Create all tables: Set up database schema once per session.
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all)  # Create all tables
     
-    yield engine
+    yield engine  # Tests run here
     
-    # Cleanup: Drop all tables
+    # Cleanup: Drop all tables after all tests complete.
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.drop_all)  # Clean up schema
     
-    await engine.dispose()
+    await engine.dispose()  # Close all connections
 
 # For PostgreSQL - use separate test database
 @pytest.fixture(scope="session")
@@ -105,9 +96,10 @@ async def db_session(test_engine: AsyncEngine) -> AsyncSession:
         expire_on_commit=False
     )
     
+    # Session fixture: One session per test (function scope).
     async with async_session_maker() as session:
-        yield session
-        # Cleanup: Rollback any uncommitted changes
+        yield session  # Session available during test
+        # Cleanup: Rollback any uncommitted changes (keeps database clean).
         await session.rollback()
 ```
 
@@ -121,20 +113,20 @@ async def db_session_transaction(test_engine: AsyncEngine) -> AsyncSession:
     
     Each test runs in isolated transaction that never commits.
     """
-    # Create connection
+    # Transaction-based session: Each test runs in isolated transaction (never commits).
     connection = await test_engine.connect()
     
-    # Begin transaction
+    # Begin transaction: Start transaction that will be rolled back.
     transaction = await connection.begin()
     
-    # Create session bound to connection
+    # Create session bound to connection: Session uses this transaction.
     session = AsyncSession(bind=connection)
     
-    yield session
+    yield session  # Test runs here (all changes in transaction)
     
-    # Cleanup: Always rollback
+    # Cleanup: Always rollback (no data persists between tests).
     await session.close()
-    await transaction.rollback()
+    await transaction.rollback()  # Rollback transaction (undo all changes)
     await connection.close()
 
 # Usage

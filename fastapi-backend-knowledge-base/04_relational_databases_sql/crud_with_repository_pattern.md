@@ -4,17 +4,11 @@ This guide teaches the Repository pattern using our e-commerce example. We'll bu
 
 ## Understanding the Repository Pattern
 
-**The Problem:**
-Without repositories, database code is scattered everywhere. If you change databases, you have to update code in many places.
+**The Problem:** Without repositories, database code is scattered everywhere. If you change databases, you have to update code in many places.
 
-**The Solution:**
-Repository pattern centralizes all database operations in one place. Your business logic (services) calls repositories, and repositories handle all database details.
+**The Solution:** Repository pattern centralizes all database operations in one place. Your business logic (services) calls repositories, and repositories handle all database details.
 
-**Benefits:**
-- ✅ All database code in one place
-- ✅ Easy to test (mock repositories)
-- ✅ Easy to switch databases
-- ✅ Clean separation of concerns
+**Benefits:** All database code in one place, easy to test (mock repositories), easy to switch databases, and clean separation of concerns.
 
 ## Our E-Commerce Models
 
@@ -146,13 +140,13 @@ class UserRepository:
             full_name=full_name
         )
         
-        # Add to session (stages for insert)
+        # Add to session: Stages object for insert (not yet committed).
         self.session.add(user)
         
-        # Flush to get ID from database
+        # Flush: Sends INSERT to DB, gets auto-generated ID, but doesn't commit.
         await self.session.flush()
         
-        # Refresh to get any defaults from database
+        # Refresh: Reloads object from DB to get any defaults/triggers.
         await self.session.refresh(user)
         
         return user

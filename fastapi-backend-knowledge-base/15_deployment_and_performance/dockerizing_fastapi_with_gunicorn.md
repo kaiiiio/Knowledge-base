@@ -4,61 +4,48 @@ Dockerizing your FastAPI application properly is essential for production. This 
 
 ## Understanding the Components
 
-**What you need:**
-- **Docker**: Containerizes your application
-- **Gunicorn**: Production WSGI/ASGI server
-- **Uvicorn Workers**: ASGI workers for FastAPI
+**What you need:** **Docker** (containerizes your application), **Gunicorn** (production WSGI/ASGI server), and **Uvicorn Workers** (ASGI workers for FastAPI).
 
-**Why Gunicorn + Uvicorn?**
-- Gunicorn manages workers (process management)
-- Uvicorn workers handle async requests
-- Together: Multi-process, multi-threaded, production-ready
+**Why Gunicorn + Uvicorn?** Gunicorn manages workers (process management), Uvicorn workers handle async requests, and together they provide multi-process, multi-threaded, production-ready setup.
 
 ## Step 1: Basic Dockerfile
 
 Let's start with a simple Dockerfile:
 
 ```dockerfile
-# Use Python 3.11 slim image (smaller size)
+# Use Python 3.11 slim image: Smaller size, faster builds.
 FROM python:3.11-slim
 
-# Set working directory
+# Set working directory: All commands run from /app.
 WORKDIR /app
 
-# Set environment variables
+# Set environment variables: Unbuffered output, no .pyc files.
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install system dependencies
+# Install system dependencies: PostgreSQL client for DB connections.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce image size
 
-# Copy requirements first (for better caching)
+# Copy requirements first: Docker caches this layer (faster rebuilds).
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install Python dependencies: --no-cache-dir reduces image size.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application code: This layer changes most often.
 COPY . .
 
-# Expose port
+# Expose port: Document which port the app uses.
 EXPOSE 8000
 
-# Run with Gunicorn + Uvicorn
+# Run with Gunicorn + Uvicorn: Production-ready ASGI server.
 CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
 ```
 
-**Understanding each line:**
-- `FROM python:3.11-slim` - Base image (Python 3.11, minimal size)
-- `WORKDIR /app` - Working directory inside container
-- `ENV` - Environment variables
-- `COPY requirements.txt` - Copy dependencies file first (Docker layers cache)
-- `RUN pip install` - Install dependencies
-- `COPY .` - Copy application code
-- `CMD` - Command to run when container starts
+**Understanding each line:** `FROM python:3.11-slim` is base image (Python 3.11, minimal size), `WORKDIR /app` sets working directory inside container, `ENV` sets environment variables, `COPY requirements.txt` copies dependencies file first (Docker layers cache), `RUN pip install` installs dependencies, `COPY .` copies application code, and `CMD` is command to run when container starts.
 
 ## Step 2: Production-Ready Dockerfile
 
@@ -100,11 +87,11 @@ ENV PATH=/root/.local/bin:$PATH
 # Copy application
 COPY . .
 
-# Create non-root user for security
+# Create non-root user: Security best practice (don't run as root).
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+USER appuser  # Switch to non-root user
 
-# Health check
+# Health check: Docker monitors container health automatically.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import httpx; httpx.get('http://localhost:8000/health')"
 
@@ -124,9 +111,7 @@ CMD ["gunicorn", \
      "--timeout", "120"]
 ```
 
-**Understanding multi-stage build:**
-- **Builder stage**: Installs build tools, compiles packages
-- **Production stage**: Only runtime dependencies, smaller image
+**Understanding multi-stage build:** **Builder stage** installs build tools and compiles packages. **Production stage** includes only runtime dependencies, resulting in a smaller image.
 
 ## Step 3: Gunicorn Configuration
 
@@ -141,12 +126,12 @@ import os
 bind = "0.0.0.0:8000"
 backlog = 2048
 
-# Worker processes
+# Worker processes: Formula: (2 × CPU cores) + 1 (optimal for most cases).
 workers = int(os.getenv("WORKERS", multiprocessing.cpu_count() * 2 + 1))
-worker_class = "uvicorn.workers.UvicornWorker"
-worker_connections = 1000
-timeout = 120
-keepalive = 5
+worker_class = "uvicorn.workers.UvicornWorker"  # ASGI worker for FastAPI
+worker_connections = 1000  # Max connections per worker
+timeout = 120  # Worker timeout (seconds)
+keepalive = 5  # Keep connections alive
 
 # Logging
 accesslog = "-"  # stdout

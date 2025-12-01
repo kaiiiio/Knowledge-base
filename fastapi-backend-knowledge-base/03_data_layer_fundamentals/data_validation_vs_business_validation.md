@@ -24,41 +24,44 @@ Understanding the distinction between data validation (syntax) and business vali
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
 
+# UserCreate: Pydantic model for data validation at API boundary.
 class UserCreate(BaseModel):
     email: EmailStr  # Data validation: email format
-    password: str = Field(min_length=8, max_length=100)  # Length
-    age: int = Field(ge=0, le=150)  # Range
+    password: str = Field(min_length=8, max_length=100)  # Length validation
+    age: int = Field(ge=0, le=150)  # Range validation
     
     @validator('password')
     def validate_password_strength(cls, v):
-        # Data validation: format requirements
+        # Data validation: format requirements (syntax, not business logic).
         if not any(c.isupper() for c in v):
             raise ValueError('Password must contain uppercase')
         if not any(c.isdigit() for c in v):
             raise ValueError('Password must contain digit')
         return v
 
-# FastAPI automatically validates
+# FastAPI automatically validates: Happens before function runs.
 @app.post("/users/", response_model=UserResponse)
 async def create_user(user: UserCreate):
-    # user is already validated by Pydantic
+    # user is already validated by Pydantic: Format, type, structure checked.
     pass
 ```
 
 ### Response Validation
 
 ```python
+# UserResponse: Response schema validates and serializes output.
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
     
     class Config:
-        from_attributes = True  # For SQLAlchemy models
+        from_attributes = True  # For SQLAlchemy models: Auto-convert ORM to Pydantic
 
 @app.get("/users/{user_id}", response_model=UserResponse)
+# response_model: Validates response shape and serializes automatically.
 async def get_user(user_id: int):
-    # Response automatically validated and serialized
+    # Response automatically validated and serialized: Ensures consistency.
     return user
 ```
 
@@ -70,26 +73,27 @@ async def get_user(user_id: int):
 # app/services/user_service.py
 from app.core.exceptions import BusinessRuleViolation
 
+# UserService: Business validation layer. Enforces domain rules.
 class UserService:
     def __init__(self, user_repo: UserRepository):
         self.user_repo = user_repo
     
     async def create_user(self, user_data: UserCreate) -> User:
-        # Business validation: Check if email exists
+        # Business validation: Check if email exists (requires DB lookup).
         if await self.user_repo.email_exists(user_data.email):
             raise BusinessRuleViolation(
                 "Email already registered",
                 code="EMAIL_EXISTS"
             )
         
-        # Business validation: Check age restrictions
+        # Business validation: Check age restrictions (business rule).
         if user_data.age < 18:
             raise BusinessRuleViolation(
                 "Must be 18 or older to register",
                 code="AGE_RESTRICTION"
             )
         
-        # Create user (data already validated by Pydantic)
+        # Create user: Data already validated by Pydantic (format/type checked).
         return await self.user_repo.create(user_data)
 ```
 
@@ -355,15 +359,9 @@ raise ValueError("Invalid")
 
 ## Summary
 
-- **Data Validation** (Pydantic): Format, type, structure
-  - Email format, string length, number ranges
-  - Happens at API boundary
-  - Automatic with FastAPI
+**Data Validation (Pydantic):** Format, type, structure. Email format, string length, number ranges. Happens at API boundary. Automatic with FastAPI.
 
-- **Business Validation** (Service Layer): Domain rules
-  - Uniqueness, relationships, business constraints
-  - Happens in service layer
-  - Explicit checks
+**Business Validation (Service Layer):** Domain rules. Uniqueness, relationships, business constraints. Happens in service layer. Explicit checks.
 
-Both are essential for robust applications. Data validation ensures requests are well-formed, while business validation ensures they make business sense.
+**Key Point:** Both are essential for robust applications. Data validation ensures requests are well-formed, while business validation ensures they make business sense.
 

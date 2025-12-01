@@ -4,11 +4,7 @@ Getting structured, validated output from LLMs is crucial for production AI appl
 
 ## The Problem with LLM Output
 
-**Without structured output:**
-- LLMs return free-form text
-- Need manual parsing
-- Inconsistent formats
-- Hard to validate
+**Without structured output:** LLMs return free-form text, need manual parsing, inconsistent formats, and hard to validate.
 
 **Example:**
 ```python
@@ -18,11 +14,7 @@ text = response.choices[0].message.content
 # How do we parse this? Split? Regex? Fragile!
 ```
 
-**With structured output:**
-- LLMs return JSON matching your schema
-- Automatic validation
-- Type-safe
-- Consistent format
+**With structured output:** LLMs return JSON matching your schema, automatic validation, type-safe, and consistent format.
 
 ## Step 1: Basic Structured Output
 
@@ -54,20 +46,16 @@ async def extract_user_info(text: str) -> UserInfo:
             {"role": "system", "content": "Extract user information from the text."},
             {"role": "user", "content": text}
         ],
-        response_format=UserInfo  # Pydantic model as schema!
+        response_format=UserInfo  # Pydantic model as schema! (LLM returns JSON matching this)
     )
     
-    # Automatically parsed and validated
-    user_info: UserInfo = response.choices[0].message.parsed
+    # Automatically parsed and validated: Pydantic validates and converts to model.
+    user_info: UserInfo = response.choices[0].message.parsed  # Already validated
     
     return user_info
 ```
 
-**What happens:**
-1. Pydantic model converted to JSON schema
-2. LLM returns JSON matching schema
-3. Automatically parsed into Pydantic model
-4. Validated (age constraints, email format, etc.)
+**What happens:** Pydantic model converted to JSON schema, LLM returns JSON matching schema, automatically parsed into Pydantic model, and validated (age constraints, email format, etc.).
 
 ## Step 2: Complex Structured Outputs
 
@@ -157,23 +145,19 @@ async def extract_user_info_safe(text: str) -> Optional[UserInfo]:
         return response.choices[0].message.parsed
     
     except BadRequestError as e:
-        # LLM didn't follow schema
+        # LLM didn't follow schema: LLM returned invalid JSON or didn't match schema.
         print(f"LLM parsing error: {e}")
         return None
     
     except ValidationError as e:
-        # Pydantic validation failed
+        # Pydantic validation failed: JSON parsed but doesn't meet field constraints.
         print(f"Validation error: {e}")
         return None
 ```
 
 ## Summary
 
-Structured output provides:
-- ✅ Type-safe LLM responses
-- ✅ Automatic validation
-- ✅ Consistent formats
-- ✅ Easy integration with FastAPI
+**Structured output provides:** Type-safe LLM responses, automatic validation, consistent formats, and easy integration with FastAPI.
 
 Use Pydantic models with LLMs for production-ready AI features!
 

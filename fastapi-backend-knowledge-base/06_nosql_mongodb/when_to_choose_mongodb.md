@@ -4,25 +4,17 @@ MongoDB is a document database that stores data as JSON-like documents. This gui
 
 ## Understanding Document Databases
 
-**What makes MongoDB different:**
-- Stores documents (like JSON objects) instead of rows
-- Flexible schema - documents can have different fields
-- No joins needed - related data can be embedded
-- Horizontal scaling is built-in
+**What makes MongoDB different:** Stores documents (like JSON objects) instead of rows, flexible schema (documents can have different fields), no joins needed (related data can be embedded), and horizontal scaling is built-in.
 
-**Think of it like this:**
-- **PostgreSQL**: Like Excel spreadsheets (rows, columns, fixed structure)
-- **MongoDB**: Like filing cabinets with folders (documents, flexible structure)
+**Think of it like this:** **PostgreSQL** is like Excel spreadsheets (rows, columns, fixed structure). **MongoDB** is like filing cabinets with folders (documents, flexible structure).
 
 ## When MongoDB Shines
 
 ### Use Case 1: Flexible, Evolving Schemas
 
-**The problem with relational databases:**
-Every new field requires a migration, altering tables, and potential downtime.
+**The problem with relational databases:** Every new field requires a migration, altering tables, and potential downtime.
 
-**MongoDB solution:**
-Just add the field to new documents - no schema changes needed.
+**MongoDB solution:** Just add the field to new documents - no schema changes needed.
 
 **Example - User profiles:**
 ```python
@@ -52,11 +44,7 @@ Just add the field to new documents - no schema changes needed.
 # Both in the same collection - MongoDB doesn't care!
 ```
 
-**When this matters:**
-- Rapid prototyping
-- Frequently changing requirements
-- User-generated content with varying fields
-- Content management systems
+**When this matters:** Rapid prototyping, frequently changing requirements, user-generated content with varying fields, and content management systems.
 
 ### Use Case 2: Document Embedding (No Joins)
 
@@ -98,15 +86,12 @@ WHERE u.id = 1;
     ]
 }
 
-# One query gets everything
+# One query gets everything: No joins needed (all data embedded).
 user = await db.users.find_one({"_id": user_id})
-# All data already there - no joins!
+# All data already there - no joins! (faster than SQL JOINs)
 ```
 
-**When this helps:**
-- Frequently reading complete objects
-- Rarely need just part of the data
-- Simple relationships
+**When this helps:** Frequently reading complete objects, rarely need just part of the data, and simple relationships.
 
 ### Use Case 3: Content Management
 
@@ -141,33 +126,21 @@ user = await db.users.find_one({"_id": user_id})
 }
 ```
 
-**Benefits:**
-- Single query gets post + all comments + author
-- Easy to update (add comment = append to array)
-- Natural document structure
+**Benefits:** Single query gets post + all comments + author, easy to update (add comment = append to array), and natural document structure.
 
 ### Use Case 4: Horizontal Scaling
 
-**MongoDB sharding:**
-- Automatically distributes data across servers
-- Built-in support for sharding
-- Handles massive datasets easily
+**MongoDB sharding:** Automatically distributes data across servers, built-in support for sharding, and handles massive datasets easily.
 
-**PostgreSQL:**
-- Sharding is complex (manual setup)
-- Better for vertical scaling (bigger server)
+**PostgreSQL:** Sharding is complex (manual setup) and better for vertical scaling (bigger server).
 
-**When MongoDB wins:**
-- Need to scale beyond single server
-- Millions/billions of documents
-- High write throughput
+**When MongoDB wins:** Need to scale beyond single server, millions/billions of documents, and high write throughput.
 
 ## When NOT to Use MongoDB
 
 ### ❌ Complex Relationships
 
-**Problem:**
-MongoDB doesn't have joins. Complex relationships require multiple queries.
+**Problem:** MongoDB doesn't have joins. Complex relationships require multiple queries.
 
 **Example - E-commerce orders:**
 ```python
@@ -193,10 +166,7 @@ JOIN products p ON oi.product_id = p.id
 WHERE o.id = 1;
 ```
 
-**Use PostgreSQL when:**
-- Many relationships between entities
-- Need complex queries across tables
-- Referential integrity is critical
+**Use PostgreSQL when:** Many relationships between entities, need complex queries across tables, and referential integrity is critical.
 
 ### ❌ ACID Transactions Across Documents
 

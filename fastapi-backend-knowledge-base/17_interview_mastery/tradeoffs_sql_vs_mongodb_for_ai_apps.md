@@ -8,76 +8,61 @@ Understanding when to use SQL (PostgreSQL) vs MongoDB in AI applications, with d
 
 **The Answer:** It depends on your specific use case, data structure, and requirements.
 
-**Key factors:**
-- Data structure (structured vs flexible)
-- Relationships (complex vs simple)
-- Transaction requirements
-- Scale needs
-- Vector search requirements
+**Key factors:** Data structure (structured vs flexible), relationships (complex vs simple), transaction requirements, scale needs, and vector search requirements.
 
 ## PostgreSQL (SQL) Advantages
 
 ### 1. Structured Data and Relationships
 
-**Perfect for:**
-- User profiles
-- Job postings
-- Applications with complex relationships
-- Transactional data
+**Perfect for:** User profiles, job postings, applications with complex relationships, and transactional data.
 
 **Example:**
 ```python
-# Complex relationships with joins
+# Complex relationships with joins: SQL excels at multi-table relationships.
 class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String(255))
     
-    # Relationships
-    applications = relationship("Application", back_populates="user")
-    skills = relationship("Skill", secondary=user_skills)
+    # Relationships: One-to-many and many-to-many relationships.
+    applications = relationship("Application", back_populates="user")  # One user has many applications
+    skills = relationship("Skill", secondary=user_skills)  # Many-to-many: users and skills
 
 class Application(Base):
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    job_id = Column(Integer, ForeignKey("jobs.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to users
+    job_id = Column(Integer, ForeignKey("jobs.id"))  # Foreign key to jobs
     
+    # Relationships: Bidirectional links.
     user = relationship("User", back_populates="applications")
     job = relationship("Job", back_populates="applications")
 
-# Complex query with joins
+# Complex query with joins: Efficient multi-table queries with SQL joins.
 applications = await db.execute(
     select(Application)
-    .join(User)
-    .join(Job)
+    .join(User)  # Join with users table
+    .join(Job)  # Join with jobs table
     .where(User.id == user_id)
     .where(Job.category == "technology")
 )
 ```
 
-**Why SQL is better:**
-- ✅ ACID transactions across multiple tables
-- ✅ Complex joins and aggregations
-- ✅ Referential integrity
-- ✅ Normalized data (no duplication)
+**Why SQL is better:** ACID transactions across multiple tables, complex joins and aggregations, referential integrity, and normalized data (no duplication).
 
 ### 2. ACID Transactions
 
-**Critical for:**
-- Payment processing
-- Order management
-- Financial transactions
-- Multi-step operations
+**Critical for:** Payment processing, order management, financial transactions, and multi-step operations.
 
 **Example:**
 ```python
+# ACID transaction: All operations succeed or all fail (atomicity).
 async def process_payment(user_id: int, amount: float):
     """Atomic transaction - all or nothing."""
-    async with db.begin():
-        # Deduct from user balance
+    async with db.begin():  # Start transaction: All operations are atomic
+        # Deduct from user balance: Update user's balance.
         user = await db.get(User, user_id)
         user.balance -= amount
         
-        # Create transaction record
+        # Create transaction record: Log the payment.
         transaction = Transaction(
             user_id=user_id,
             amount=amount,
@@ -85,26 +70,18 @@ async def process_payment(user_id: int, amount: float):
         )
         db.add(transaction)
         
-        # Update order status
+        # Update order status: Mark order as paid.
         order.status = "paid"
         
-        # All operations succeed or all fail
+        # All operations succeed or all fail: Commit makes all changes permanent, or rollback on error.
         await db.commit()
 ```
 
-**Why transactions matter:**
-- ✅ Data consistency
-- ✅ No partial updates
-- ✅ Rollback on errors
-- ✅ Concurrent access safety
+**Why transactions matter:** Data consistency, no partial updates, rollback on errors, and concurrent access safety.
 
 ### 3. JSONB Support (Best of Both Worlds)
 
-**PostgreSQL JSONB:**
-- Structured data in relational database
-- Flexible schema for varying data
-- Indexed JSON queries
-- Full-text search on JSON
+**PostgreSQL JSONB:** Structured data in relational database, flexible schema for varying data, indexed JSON queries, and full-text search on JSON.
 
 **Example:**
 ```python
@@ -112,42 +89,41 @@ class Resume(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     
-    # Structured fields
+    # Structured fields: Fixed schema columns.
     name = Column(String(255))
     email = Column(String(255))
     
-    # Flexible JSONB field
+    # Flexible JSONB field: Store variable structure (experience, education, skills).
     resume_data = Column(JSONB)  # Experience, education, skills
     
-    # Indexed JSON queries
+    # Indexed JSON queries: GIN index for fast JSON queries.
     __table_args__ = (
-        Index('idx_resume_skills', resume_data['skills'].astext, postgresql_using='gin'),
+        Index('idx_resume_skills', resume_data['skills'].astext, postgresql_using='gin'),  # Index JSON field
     )
 
-# Query JSONB
+# Query JSONB: Query nested JSON data efficiently.
 resumes = await db.execute(
     select(Resume)
-    .where(Resume.resume_data['skills'].contains(['Python', 'FastAPI']))
+    .where(Resume.resume_data['skills'].contains(['Python', 'FastAPI']))  # Query nested JSON array
 )
 ```
 
-**Benefits:**
-- ✅ Structured + flexible in one database
-- ✅ Indexed JSON queries
-- ✅ ACID guarantees on JSON data
+**Benefits:** Structured + flexible in one database, indexed JSON queries, and ACID guarantees on JSON data.
 
 ### 4. pgvector for Embeddings
 
-**Native vector support:**
+**Native vector support:** PostgreSQL with pgvector extension provides native vector storage and similarity search.
+
 ```python
 from pgvector.sqlalchemy import Vector
 
 class Document(Base):
     id = Column(Integer, primary_key=True)
     content = Column(Text)
-    embedding = Column(Vector(1536))  # Vector type
+    # Vector column: Store embeddings directly in PostgreSQL.
+    embedding = Column(Vector(1536))  # Vector type (1536 dimensions for OpenAI)
 
-# Vector similarity search
+# Vector similarity search: Find similar documents using cosine distance.
 results = await db.execute(
     select(Document)
     .order_by(Document.embedding.l2_distance(query_embedding))

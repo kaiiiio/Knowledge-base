@@ -60,11 +60,7 @@ async def get_user(
     return await service.get_user(user_id)
 ```
 
-**Benefits:**
-- Each module has a single responsibility
-- Easy to test individual components
-- Easy to modify one part without affecting others
-- Clear dependencies between layers
+**Benefits:** Each module has a single responsibility, easy to test individual components, easy to modify one part without affecting others, and clear dependencies between layers.
 
 ### 2. **Separation of Concerns**
 
@@ -82,7 +78,8 @@ Divide your application into distinct layers:
 └─────────────────────────────────────┘
 ```
 
-**API Layer** - Handles HTTP concerns:
+**API Layer** - Handles HTTP concerns (request/response, status codes, exceptions):
+
 ```python
 # app/api/routes/users.py
 from fastapi import APIRouter, Depends, HTTPException
@@ -90,57 +87,64 @@ from fastapi import APIRouter, Depends, HTTPException
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
 @router.post("/", response_model=UserResponse, status_code=201)
+# Route handler: Thin layer, delegates to service.
 async def create_user(
-    user_data: UserCreate,
-    service: UserService = Depends(get_user_service)
+    user_data: UserCreate,  # Pydantic validates request
+    service: UserService = Depends(get_user_service)  # Dependency injection
 ):
     try:
-        return await service.create_user(user_data)
+        return await service.create_user(user_data)  # Delegate to service
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))  # Convert to HTTP error
 ```
 
-**Service Layer** - Contains business logic:
+**Service Layer** - Contains business logic (rules, orchestration, side effects):
+
 ```python
 # app/services/user_service.py
+# UserService: Business logic layer (enforces rules, orchestrates operations).
 class UserService:
     def __init__(
         self,
-        user_repo: UserRepository,
+        user_repo: UserRepository,  # Injected dependencies
         email_service: EmailService
     ):
         self.user_repo = user_repo
         self.email_service = email_service
     
     async def create_user(self, user_data: UserCreate) -> User:
-        # Business rules
+        # Business rules: Enforce domain constraints.
         if await self.user_repo.email_exists(user_data.email):
             raise ValidationError("Email already exists")
         
-        # Create user
+        # Create user: Delegate to repository.
         user = await self.user_repo.create(user_data)
         
-        # Side effects
+        # Side effects: Send welcome email (not part of core creation).
         await self.email_service.send_welcome_email(user.email)
         
         return user
 ```
 
-**Repository Layer** - Handles data access:
+**Repository Layer** - Handles data access (database operations only):
+
 ```python
 # app/repositories/user_repository.py
+# UserRepository: Data access layer (only database operations, no business logic).
 class UserRepository:
     def __init__(self, session: AsyncSession):
-        self.session = session
+        self.session = session  # Injected database session
     
     async def create(self, user_data: UserCreate) -> User:
+        # Database operation: Create record.
         user = User(**user_data.dict())
         self.session.add(user)
         await self.session.commit()
-        await self.session.refresh(user)
+        await self.session.refresh(user)  # Get auto-generated fields
         return user
     
     async def email_exists(self, email: str) -> bool:
+        # Database query: Check existence.
         result = await self.session.execute(
             select(User).where(User.email == email)
         )

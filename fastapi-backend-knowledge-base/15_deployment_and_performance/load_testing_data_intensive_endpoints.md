@@ -4,14 +4,9 @@ Load testing ensures endpoints handle production traffic. This comprehensive gui
 
 ## Understanding Load Testing
 
-**What is load testing?**
-Testing your application under expected and peak load conditions to identify bottlenecks and performance limits.
+**What is load testing?** Testing your application under expected and peak load conditions to identify bottlenecks and performance limits.
 
-**Types of load tests:**
-- **Baseline**: Normal expected load
-- **Stress**: Beyond normal capacity
-- **Spike**: Sudden traffic increases
-- **Endurance**: Sustained load over time
+**Types of load tests:** **Baseline** is normal expected load. **Stress** is beyond normal capacity. **Spike** is sudden traffic increases. **Endurance** is sustained load over time.
 
 ## Step 1: Setting Up Locust
 
@@ -31,34 +26,37 @@ class DataIntensiveUser(FastHttpUser):
     """
     wait_time = between(1, 3)  # Wait 1-3 seconds between tasks
     
+    # User setup: Called when simulated user starts.
     def on_start(self):
         """Called when user starts (login, setup)."""
-        # Login and get auth token
+        # Login and get auth token: Authenticate before making requests.
         response = self.client.post("/auth/login", json={
-            "email": f"user{random.randint(1, 1000)}@example.com",
+            "email": f"user{random.randint(1, 1000)}@example.com",  # Random user email
             "password": "password"
         })
         if response.status_code == 200:
-            self.token = response.json()["access_token"]
-            self.client.headers = {"Authorization": f"Bearer {self.token}"}
+            self.token = response.json()["access_token"]  # Store token
+            self.client.headers = {"Authorization": f"Bearer {self.token}"}  # Set auth header
     
-    @task(3)  # Weight: 3x more frequent
+    # Task with weight: Higher weight = more frequent execution.
+    @task(3)  # Weight: 3x more frequent than tasks with weight=1
     def search_products(self):
         """Test product search endpoint."""
         queries = ["laptop", "phone", "book", "gaming", "electronics"]
-        query = random.choice(queries)
+        query = random.choice(queries)  # Random search query
         
+        # Make request: catch_response allows custom success/failure logic.
         with self.client.get(
             f"/products/search?q={query}&limit=20",
-            catch_response=True,
-            name="/products/search"
+            catch_response=True,  # Manual success/failure handling
+            name="/products/search"  # Group all search requests under this name
         ) as response:
             if response.status_code == 200:
                 data = response.json()
                 if len(data.get("results", [])) == 0:
-                    response.failure("No results returned")
+                    response.failure("No results returned")  # Mark as failure if no results
             else:
-                response.failure(f"Status code: {response.status_code}")
+                response.failure(f"Status code: {response.status_code}")  # Mark non-200 as failure
     
     @task(2)
     def get_user_profile(self):

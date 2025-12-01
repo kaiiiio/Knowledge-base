@@ -24,31 +24,17 @@ async def create_order_problematic(order_data: dict):
 
 **What can go wrong:**
 
-**Scenario 1: Transaction Fails After Event Published**
-```
-Time 0ms: Event published to message queue → "order_created" event in queue
-Time 1ms: Database transaction fails → Order NOT in database
-Time 2ms: Consumer processes event → Tries to process order that doesn't exist
-Result: ❌ Inconsistent state
-```
+**Scenario 1: Transaction Fails After Event Published:** Time 0ms: Event published to message queue → "order_created" event in queue. Time 1ms: Database transaction fails → Order NOT in database. Time 2ms: Consumer processes event → Tries to process order that doesn't exist. Result: Inconsistent state.
 
-**Scenario 2: Application Crashes After Event Published**
-```
-Time 0ms: Event published → In queue
-Time 1ms: Application crashes → Transaction never committed
-Result: ❌ Lost consistency
-```
+**Scenario 2: Application Crashes After Event Published:** Time 0ms: Event published → In queue. Time 1ms: Application crashes → Transaction never committed. Result: Lost consistency.
 
 ### Why This Matters
 
-**Event-driven architecture dependency:**
-- Other services depend on events
-- Events must match database state exactly
-- Inconsistency causes cascading failures
+**Event-driven architecture dependency:** Other services depend on events, events must match database state exactly, and inconsistency causes cascading failures.
 
 ## The Solution: Outbox Pattern
 
-**Core idea:** Store events in the database within the same transaction. A separate process publishes events.
+**Core idea:** Store events in the database within the same transaction. A separate process publishes events. This ensures events are only published if the transaction succeeds.
 
 ### Architecture Diagram
 
@@ -124,12 +110,7 @@ class OutboxEvent(Base):
         return f"<OutboxEvent(id={self.id}, event_type={self.event_type}, processed={self.processed})>"
 ```
 
-**Understanding the schema:**
-- `event_type`: What kind of event (e.g., "order_created", "payment_processed")
-- `event_data`: JSON payload with event details
-- `processed`: Flag indicating if event was published
-- `created_at`: When event was created (for ordering)
-- `retry_count`: Track failed publishing attempts
+**Understanding the schema:** `event_type` is what kind of event (e.g., "order_created", "payment_processed"), `event_data` is JSON payload with event details, `processed` is flag indicating if event was published, `created_at` is when event was created (for ordering), and `retry_count` tracks failed publishing attempts.
 
 ## Step 2: Creating Events in Transaction
 
@@ -150,41 +131,38 @@ async def create_order_with_outbox(
     This ensures atomicity: Either both order and event are saved,
     or neither is saved.
     """
+    # Outbox pattern: Store event in same transaction as business data (atomic).
     async with db.begin():  # Start transaction
-        # Step 1: Create order
+        # Step 1: Create order: Business data creation.
         order = Order(
             user_id=order_data["user_id"],
             total_amount=order_data["total_amount"],
             items=order_data["items"]
         )
         db.add(order)
-        await db.flush()  # Get order.id without committing
+        await db.flush()  # Get order.id without committing (needed for event data)
         
-        # Step 2: Create outbox event (same transaction)
+        # Step 2: Create outbox event: Event stored in same transaction (atomic).
         outbox_event = OutboxEvent(
             event_type="order_created",
             event_data={
-                "order_id": order.id,
+                "order_id": order.id,  # Use order.id from flush
                 "user_id": order.user_id,
                 "total_amount": float(order.total_amount),
                 "created_at": datetime.utcnow().isoformat()
             },
-            processed=False
+            processed=False  # Will be processed by background worker
         )
         db.add(outbox_event)
         
-        # Step 3: Commit both together (atomic operation)
+        # Step 3: Commit both together: Atomic operation (both or neither).
         await db.commit()
         
-        # Transaction successful = both order and event are saved
+        # Transaction successful: Both order and event are saved (event will be published later).
         return order
 ```
 
-**Why this works:**
-- Both `Order` and `OutboxEvent` in same transaction
-- Database ACID guarantees: All or nothing
-- If commit fails, both rollback
-- Event only exists if order was created
+**Why this works:** Both `Order` and `OutboxEvent` in same transaction, database ACID guarantees (all or nothing), if commit fails both rollback, and event only exists if order was created.
 
 ### Reusable Helper Function
 

@@ -44,19 +44,18 @@ FastAPI is built on Starlette (async web framework) and Pydantic (data validatio
 Let's see what this looks like in practice. First, a simple endpoint:
 
 ```python
+# FastAPI: async/await pattern enables non-blocking I/O.
 @app.get("/users/{user_id}")
 async def get_user(user_id: int):
-    user = await db.get_user(user_id)  # This line is key
+    user = await db.get_user(user_id)  # await: Yields control while waiting for DB
     return user
 ```
 
-Notice the `async def` and `await` keywords. This means:
-1. When the database query runs, the function doesn't block
-2. Other requests can be handled while waiting
-3. The response returns as soon as the database responds
+**Explanation:** The `async def` and `await` keywords enable non-blocking I/O. When the database query runs, the function doesn't block—other requests can be handled while waiting. The response returns as soon as the database responds.
 
 Compare this to Flask:
 ```python
+# Flask: Synchronous blocking pattern.
 @app.route("/users/<int:user_id>")
 def get_user(user_id):
     user = db.get_user(user_id)  # Blocks until database responds
@@ -69,6 +68,7 @@ This is where FastAPI truly shines. Let's understand the problem first:
 
 **Without Type Safety (Flask example):**
 ```python
+# Flask: Manual validation required, error-prone.
 @app.route("/users", methods=["POST"])
 def create_user():
     data = request.json  # What if this is None? What if email is missing?
@@ -89,19 +89,17 @@ Here's how it works step by step:
 ```python
 from pydantic import BaseModel
 
+# UserCreate: Pydantic model automatically validates request body.
 class UserCreate(BaseModel):
     email: str  # Must be a string
     age: int    # Must be an integer
 ```
 
-This simple definition tells FastAPI:
-- The request body must have `email` (string) and `age` (integer)
-- If email is missing → 422 error automatically
-- If age is "twenty" instead of 20 → 422 error automatically
-- If age is negative → you can add validation (we'll see this next)
+**Explanation:** This simple definition tells FastAPI: the request body must have `email` (string) and `age` (integer). If email is missing → 422 error automatically. If age is "twenty" instead of 20 → 422 error automatically. If age is negative → you can add validation (we'll see this next).
 
 **Step 2: Use it in your endpoint**
 ```python
+# FastAPI: Validation happens automatically before function runs.
 @app.post("/users/", response_model=User)
 async def create_user(user: UserCreate):
     # By the time we reach here, user.email is guaranteed to be a string
@@ -113,12 +111,14 @@ async def create_user(user: UserCreate):
 ```python
 from pydantic import BaseModel, EmailStr, validator
 
+# UserCreate: Enhanced with custom validators for business rules.
 class UserCreate(BaseModel):
     email: EmailStr  # Automatically validates email format
     age: int
     
     @validator('age')
     def validate_age(cls, v):
+        # Custom validation: Enforce business rules.
         if v < 18:
             raise ValueError('Must be 18 or older')
         if v > 150:
@@ -126,12 +126,7 @@ class UserCreate(BaseModel):
         return v
 ```
 
-Now when someone sends invalid data:
-- Missing email → FastAPI returns: `{"detail": [{"loc": ["body", "email"], "msg": "field required"}]}`
-- Invalid email format → FastAPI validates and rejects it
-- Age is 17 → Your custom validator catches it
-
-All of this happens **before** your function even runs. No manual checking needed.
+**Explanation:** Now when someone sends invalid data: missing email → FastAPI returns detailed error. Invalid email format → FastAPI validates and rejects it. Age is 17 → Your custom validator catches it. All of this happens **before** your function even runs. No manual checking needed.
 
 ### 3. **Developer Experience - Work Less, Build More**
 
@@ -186,20 +181,22 @@ That's it. Validation and serialization happen automatically.
 FastAPI has built-in dependency injection that's incredibly elegant. We'll explore this in detail later, but here's a taste:
 
 ```python
+# get_db: Generator dependency manages resource lifecycle.
 def get_db():
     db = create_connection()
     try:
-        yield db
+        yield db  # Resource available during request
     finally:
-        db.close()
+        db.close()  # Always cleanup
 
 @app.get("/users/{user_id}")
+# Depends(get_db): FastAPI automatically creates and closes DB connection.
 async def get_user(user_id: int, db = Depends(get_db)):
     # db is automatically created and closed for you
     return await db.get_user(user_id)
 ```
 
-This pattern makes testing and reusability trivial.
+**Explanation:** This pattern makes testing and reusability trivial. Dependencies are injected automatically, and you can override them in tests without changing application code.
 
 ### 4. **Production Ready - Not Just a Prototype Framework**
 
@@ -216,12 +213,13 @@ This means your APIs can integrate with any tool that understands these standard
 Need real-time features? FastAPI has native WebSocket support:
 
 ```python
+# WebSocket: Native support for real-time bidirectional communication.
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
+    await websocket.accept()  # Accept connection
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message received: {data}")
+        data = await websocket.receive_text()  # Receive message
+        await websocket.send_text(f"Message received: {data}")  # Send response
 ```
 
 **Background Tasks:**
@@ -230,11 +228,13 @@ Sometimes you need to do things after responding to the user (like sending an em
 ```python
 from fastapi import BackgroundTasks
 
+# send_email: Background task runs after response is sent.
 def send_email(email: str):
     # This runs after the response is sent
     print(f"Sending email to {email}")
 
 @app.post("/signup")
+# BackgroundTasks: Queue tasks to run after response, without blocking.
 async def signup(email: str, background_tasks: BackgroundTasks):
     # Create user immediately
     user = create_user(email)
@@ -249,6 +249,7 @@ FastAPI includes a TestClient that makes testing feel natural:
 ```python
 from fastapi.testclient import TestClient
 
+# TestClient: Built-in testing client, no external framework needed.
 client = TestClient(app)
 
 def test_get_user():
@@ -257,7 +258,7 @@ def test_get_user():
     assert response.json()["id"] == 123
 ```
 
-No need for separate test frameworks or complex setup.
+**Explanation:** No need for separate test frameworks or complex setup. TestClient works synchronously for testing async endpoints, making tests simple and readable.
 
 ## Comparison Matrix
 
@@ -272,12 +273,7 @@ No need for separate test frameworks or complex setup.
 
 ## When FastAPI Shines
 
-1. **High-performance APIs**: When you need to handle many concurrent requests
-2. **Type-safe APIs**: When you want compile-time-like safety in Python
-3. **Modern Python apps**: Teams using Python 3.6+ features
-4. **Microservices**: Lightweight, fast startup times
-5. **Data-heavy apps**: Great integration with data science libraries
-6. **AI/ML APIs**: Easy integration with ML models and async processing
+**Best for:** High-performance APIs (many concurrent requests), type-safe APIs (compile-time-like safety in Python), modern Python apps (Python 3.6+ features), microservices (lightweight, fast startup), data-heavy apps (great integration with data science libraries), and AI/ML APIs (easy integration with ML models and async processing).
 
 ## Trade-offs to Consider
 
@@ -288,11 +284,7 @@ No need for separate test frameworks or complex setup.
 
 ## Conclusion
 
-FastAPI is the best choice when you need:
-- High performance with async operations
-- Type safety and automatic validation
-- Modern Python development experience
-- Production-ready API development
+**Best choice when you need:** High performance with async operations, type safety and automatic validation, modern Python development experience, and production-ready API development.
 
-It's particularly strong for backend APIs, microservices, and data-intensive applications where performance and type safety matter.
+**Particularly strong for:** Backend APIs, microservices, and data-intensive applications where performance and type safety matter.
 

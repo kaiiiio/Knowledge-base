@@ -4,10 +4,7 @@ Choosing the right background task system is crucial. This guide explains when t
 
 ## Understanding the Options
 
-**Three main options:**
-1. **FastAPI BackgroundTasks** - Built-in, simple
-2. **Celery** - Full-featured, powerful
-3. **RQ (Redis Queue)** - Simple, Redis-based
+**Three main options:** **FastAPI BackgroundTasks** (built-in, simple), **Celery** (full-featured, powerful), and **RQ (Redis Queue)** (simple, Redis-based).
 
 Let's understand each deeply.
 
@@ -42,28 +39,13 @@ async def signup(
     # Email sent after response (doesn't block user)
 ```
 
-**Understanding the flow:**
-1. Request comes in
-2. User is created
-3. Email task is queued
-4. Response is sent to client
-5. Email is sent in background
+**Understanding the flow:** Request comes in, user is created, email task is queued, response is sent to client, and email is sent in background.
 
 ### When to Use BackgroundTasks
 
-**✅ Use when:**
-- Simple, short-running tasks
-- Tasks tied to HTTP request lifecycle
-- No need for task persistence
-- No need for task monitoring
-- Tasks run in same process (simpler)
+**✅ Use when:** Simple, short-running tasks, tasks tied to HTTP request lifecycle, no need for task persistence, no need for task monitoring, and tasks run in same process (simpler).
 
-**❌ Don't use when:**
-- Long-running tasks (minutes/hours)
-- Need task persistence (survive restarts)
-- Need task monitoring/retry
-- Need distributed workers
-- Need scheduled tasks
+**❌ Don't use when:** Long-running tasks (minutes/hours), need task persistence (survive restarts), need task monitoring/retry, need distributed workers, and need scheduled tasks.
 
 ### Limitations
 
@@ -93,11 +75,7 @@ FastAPI → Celery Broker (Redis/RabbitMQ) → Celery Workers
     Worker 1  Worker 2  Worker 3
 ```
 
-**How it works:**
-1. FastAPI sends task to broker
-2. Broker queues task
-3. Workers pick up tasks
-4. Workers process tasks independently
+**How it works:** FastAPI sends task to broker, broker queues task, workers pick up tasks, and workers process tasks independently.
 
 ### Setup
 
@@ -125,9 +103,9 @@ from celery_app import send_email_task
 async def signup(email: str):
     user = create_user(email)
     
-    # Send task to Celery
+    # Send task to Celery: .delay() pushes task to queue (non-blocking).
     send_email_task.delay(email, "Welcome!")
-    # Or with result tracking:
+    # Or with result tracking: Get task ID for status monitoring.
     # result = send_email_task.delay(email, "Welcome!")
     # task_id = result.id
     
@@ -136,9 +114,7 @@ async def signup(email: str):
 
 ### Celery Features
 
-**1. Task Persistence**
-- Tasks survive server restarts
-- Stored in broker (Redis/RabbitMQ)
+**1. Task Persistence:** Tasks survive server restarts, stored in broker (Redis/RabbitMQ).
 
 **2. Retry with Backoff**
 ```python
@@ -175,26 +151,13 @@ celery_app.conf.beat_schedule = {
 }
 ```
 
-**5. Distributed Workers**
-- Run workers on multiple servers
-- Automatic load balancing
-- Horizontal scaling
+**5. Distributed Workers:** Run workers on multiple servers, automatic load balancing, and horizontal scaling.
 
 ### When to Use Celery
 
-**✅ Use when:**
-- Long-running tasks (minutes to hours)
-- Need task persistence
-- Need retry mechanisms
-- Need task monitoring
-- Need scheduled tasks (cron-like)
-- Need distributed workers
-- Complex task workflows
+**✅ Use when:** Long-running tasks (minutes to hours), need task persistence, need retry mechanisms, need task monitoring, need scheduled tasks (cron-like), need distributed workers, and complex task workflows.
 
-**❌ Overkill when:**
-- Simple, short tasks
-- Tasks tied to request lifecycle
-- Don't need persistence/monitoring
+**❌ Overkill when:** Simple, short tasks, tasks tied to request lifecycle, and don't need persistence/monitoring.
 
 ## RQ (Redis Queue)
 

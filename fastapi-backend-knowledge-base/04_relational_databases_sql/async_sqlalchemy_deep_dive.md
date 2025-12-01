@@ -26,37 +26,24 @@ from datetime import datetime
 # Step 1.1: Create the base class for all models
 Base = declarative_base()
 
-# Step 1.2: Create the async engine
-# This manages the connection pool to PostgreSQL
+# Step 1.2: Create the async engine - manages connection pool to PostgreSQL.
 engine = create_async_engine(
-    "postgresql+asyncpg://user:password@localhost/ecommerce_db",
-    echo=True,  # Shows SQL queries in console (helpful for learning!)
-    future=True,
-    pool_size=10,  # Keep 10 connections ready
-    max_overflow=20  # Can create 20 more if needed
+    "postgresql+asyncpg://user:password@localhost/ecommerce_db",  # asyncpg = async driver
+    echo=True,  # Shows SQL queries in console (helpful for learning, remove in production!)
+    future=True,  # Use SQLAlchemy 2.0 style
+    pool_size=10,  # Keep 10 connections ready (reused efficiently)
+    max_overflow=20  # Can create 20 more if needed (total 30 max)
 )
 
-# Step 1.3: Create session factory
-# Sessions are like "workspaces" for database operations
+# Step 1.3: Create session factory - sessions are "workspaces" for database operations.
 async_session_maker = sessionmaker(
     engine,
-    class_=AsyncSession,
-    expire_on_commit=False  # Keep objects after commit (useful!)
+    class_=AsyncSession,  # Async version (non-blocking)
+    expire_on_commit=False  # Keep objects after commit (useful for accessing data)
 )
 ```
 
-**Understanding each part:**
-
-**`create_async_engine`:**
-- Creates a connection pool (reuses connections efficiently)
-- `postgresql+asyncpg` - Uses asyncpg driver (async PostgreSQL)
-- `echo=True` - Prints all SQL queries (remove in production)
-- `pool_size=10` - Maintains 10 connections ready to use
-
-**`sessionmaker`:**
-- Factory that creates new sessions
-- `AsyncSession` - Async version (non-blocking)
-- `expire_on_commit=False` - Objects stay valid after commit
+**Understanding each part:** `create_async_engine` creates a connection pool (reuses connections efficiently), uses `postgresql+asyncpg` driver (async PostgreSQL), `echo=True` prints all SQL queries (remove in production), and `pool_size=10` maintains 10 connections ready to use. `sessionmaker` is a factory that creates new sessions, `AsyncSession` is async version (non-blocking), and `expire_on_commit=False` keeps objects valid after commit.
 
 ## Step 2: Creating Our First Table - Users
 
@@ -75,31 +62,23 @@ class User(Base):
     """
     __tablename__ = "users"  # Table name in database
     
-    # Primary key - uniquely identifies each user
+    # Primary key: Uniquely identifies each user (auto-incremented).
     id = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Email must be unique - no two users can have same email
+    # Email: Must be unique, indexed for fast lookups.
     email = Column(String(255), unique=True, nullable=False, index=True)
     
-    # Full name can be up to 200 characters
+    # Full name: Up to 200 characters, required.
     full_name = Column(String(200), nullable=False)
     
-    # Timestamp when user was created
+    # Timestamp: Auto-set when user is created.
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}')>"
 ```
 
-**What each Column parameter means:**
-
-- `Integer` - Stores integers (1, 2, 3, ...)
-- `String(255)` - Stores text, max 255 characters
-- `primary_key=True` - This is the unique identifier
-- `autoincrement=True` - Database automatically assigns 1, 2, 3, ...
-- `unique=True` - No duplicates allowed
-- `nullable=False` - Cannot be empty/NULL
-- `index=True` - Creates index for faster lookups
+**What each Column parameter means:** `Integer` stores integers, `String(255)` stores text (max 255 characters), `primary_key=True` is the unique identifier, `autoincrement=True` lets database auto-assign IDs, `unique=True` prevents duplicates, `nullable=False` makes field required, and `index=True` creates index for faster lookups.
 
 ## Step 3: Creating Products and Categories Tables
 
@@ -132,19 +111,13 @@ class Product(Base):
     price = Column(Numeric(10, 2), nullable=False)  # Decimal: 10 digits, 2 decimals
     stock_quantity = Column(Integer, default=0, nullable=False)
     
-    # Foreign Key: Links product to category
-    # This means each product must belong to a category
+    # Foreign Key: Links product to category (each product must belong to a category).
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False, index=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
 ```
 
-**Understanding Foreign Keys:**
-
-A foreign key creates a relationship. `category_id = ForeignKey("categories.id")` means:
-- Each product references one category
-- The category must exist (database enforces this)
-- If you try to delete a category with products, you'll get an error
+**Understanding Foreign Keys:** A foreign key creates a relationship. `category_id = ForeignKey("categories.id")` means each product references one category, the category must exist (database enforces this), and if you try to delete a category with products, you'll get an error.
 
 ## Step 4: Understanding Relationships - One-to-Many
 
@@ -159,8 +132,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True, nullable=False)
     
-    # Relationship: One category has many products
-    # This lets you do: category.products to get all products
+    # Relationship: One category has many products (allows category.products access).
     products = relationship("Product", back_populates="category")
 
 
@@ -171,19 +143,11 @@ class Product(Base):
     name = Column(String(200), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     
-    # Relationship: Each product belongs to one category
-    # This lets you do: product.category to get the category
+    # Relationship: Each product belongs to one category (allows product.category access).
     category = relationship("Category", back_populates="products")
 ```
 
-**What `back_populates` means:**
-
-- `products = relationship("Product", back_populates="category")` in Category
-- `category = relationship("Category", back_populates="products")` in Product
-
-These two create a **bidirectional link**:
-- From category: `category.products` → list of all products in that category
-- From product: `product.category` → the category this product belongs to
+**What `back_populates` means:** These two relationships create a bidirectional link. From category: `category.products` → list of all products in that category. From product: `product.category` → the category this product belongs to. Both sides must use `back_populates` to link them.
 
 ## Step 5: Creating Orders and OrderItems - Many-to-Many
 

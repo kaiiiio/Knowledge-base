@@ -4,10 +4,7 @@ Cache invalidation is hard - knowing when to remove cached data. This guide teac
 
 ## The Cache Invalidation Problem
 
-**Why it's hard:**
-- When data changes, cache becomes stale
-- Need to know what to invalidate
-- Balance between freshness and performance
+**Why it's hard:** When data changes, cache becomes stale, need to know what to invalidate, and balance between freshness and performance.
 
 ## Pattern 1: Time-Based Expiration (TTL)
 
@@ -18,14 +15,9 @@ Cache invalidation is hard - knowing when to remove cached data. This guide teac
 await redis.setex("user:1", 3600, json.dumps(user_data))  # Expires in 1 hour
 ```
 
-**When to use:**
-- Data changes infrequently
-- Acceptable to serve stale data temporarily
-- Simple to implement
+**When to use:** Data changes infrequently, acceptable to serve stale data temporarily, and simple to implement.
 
-**Trade-offs:**
-- ⚠️ Stale data possible
-- ✅ Simple implementation
+**Trade-offs:** Stale data possible, but simple implementation.
 
 ## Pattern 2: Event-Based Invalidation
 
@@ -40,15 +32,13 @@ async def update_user(user_id: int, updates: dict):
         setattr(user, key, value)
     await db.commit()
     
-    # Invalidate cache
+    # Invalidate cache: Delete cache entry when data changes (event-based invalidation).
     await redis.delete(f"user:{user_id}")
     
     return user
 ```
 
-**When to use:**
-- Need immediate consistency
-- Can identify what to invalidate
+**When to use:** Need immediate consistency and can identify what to invalidate.
 
 ## Pattern 3: Tag-Based Invalidation
 
@@ -82,10 +72,7 @@ await cache_with_tags(
 await invalidate_by_tag("category:electronics")
 ```
 
-**Benefits:**
-- Bulk invalidation
-- Logical grouping
-- Efficient updates
+**Benefits:** Bulk invalidation, logical grouping, and efficient updates.
 
 ## Pattern 4: Version-Based Invalidation
 
@@ -119,10 +106,7 @@ async def invalidate_user_cache(user_id: int):
     # Old cache entries naturally expire or can be cleaned up
 ```
 
-**Benefits:**
-- Gradual invalidation
-- No immediate delete needed
-- Works well with CDNs
+**Benefits:** Gradual invalidation, no immediate delete needed, and works well with CDNs.
 
 ## Pattern 5: Write-Through Cache
 
@@ -137,20 +121,16 @@ async def update_user_write_through(user_id: int, updates: dict):
         setattr(user, key, value)
     await db.commit()
     
-    # Update cache immediately
+    # Update cache immediately: Write-through pattern (cache always fresh).
     user_data = {"id": user.id, "email": user.email}
-    await redis.setex(f"user:{user_id}", 3600, json.dumps(user_data))
+    await redis.setex(f"user:{user_id}", 3600, json.dumps(user_data))  # Update cache with new data
     
     return user
 ```
 
-**Benefits:**
-- Cache always fresh
-- No stale data
+**Benefits:** Cache always fresh and no stale data.
 
-**Trade-offs:**
-- Slower writes (two operations)
-- More complex
+**Trade-offs:** Slower writes (two operations) and more complex.
 
 ## Pattern 6: Cache Warming After Invalidation
 
@@ -162,15 +142,13 @@ async def invalidate_and_warm(user_id: int):
     # Delete cache
     await redis.delete(f"user:{user_id}")
     
-    # Warm cache
+    # Warm cache: Pre-populate cache after invalidation (avoids cache stampede).
     user = await db.get(User, user_id)
     user_data = {"id": user.id, "email": user.email}
-    await redis.setex(f"user:{user_id}", 3600, json.dumps(user_data))
+    await redis.setex(f"user:{user_id}", 3600, json.dumps(user_data))  # Repopulate immediately
 ```
 
-**Benefits:**
-- Next request is fast
-- Avoids cache stampede
+**Benefits:** Next request is fast and avoids cache stampede.
 
 ## Best Practices
 
@@ -181,12 +159,7 @@ async def invalidate_and_warm(user_id: int):
 
 ## Summary
 
-Cache invalidation patterns:
-- ✅ TTL for simple cases
-- ✅ Event-based for consistency
-- ✅ Tags for bulk operations
-- ✅ Version-based for gradual updates
-- ✅ Write-through for freshness
+**Cache invalidation patterns:** TTL for simple cases, event-based for consistency, tags for bulk operations, version-based for gradual updates, and write-through for freshness.
 
 Choose the pattern that matches your consistency requirements!
 

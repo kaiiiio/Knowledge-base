@@ -4,17 +4,11 @@ Unit tests verify individual components work correctly in isolation. This guide 
 
 ## Understanding Unit Testing
 
-**What is a unit test?**
-Tests a single function or class in isolation, with dependencies mocked.
+**What is a unit test?** Tests a single function or class in isolation, with dependencies mocked.
 
-**Key principles:**
-- Fast (run in milliseconds)
-- Isolated (no database, no external services)
-- Repeatable (same result every time)
-- Independent (can run in any order)
+**Key principles:** Fast (run in milliseconds), isolated (no database, no external services), repeatable (same result every time), and independent (can run in any order).
 
-**Real-world analogy:**
-Testing a car engine in a workshop (isolated) vs testing it while driving (integration test).
+**Real-world analogy:** Testing a car engine in a workshop (isolated) vs testing it while driving (integration test).
 
 ## Setting Up Testing Environment
 
@@ -40,15 +34,16 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock
 from app.services.user_service import UserService
 
+# Mock fixtures: Replace real dependencies with mocks for isolated testing.
 @pytest.fixture
 def mock_user_repository():
-    """Mock user repository for testing."""
-    return AsyncMock()
+    """Mock user repository for testing: No real database needed."""
+    return AsyncMock()  # AsyncMock for async methods
 
 @pytest.fixture
 def user_service(mock_user_repository):
-    """User service with mocked dependencies."""
-    return UserService(mock_user_repository)
+    """User service with mocked dependencies: Test service in isolation."""
+    return UserService(mock_user_repository)  # Inject mock instead of real repo
 ```
 
 ## Step 1: Testing Simple Service Methods
@@ -86,21 +81,21 @@ async def test_get_user_success(mock_user_repository):
     Act: Call the service method
     Assert: Verify correct user is returned
     """
-    # Arrange: Set up mock
+    # Arrange: Set up mock (configure mock behavior).
     expected_user = User(id=1, email="test@example.com", full_name="Test User")
-    mock_user_repository.get_by_id = AsyncMock(return_value=expected_user)
+    mock_user_repository.get_by_id = AsyncMock(return_value=expected_user)  # Mock returns user
     
     service = UserService(mock_user_repository)
     
-    # Act: Call the method
+    # Act: Call the method (execute code under test).
     result = await service.get_user(1)
     
-    # Assert: Verify results
+    # Assert: Verify results (check expected outcomes).
     assert result == expected_user
     assert result.id == 1
     assert result.email == "test@example.com"
     
-    # Verify repository was called correctly
+    # Verify repository was called correctly: Ensure dependencies called as expected.
     mock_user_repository.get_by_id.assert_called_once_with(1)
 
 @pytest.mark.asyncio
@@ -126,10 +121,7 @@ async def test_get_user_not_found(mock_user_repository):
     mock_user_repository.get_by_id.assert_called_once_with(999)
 ```
 
-**Understanding the test structure:**
-- **Arrange**: Set up mocks and test data
-- **Act**: Call the method being tested
-- **Assert**: Verify the results
+**Understanding the test structure:** **Arrange** sets up mocks and test data, **Act** calls the method being tested, and **Assert** verifies the results.
 
 ## Step 2: Testing Business Logic
 

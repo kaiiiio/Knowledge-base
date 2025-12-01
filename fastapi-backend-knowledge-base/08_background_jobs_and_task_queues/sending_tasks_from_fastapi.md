@@ -4,19 +4,9 @@ This comprehensive guide shows you how to integrate Celery with FastAPI, coverin
 
 ## Understanding the Integration
 
-**Why Celery with FastAPI?**
-- FastAPI handles HTTP requests (fast, async)
-- Celery handles background tasks (long-running, scheduled)
-- Together: Responsive API + powerful background processing
+**Why Celery with FastAPI?** FastAPI handles HTTP requests (fast, async), Celery handles background tasks (long-running, scheduled), and together they provide responsive API + powerful background processing.
 
-**Architecture:**
-```
-HTTP Request → FastAPI Endpoint → Enqueue Task → Return Immediately
-                                      ↓
-                              Celery Worker Processes Task
-                                      ↓
-                              Result Stored (optional)
-```
+**Architecture:** HTTP Request → FastAPI Endpoint → Enqueue Task → Return Immediately → Celery Worker Processes Task → Result Stored (optional).
 
 ## Step 1: Celery Application Setup
 
@@ -26,11 +16,11 @@ HTTP Request → FastAPI Endpoint → Enqueue Task → Return Immediately
 # celery_app.py
 from celery import Celery
 
-# Create Celery instance
+# Create Celery instance: Configure broker and backend for task queue.
 celery_app = Celery(
     'myapp',  # Application name
-    broker='redis://localhost:6379/0',  # Message broker
-    backend='redis://localhost:6379/0'  # Result backend
+    broker='redis://localhost:6379/0',  # Message broker (where tasks are queued)
+    backend='redis://localhost:6379/0'  # Result backend (where results are stored)
 )
 
 # Configure Celery
@@ -77,17 +67,17 @@ celery_app.conf.update(
     timezone='UTC',
     enable_utc=True,
     
-    # Task settings
-    task_track_started=True,  # Track when task starts
-    task_time_limit=30 * 60,  # 30 minute hard timeout
-    task_soft_time_limit=25 * 60,  # 25 minute soft timeout
+    # Task settings: Configure task execution limits.
+    task_track_started=True,  # Track when task starts (for monitoring)
+    task_time_limit=30 * 60,  # 30 minute hard timeout (kills task)
+    task_soft_time_limit=25 * 60,  # 25 minute soft timeout (raises exception, can handle)
     
-    # Result backend
-    result_expires=3600,  # Results expire after 1 hour
+    # Result backend: Configure result storage.
+    result_expires=3600,  # Results expire after 1 hour (cleanup old results)
     
-    # Worker settings
-    worker_prefetch_multiplier=4,
-    worker_max_tasks_per_child=1000,
+    # Worker settings: Configure worker behavior.
+    worker_prefetch_multiplier=4,  # Prefetch 4 tasks per worker (performance optimization)
+    worker_max_tasks_per_child=1000,  # Restart worker after 1000 tasks (prevent memory leaks)
     
     # Beat schedule (periodic tasks)
     beat_schedule={
@@ -120,12 +110,12 @@ async def create_user(user_data: UserCreate):
     # Create user in database
     user = await create_user_in_db(user_data)
     
-    # Send task to Celery (non-blocking)
+    # Send task to Celery: .delay() queues task and returns immediately (non-blocking).
     task = send_email_task.delay(
         email=user.email,
         subject="Welcome!",
         body="Thanks for joining our platform"
-    )
+    )  # Returns AsyncResult with task.id
     
     return {
         "user_id": user.id,
@@ -134,11 +124,7 @@ async def create_user(user_data: UserCreate):
     }
 ```
 
-**Understanding `.delay()`:**
-- Returns immediately (doesn't wait for task)
-- Returns `AsyncResult` object with task ID
-- Task is queued in broker
-- Worker will process it asynchronously
+**Understanding `.delay()`:** Returns immediately (doesn't wait for task), returns `AsyncResult` object with task ID, task is queued in broker, and worker will process it asynchronously.
 
 ### Dependency Injection Pattern
 
@@ -157,10 +143,10 @@ async def send_notification(
     celery: Celery = Depends(get_celery_app)
 ):
     """Send notification using Celery."""
-    # Access tasks via Celery app
+    # Access tasks via Celery app: send_task() for dynamic task names.
     task = celery.send_task(
-        'tasks.send_email',
-        args=[notification.email, notification.subject, notification.body]
+        'tasks.send_email',  # Task name (string)
+        args=[notification.email, notification.subject, notification.body]  # Task arguments
     )
     
     return {"task_id": task.id}
@@ -181,10 +167,11 @@ async def get_task_status(task_id: str):
     """Get task execution status."""
     result = AsyncResult(task_id, app=celery_app)
     
+    # get_task_status: Check task execution status (PENDING, STARTED, SUCCESS, FAILURE).
     return {
         "task_id": task_id,
         "status": result.state,  # PENDING, STARTED, SUCCESS, FAILURE
-        "result": result.result if result.ready() else None
+        "result": result.result if result.ready() else None  # Result only if task completed
     }
 ```
 

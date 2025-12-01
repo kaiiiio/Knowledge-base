@@ -4,29 +4,11 @@ Distributed tracing tracks requests across services, databases, and external API
 
 ## Understanding Distributed Tracing
 
-**What is distributed tracing?**
-Tracing follows a single request as it flows through multiple services, showing where time is spent and where failures occur.
+**What is distributed tracing?** Tracing follows a single request as it flows through multiple services, showing where time is spent and where failures occur.
 
-**Visual representation:**
-```
-Request: GET /api/users/123
-│
-├─ FastAPI Service (10ms)
-│  ├─ Database Query (5ms)
-│  └─ Redis Cache (2ms)
-│
-├─ Email Service (50ms)
-│  └─ SMTP Call (45ms)
-│
-└─ Analytics Service (30ms)
-   └─ Event Logging (25ms)
-```
+**Visual representation:** Request: GET /api/users/123 → FastAPI Service (10ms) → Database Query (5ms), Redis Cache (2ms) → Email Service (50ms) → SMTP Call (45ms) → Analytics Service (30ms) → Event Logging (25ms).
 
-**Benefits:**
-- Debug complex distributed systems
-- Identify performance bottlenecks
-- Understand service dependencies
-- Track request flow across services
+**Benefits:** Debug complex distributed systems, identify performance bottlenecks, understand service dependencies, and track request flow across services.
 
 ## Step 1: OpenTelemetry Setup
 
@@ -54,28 +36,28 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 def setup_tracing(service_name: str = "fastapi-app"):
     """Setup OpenTelemetry tracing."""
     
-    # Create resource with service name
+    # Create resource: Metadata about the service being traced.
     resource = Resource.create({
-        "service.name": service_name,
-        "service.version": "1.0.0",
-        "deployment.environment": "production"
+        "service.name": service_name,  # Service identifier
+        "service.version": "1.0.0",  # Version for filtering
+        "deployment.environment": "production"  # Environment tag
     })
     
-    # Setup tracer provider
+    # Setup tracer provider: Creates and manages tracers.
     provider = TracerProvider(resource=resource)
-    trace.set_tracer_provider(provider)
+    trace.set_tracer_provider(provider)  # Set as global provider
     
-    # Export to Jaeger
+    # Export to Jaeger: Send traces to Jaeger for visualization.
     jaeger_exporter = JaegerExporter(
-        agent_host_name="localhost",
-        agent_port=6831,
+        agent_host_name="localhost",  # Jaeger agent host
+        agent_port=6831,  # Jaeger agent port
     )
     
-    # Use batch processor for performance
+    # Use batch processor: Batches spans for better performance (not one-by-one).
     span_processor = BatchSpanProcessor(jaeger_exporter)
     provider.add_span_processor(span_processor)
     
-    # Also export to console (development)
+    # Also export to console: Development debugging (prints spans to console).
     console_exporter = ConsoleSpanExporter()
     console_processor = BatchSpanProcessor(console_exporter)
     provider.add_span_processor(console_processor)
@@ -96,14 +78,11 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 app = FastAPI()
 
-# Automatically instrument FastAPI
+# Automatically instrument FastAPI: Creates spans for all HTTP requests automatically.
 FastAPIInstrumentor.instrument_app(app)
 ```
 
-**What this does:**
-- Automatically creates spans for all HTTP requests
-- Adds trace context to request headers
-- Tracks request/response details
+**What this does:** Automatically creates spans for all HTTP requests, adds trace context to request headers, and tracks request/response details.
 
 ### Manual Span Creation
 
@@ -115,15 +94,15 @@ tracer = trace.get_tracer(__name__)
 @router.get("/users/{user_id}")
 async def get_user(user_id: int):
     """Get user with custom spans."""
-    # Create span for this operation
+    # Create span: Manual span creation for custom operations.
     with tracer.start_as_current_span("get_user") as span:
-        span.set_attribute("user.id", user_id)
+        span.set_attribute("user.id", user_id)  # Add custom attributes
         
-        # Nested span for database query
+        # Nested span: Child span shows database query within get_user operation.
         with tracer.start_as_current_span("database.query") as db_span:
-            db_span.set_attribute("db.statement", "SELECT * FROM users WHERE id = ?")
+            db_span.set_attribute("db.statement", "SELECT * FROM users WHERE id = ?")  # SQL query
             user = await db.get(User, user_id)
-            db_span.set_attribute("db.rows_returned", 1 if user else 0)
+            db_span.set_attribute("db.rows_returned", 1 if user else 0)  # Query result
         
         return user
 ```
@@ -135,18 +114,15 @@ async def get_user(user_id: int):
 ```python
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
-# Instrument SQLAlchemy
+# Instrument SQLAlchemy: Automatically traces all database queries.
 SQLAlchemyInstrumentor().instrument(
-    engine=engine.sync_engine,  # Sync engine for instrumentation
-    enable_commenter=True,  # Add trace comments to SQL
+    engine=engine.sync_engine,  # Sync engine for instrumentation (async engine has sync_engine)
+    enable_commenter=True,  # Add trace comments to SQL (for database-level tracing)
     commenter_options={"db_driver": True}
 )
 ```
 
-**What this does:**
-- Automatically creates spans for all SQL queries
-- Adds query details as span attributes
-- Tracks query duration
+**What this does:** Automatically creates spans for all SQL queries, adds query details as span attributes, and tracks query duration.
 
 ### Manual Database Span Creation
 

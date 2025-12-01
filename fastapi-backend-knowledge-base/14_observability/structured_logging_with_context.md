@@ -4,14 +4,9 @@ Structured logging with context enables better debugging, monitoring, and tracea
 
 ## Understanding Structured Logging
 
-**What is structured logging?**
-Logging in a structured format (JSON) with key-value pairs, making logs machine-readable and searchable.
+**What is structured logging?** Logging in a structured format (JSON) with key-value pairs, making logs machine-readable and searchable.
 
-**Benefits:**
-- Easy to query and filter
-- Better for log aggregation systems
-- Preserves context across services
-- Better debugging experience
+**Benefits:** Easy to query and filter, better for log aggregation systems, preserves context across services, and better debugging experience.
 
 **Example:**
 ```json
@@ -34,40 +29,40 @@ import structlog
 import logging
 import sys
 
-# Configure structlog
+# Configure structlog: Processors transform logs step by step.
 structlog.configure(
     processors=[
-        # Filter logs by level
+        # Filter logs by level: Only process logs at or above configured level.
         structlog.stdlib.filter_by_level,
         
-        # Add logger name
+        # Add logger name: Identifies which module logged the message.
         structlog.stdlib.add_logger_name,
         
-        # Add log level
+        # Add log level: INFO, ERROR, DEBUG, etc.
         structlog.stdlib.add_log_level,
         
-        # Format positional arguments
+        # Format positional arguments: Converts *args to structured data.
         structlog.stdlib.PositionalArgumentsFormatter(),
         
-        # Add timestamp
+        # Add timestamp: ISO format for easy parsing.
         structlog.processors.TimeStamper(fmt="iso"),
         
-        # Add stack info
+        # Add stack info: Stack traces for debugging.
         structlog.processors.StackInfoRenderer(),
         
-        # Format exceptions
+        # Format exceptions: Converts exceptions to structured format.
         structlog.processors.format_exc_info,
         
-        # Decode Unicode
+        # Decode Unicode: Handles special characters properly.
         structlog.processors.UnicodeDecoder(),
         
-        # Output as JSON
+        # Output as JSON: Final step - converts to JSON string.
         structlog.processors.JSONRenderer()
     ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
+    context_class=dict,  # Store context as dictionary
+    logger_factory=structlog.stdlib.LoggerFactory(),  # Use standard library logger
+    wrapper_class=structlog.stdlib.BoundLogger,  # Logger with context binding
+    cache_logger_on_first_use=True,  # Performance optimization
 )
 
 logger = structlog.get_logger(__name__)
@@ -90,10 +85,10 @@ def configure_structlog(environment: str = "production"):
     ]
     
     if environment == "development":
-        # Pretty print in development
+        # Pretty print in development: Human-readable colored output.
         processors.append(structlog.dev.ConsoleRenderer())
     else:
-        # JSON in production
+        # JSON in production: Machine-readable for log aggregation systems.
         processors.append(structlog.processors.JSONRenderer())
     
     structlog.configure(
@@ -117,26 +112,27 @@ router = APIRouter()
 @router.post("/users")
 async def create_user(user_data: UserCreate, request: Request):
     """Create user with structured logging."""
-    # Create logger with initial context
+    # Create logger with initial context: All logs in this request will include this context.
     log = logger.bind(
         endpoint="/users",
         method="POST",
-        correlation_id=request.headers.get("X-Correlation-ID"),
+        correlation_id=request.headers.get("X-Correlation-ID"),  # Track request across services
         user_id=None  # Will update later
     )
     
-    log.info("user_creation_started", email=user_data.email)
+    log.info("user_creation_started", email=user_data.email)  # Structured log with context
     
     try:
         user = await create_user_in_db(user_data)
         
-        # Update context with user ID
+        # Update context with user ID: Add more context as operation progresses.
         log = log.bind(user_id=user.id)
         log.info("user_creation_completed", email=user.email)
         
         return user
     
     except Exception as e:
+        # Error logging: Includes error details in structured format.
         log.error("user_creation_failed", error=str(e), error_type=type(e).__name__)
         raise
 ```
