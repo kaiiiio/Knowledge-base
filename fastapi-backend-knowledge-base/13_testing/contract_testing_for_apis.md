@@ -4,19 +4,11 @@ Contract testing ensures API consumers and providers stay compatible, preventing
 
 ## Understanding Contract Testing
 
-**What is contract testing?**
-Testing that APIs adhere to agreed-upon contracts (schemas, response formats) between services.
+**What is contract testing?** Testing that APIs adhere to agreed-upon contracts (schemas, response formats) between services.
 
-**Why it matters:**
-- Prevents breaking changes
-- Ensures service compatibility
-- Catches issues early
-- Documents API expectations
+**Why it matters:** Prevents breaking changes, ensures service compatibility, catches issues early, and documents API expectations.
 
-**Types:**
-- **Provider contracts**: Service defines expected requests/responses
-- **Consumer contracts**: Client defines expected API behavior
-- **Bi-directional**: Both sides validate contracts
+**Types:** **Provider contracts** are when service defines expected requests/responses. **Consumer contracts** are when client defines expected API behavior. **Bi-directional** is when both sides validate contracts.
 
 ## Step 1: Pydantic-Based Contracts
 
@@ -27,13 +19,14 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
+# Response contract: Define expected API response structure.
 class UserResponse(BaseModel):
     """API response contract for user data."""
-    id: int = Field(..., description="User ID", gt=0)
-    email: EmailStr = Field(..., description="User email")
-    name: str = Field(..., min_length=1, max_length=255)
-    created_at: datetime = Field(..., description="Account creation time")
-    is_active: bool = Field(default=True)
+    id: int = Field(..., description="User ID", gt=0)  # Required, must be > 0
+    email: EmailStr = Field(..., description="User email")  # Required, validated email
+    name: str = Field(..., min_length=1, max_length=255)  # Required, length constraints
+    created_at: datetime = Field(..., description="Account creation time")  # Required datetime
+    is_active: bool = Field(default=True)  # Optional, defaults to True
     
     class Config:
         json_schema_extra = {
@@ -59,14 +52,14 @@ async def get_user(user_id: int):
     """Get user - response must match UserResponse contract."""
     user = await get_user_from_db(user_id)
     
-    # FastAPI automatically validates response against schema
+    # FastAPI automatically validates response against schema: Ensures contract compliance.
     return UserResponse(
         id=user.id,
         email=user.email,
         name=user.name,
         created_at=user.created_at,
         is_active=user.is_active
-    )
+    )  # Response must match UserResponse contract
 ```
 
 ### Define Request Contracts
@@ -105,15 +98,15 @@ def test_user_response_contract(client: TestClient):
     
     assert response.status_code == 200
     
-    # Validate response matches contract
+    # Validate response matches contract: Pydantic validates structure.
     data = response.json()
     user = UserResponse(**data)  # Will raise ValidationError if contract broken
     
-    # Additional assertions
-    assert user.id > 0
-    assert "@" in user.email
-    assert user.name is not None
-    assert isinstance(user.created_at, datetime)
+    # Additional assertions: Verify data correctness.
+    assert user.id > 0  # ID must be positive
+    assert "@" in user.email  # Email must contain @
+    assert user.name is not None  # Name must be present
+    assert isinstance(user.created_at, datetime)  # Created_at must be datetime
 
 def test_user_list_response_contract(client: TestClient):
     """Test user list endpoint contract."""

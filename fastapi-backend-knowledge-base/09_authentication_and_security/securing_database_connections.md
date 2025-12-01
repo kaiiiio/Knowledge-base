@@ -4,17 +4,9 @@ Secure database connections protect data in transit and at connection time. This
 
 ## Understanding Connection Security
 
-**Why secure database connections?**
-- Prevent data interception (man-in-the-middle attacks)
-- Encrypt data in transit
-- Verify server identity
-- Protect credentials
+**Why secure database connections?** Prevent data interception (man-in-the-middle attacks), encrypt data in transit, verify server identity, and protect credentials.
 
-**Security layers:**
-1. **Connection encryption** (SSL/TLS)
-2. **Credential protection** (secrets management)
-3. **Network security** (VPN, private networks)
-4. **Access control** (user privileges)
+**Security layers:** Connection encryption (SSL/TLS), credential protection (secrets management), network security (VPN, private networks), and access control (user privileges).
 
 ## Step 1: SSL/TLS for PostgreSQL
 
@@ -25,14 +17,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from ssl import create_default_context
 import os
 
-# Create SSL context
+# Create SSL context: Default SSL configuration (uses system CA certificates).
 ssl_context = create_default_context()
 
-# Configure SSL for asyncpg
+# Configure SSL for asyncpg: Enable SSL/TLS encryption for database connection.
 engine = create_async_engine(
     DATABASE_URL,
     connect_args={
-        "ssl": ssl_context
+        "ssl": ssl_context  # Enable SSL encryption
     }
 )
 ```
@@ -44,9 +36,9 @@ engine = create_async_engine(
 1. **disable**: No SSL (not recommended)
 2. **allow**: Try SSL, fallback if unavailable
 3. **prefer**: Prefer SSL, fallback if unavailable
-4. **require**: Require SSL, fail if unavailable ✅ (recommended)
-5. **verify-ca**: Require SSL + verify CA certificate ✅✅
-6. **verify-full**: Require SSL + verify CA + hostname ✅✅✅ (most secure)
+4. **require**: Require SSL, fail if unavailable (recommended)
+5. **verify-ca**: Require SSL + verify CA certificate
+6. **verify-full**: Require SSL + verify CA + hostname (most secure)
 
 ### Production SSL Configuration
 
@@ -58,24 +50,24 @@ def create_ssl_context(mode: str = "verify-full") -> SSLContext:
     """Create SSL context based on security requirements."""
     
     if mode == "verify-full":
-        # Most secure - verify certificate and hostname
+        # Most secure: Verify certificate and hostname (prevents MITM attacks).
         ssl_context = create_default_context()
-        ssl_context.check_hostname = True
-        ssl_context.verify_mode = CERT_REQUIRED
+        ssl_context.check_hostname = True  # Verify hostname matches certificate
+        ssl_context.verify_mode = CERT_REQUIRED  # Require valid certificate
         return ssl_context
     
     elif mode == "verify-ca":
-        # Verify CA certificate, but not hostname
+        # Verify CA certificate: Verify certificate but not hostname (less secure).
         ssl_context = create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = CERT_REQUIRED
+        ssl_context.check_hostname = False  # Don't verify hostname
+        ssl_context.verify_mode = CERT_REQUIRED  # Require valid certificate
         return ssl_context
     
     elif mode == "require":
-        # Require SSL but don't verify certificate
+        # Require SSL: Encrypt connection but don't verify certificate (least secure).
         ssl_context = create_default_context()
         ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
+        ssl_context.verify_mode = ssl.CERT_NONE  # Don't verify certificate
         return ssl_context
     
     else:
@@ -183,7 +175,7 @@ class DatabaseSettings(BaseSettings):
     db_port: int = 5432
     db_name: str
     db_user: str
-    db_password: str  # Never hardcode!
+    db_password: str  # Never hardcode! (use environment variables or secrets manager)
     
     @property
     def database_url(self) -> str:

@@ -4,13 +4,9 @@ Proper connection pool tuning is critical for performance, preventing connection
 
 ## Understanding Connection Pools
 
-**What is a connection pool?**
-A cache of database connections that can be reused across requests, avoiding the overhead of creating new connections.
+**What is a connection pool?** A cache of database connections that can be reused across requests, avoiding the overhead of creating new connections.
 
-**Why pools matter:**
-- Creating connections is expensive (network handshake, authentication)
-- Limited database connections available
-- Prevents connection exhaustion
+**Why pools matter:** Creating connections is expensive (network handshake, authentication), limited database connections available, and prevents connection exhaustion.
 
 **Visual representation:**
 ```
@@ -37,48 +33,32 @@ from sqlalchemy.ext.asyncio import create_async_engine
 engine = create_async_engine(
     DATABASE_URL,
     
-    # Pool size configuration
-    pool_size=10,          # Base number of connections to maintain
-    max_overflow=20,       # Additional connections when pool is exhausted
+    # Pool size configuration: Base connections always ready.
+    pool_size=10,          # Base number of connections to maintain (always ready)
+    max_overflow=20,       # Additional connections when pool is exhausted (created on-demand)
                            # Total max = pool_size + max_overflow = 30
     
-    # Connection management
-    pool_timeout=30,       # Seconds to wait for connection from pool
-    pool_recycle=3600,     # Recycle connections after 1 hour
-    pool_pre_ping=True,    # Verify connection before use
+    # Connection management: Timeouts and health checks.
+    pool_timeout=30,       # Seconds to wait for connection from pool (raises error if timeout)
+    pool_recycle=3600,     # Recycle connections after 1 hour (prevents stale connections)
+    pool_pre_ping=True,    # Verify connection before use (detects dead connections)
     
-    # Connection lifecycle
-    pool_reset_on_return='commit',  # Reset connection state on return
+    # Connection lifecycle: Reset connection state when returned to pool.
+    pool_reset_on_return='commit',  # Reset connection state on return (clean state)
 )
 ```
 
 **Understanding each parameter:**
 
-**pool_size (10):**
-- Number of connections maintained at all times
-- These connections are always ready
-- Too small = connection waits
-- Too large = resource waste
+**pool_size (10):** Number of connections maintained at all times. These connections are always ready. Too small = connection waits. Too large = resource waste.
 
-**max_overflow (20):**
-- Additional connections created on-demand
-- Created when pool_size connections are all busy
-- Automatically cleaned up when no longer needed
+**max_overflow (20):** Additional connections created on-demand. Created when pool_size connections are all busy. Automatically cleaned up when no longer needed.
 
-**pool_timeout (30):**
-- Maximum seconds to wait for a connection
-- Raises exception if no connection available
-- Prevents indefinite blocking
+**pool_timeout (30):** Maximum seconds to wait for a connection. Raises exception if no connection available. Prevents indefinite blocking.
 
-**pool_recycle (3600):**
-- Recreate connections after this many seconds
-- Prevents stale connections (database may close idle connections)
-- Important for long-running applications
+**pool_recycle (3600):** Recreate connections after this many seconds. Prevents stale connections (database may close idle connections). Important for long-running applications.
 
-**pool_pre_ping (True):**
-- Test connection before using it
-- Detects stale/broken connections
-- Small performance cost, but prevents errors
+**pool_pre_ping (True):** Test connection before using it. Detects stale/broken connections. Small performance cost, but prevents errors.
 
 ## Step 2: Calculating Optimal Pool Size
 
@@ -87,13 +67,13 @@ engine = create_async_engine(
 ```python
 import os
 
-# Formula 1: Traditional (for sync)
+# Formula 1: Traditional (for sync) - one connection per thread.
 pool_size_sync = (2 * os.cpu_count()) + 1
 
-# Formula 2: Async (can handle more concurrent connections)
+# Formula 2: Async (can handle more concurrent connections) - async is more efficient.
 pool_size_async = os.cpu_count() * 5
 
-# Formula 3: Based on expected concurrent requests
+# Formula 3: Based on expected concurrent requests - calculate from traffic patterns.
 # If you expect 100 concurrent requests, and each takes 50ms:
 # Connections needed = 100 * 0.05 = 5
 # But account for spikes, use 2-3x = 15 connections
@@ -111,14 +91,14 @@ def calculate_pool_size(
         avg_query_duration_ms: Average query duration in milliseconds
         safety_multiplier: Multiplier for safety margin
     """
-    # Calculate connections needed
+    # Calculate connections needed: Based on concurrent requests and query duration.
     connections_needed = (
         expected_concurrent_requests *
-        (avg_query_duration_ms / 1000) *
-        safety_multiplier
+        (avg_query_duration_ms / 1000) *  # Convert ms to seconds
+        safety_multiplier  # Add safety margin for spikes
     )
     
-    # Round up to nearest 5, with minimum of 5
+    # Round up to nearest 5: Round to nice numbers, with minimum of 5.
     pool_size = max(5, int((connections_needed // 5 + 1) * 5))
     
     return pool_size
@@ -174,20 +154,22 @@ def track_connection_created(dbid, connection_rec):
     if pool:
         logger.debug(f"Connection created. Pool size: {pool.size()}, Checked out: {pool.checkedout()}")
 
+# Event listener: Track connection checkout (when connection is borrowed from pool).
 @event.listens_for(Engine, "checkout")
 def track_connection_checkout(dbapi_conn, connection_rec, connection_proxy):
     """Track when connection is checked out."""
     pool = connection_rec.info.get('pool')
     if pool:
-        size = pool.size()
-        checked_out = pool.checkedout()
+        size = pool.size()  # Total pool size
+        checked_out = pool.checkedout()  # Connections in use
         usage_percent = (checked_out / size * 100) if size > 0 else 0
         
+        # Update metrics: Track pool usage for monitoring.
         pool_size_gauge.labels(state='checked_out').set(checked_out)
         pool_size_gauge.labels(state='available').set(size - checked_out)
         pool_usage_gauge.set(usage_percent)
         
-        # Alert if pool is getting full
+        # Alert if pool is getting full: Warn when approaching capacity.
         if usage_percent > 80:
             logger.warning(
                 f"Connection pool usage high: {usage_percent:.1f}% "

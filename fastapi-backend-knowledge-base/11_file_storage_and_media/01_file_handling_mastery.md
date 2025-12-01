@@ -5,28 +5,28 @@
 FastAPI gives you two ways to receive files.
 
 ### The "Quick & Dirty" Way: `bytes`
-Reads the *entire* file into memory.
-- **Pros**: Simple.
-- **Cons**: Will crash your server if someone uploads a 5GB video.
+
+Reads the *entire* file into memory. **Pros:** Simple. **Cons:** Will crash your server if someone uploads a 5GB video.
 
 ### The "Professional" Way: `UploadFile`
-Uses Python's `SpooledTemporaryFile`. It keeps small files in memory but writes large files to disk automatically.
-- **Pros**: Safe, efficient, exposes metadata (filename, content_type).
+
+Uses Python's `SpooledTemporaryFile`. It keeps small files in memory but writes large files to disk automatically. **Pros:** Safe, efficient, exposes metadata (filename, content_type).
 
 ```python
 from fastapi import FastAPI, UploadFile, File
 
 app = FastAPI()
 
+# UploadFile: Professional way to handle file uploads (handles large files safely).
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    # file.file is a file-like object
-    contents = await file.read() 
+    # file.file is a file-like object: Can be read in chunks.
+    contents = await file.read()  # Read entire file (use streaming for large files)
     
     return {
-        "filename": file.filename,
-        "content_type": file.content_type,
-        "size": len(contents)
+        "filename": file.filename,  # Original filename
+        "content_type": file.content_type,  # MIME type
+        "size": len(contents)  # File size in bytes
     }
 ```
 
@@ -43,12 +43,14 @@ from pathlib import Path
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+# Streaming upload: Saves file to disk without loading into memory.
 @app.post("/save-file")
 async def save_file(file: UploadFile = File(...)):
     destination = UPLOAD_DIR / file.filename
     
-    # DANGER: See Security Section below about file.filename!
+    # DANGER: See Security Section below about file.filename! (Path traversal risk)
     
+    # shutil.copyfileobj: Streams file chunk by chunk (memory efficient).
     with destination.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
@@ -59,9 +61,7 @@ async def save_file(file: UploadFile = File(...)):
 
 ## 3. Security: The "Zip Slip" & Path Traversal
 
-**NEVER TRUST USER INPUT.** especially filenames.
-
-If a hacker uploads a file named `../../../../windows/system32/hack.exe`, and you blindly join it with your upload dir, you might overwrite critical system files.
+**NEVER TRUST USER INPUT**, especially filenames. If a hacker uploads a file named `../../../../windows/system32/hack.exe`, and you blindly join it with your upload dir, you might overwrite critical system files. This is called "Path Traversal" or "Zip Slip" attack.
 
 ### The Fix: Sanitize Filenames
 Always generate your own safe filename (e.g., UUID) or strictly sanitize the input.
@@ -69,11 +69,12 @@ Always generate your own safe filename (e.g., UUID) or strictly sanitize the inp
 ```python
 import uuid
 
+# Safe upload: Generate UUID filename to prevent path traversal attacks.
 @app.post("/safe-upload")
 async def safe_upload(file: UploadFile = File(...)):
-    # Ignore the user's filename. Make a new one.
-    extension = file.filename.split(".")[-1]
-    new_filename = f"{uuid.uuid4()}.{extension}"
+    # Ignore the user's filename: Generate UUID to prevent path traversal.
+    extension = file.filename.split(".")[-1]  # Extract extension
+    new_filename = f"{uuid.uuid4()}.{extension}"  # UUID prevents attacks
     
     destination = UPLOAD_DIR / new_filename
     
@@ -95,12 +96,14 @@ Best for files that exist on disk. It handles `Content-Type`, `Content-Length`, 
 ```python
 from fastapi.responses import FileResponse
 
+# FileResponse: Serves files from disk (handles headers automatically).
 @app.get("/download/{file_id}")
 async def download_file(file_id: str):
     file_path = UPLOAD_DIR / file_id
     if not file_path.exists():
         return {"error": "File not found"}
         
+    # FileResponse: Automatically sets Content-Type, Content-Length, etc.
     return FileResponse(path=file_path, filename=f"download_{file_id}")
 ```
 
@@ -114,14 +117,16 @@ Best for:
 from fastapi.responses import StreamingResponse
 import io
 
+# StreamingResponse: Streams data as it's generated (memory efficient for large files).
 @app.get("/generate-csv")
 async def generate_csv():
-    # Generator function yields chunks of data
+    # Generator function: Yields chunks of data (doesn't load all in memory).
     def iter_csv():
         yield "id,name,email\n"
         for i in range(1000):
             yield f"{i},User{i},user{i}@example.com\n"
             
+    # StreamingResponse: Sends data as it's generated, not all at once.
     return StreamingResponse(iter_csv(), media_type="text/csv")
 ```
 
@@ -137,24 +142,25 @@ We want a system where:
 ```python
 import filetype # pip install filetype
 
+# Secure image upload: Validates file type using magic numbers (file signature).
 @app.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):
-    # 1. Read first 2KB to check file signature
+    # 1. Read first 2KB to check file signature: Validates actual file type, not just extension.
     head = await file.read(2048)
-    kind = filetype.guess(head)
+    kind = filetype.guess(head)  # Checks magic numbers (file signature)
     
     if kind is None or not kind.mime.startswith("image/"):
-        return {"error": "Invalid image type"}
+        return {"error": "Invalid image type"}  # Reject non-images
         
-    # Reset cursor to start
+    # Reset cursor to start: Rewind file to beginning for saving.
     await file.seek(0)
     
-    # 2. Save safely
+    # 2. Save safely: Use UUID filename + validated extension.
     filename = f"{uuid.uuid4()}.{kind.extension}"
     path = UPLOAD_DIR / filename
     
     with path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-        
+    
     return {"url": f"/static/{filename}"}
 ```

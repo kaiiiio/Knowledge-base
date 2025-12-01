@@ -4,16 +4,9 @@ Managing task results and timeouts properly prevents hanging requests, resource 
 
 ## Understanding Task Results
 
-**What are task results?**
-When you send a task to Celery, you get a result object that represents the task's execution state and outcome.
+**What are task results?** When you send a task to Celery, you get a result object that represents the task's execution state and outcome.
 
-**Result states:**
-- `PENDING`: Task waiting to be executed
-- `STARTED`: Task currently executing
-- `SUCCESS`: Task completed successfully
-- `FAILURE`: Task failed with exception
-- `RETRY`: Task is being retried
-- `REVOKED`: Task was cancelled
+**Result states:** `PENDING` is task waiting to be executed. `STARTED` is task currently executing. `SUCCESS` is task completed successfully. `FAILURE` is task failed with exception. `RETRY` is task is being retried. `REVOKED` is task was cancelled.
 
 ## Getting Task Results
 
@@ -30,19 +23,19 @@ def calculate_sum(numbers: list) -> int:
     """Example task that returns a result."""
     return sum(numbers)
 
-# Send task
-task = calculate_sum.delay([1, 2, 3, 4, 5])
-task_id = task.id  # Unique task ID
+# Send task: Send task to Celery queue.
+task = calculate_sum.delay([1, 2, 3, 4, 5])  # .delay() sends task asynchronously
+task_id = task.id  # Unique task ID: Use this to track the task
 
-# Get result object
+# Get result object: Create AsyncResult to check status and get result.
 result = AsyncResult(task_id, app=celery_app)
 
-# Check status
+# Check status: Get current state of the task.
 print(result.state)  # 'PENDING', 'SUCCESS', etc.
 
-# Get result when ready
-if result.ready():
-    print(result.result)  # 15 (sum of numbers)
+# Get result when ready: Check if task is complete, then get result.
+if result.ready():  # ready() returns True if task is done
+    print(result.result)  # 15 (sum of numbers) - actual return value
 ```
 
 ### Checking Task State
@@ -115,22 +108,20 @@ def wait_for_result(task_id: str, timeout: int = 30):
     result = AsyncResult(task_id, app=celery_app)
     
     try:
-        # Wait for result (blocks until ready or timeout)
-        task_result = result.get(timeout=timeout)
+        # Wait for result: Blocks until ready or timeout (synchronous waiting).
+        task_result = result.get(timeout=timeout)  # get() blocks until result is ready
         return task_result
     except TimeoutError:
+        # Timeout: Task didn't complete within timeout period.
         print(f"Task {task_id} did not complete within {timeout} seconds")
         return None
     except Exception as e:
+        # Task failed: Handle task failure exception.
         print(f"Task {task_id} failed: {e}")
         raise
 ```
 
-**Understanding `get(timeout=...)`:**
-- Blocks execution until task completes
-- Raises `TimeoutError` if timeout exceeded
-- Returns result immediately if already ready
-- Not suitable for async/await contexts
+**Understanding `get(timeout=...)`:** Blocks execution until task completes, raises `TimeoutError` if timeout exceeded, returns result immediately if already ready, and is not suitable for async/await contexts.
 
 ### Async Result Waiting (Non-blocking)
 

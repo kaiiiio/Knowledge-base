@@ -4,19 +4,9 @@ Protecting Personally Identifiable Information (PII) at rest is critical for com
 
 ## Understanding PII Encryption
 
-**What is PII?**
-Personally Identifiable Information - data that can identify individuals:
-- Names, emails, phone numbers
-- Social security numbers
-- Credit card numbers
-- Addresses
-- Biometric data
+**What is PII?** Personally Identifiable Information - data that can identify individuals: names, emails, phone numbers, social security numbers, credit card numbers, addresses, and biometric data.
 
-**Why encrypt at rest?**
-- Compliance requirements (GDPR, HIPAA, PCI-DSS)
-- Protect against data breaches
-- Defense in depth security
-- Legal obligations
+**Why encrypt at rest?** Compliance requirements (GDPR, HIPAA, PCI-DSS), protect against data breaches, defense in depth security, and legal obligations.
 
 ## Step 1: Field-Level Encryption
 
@@ -56,13 +46,15 @@ class EncryptionService:
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
         return key
     
+    # encrypt: Convert plaintext to encrypted bytes (Fernet symmetric encryption).
     def encrypt(self, plaintext: str) -> bytes:
         """Encrypt plaintext."""
-        return self.cipher.encrypt(plaintext.encode())
+        return self.cipher.encrypt(plaintext.encode())  # Fernet handles encryption
     
+    # decrypt: Convert encrypted bytes back to plaintext.
     def decrypt(self, ciphertext: bytes) -> str:
         """Decrypt ciphertext."""
-        return self.cipher.decrypt(ciphertext).decode()
+        return self.cipher.decrypt(ciphertext).decode()  # Decrypt and decode to string
 ```
 
 ### SQLAlchemy Encrypted Type
@@ -80,16 +72,18 @@ class EncryptedString(TypeDecorator):
         super().__init__(*args, **kwargs)
         self.encryption_service = encryption_service
     
+    # process_bind_param: Encrypts value before storing (automatic encryption on write).
     def process_bind_param(self, value: Optional[str], dialect) -> Optional[bytes]:
         """Encrypt value before storing in database."""
         if value is not None:
-            return self.encryption_service.encrypt(value)
+            return self.encryption_service.encrypt(value)  # Encrypt before storing
         return None
     
+    # process_result_value: Decrypts value when reading (automatic decryption on read).
     def process_result_value(self, value: Optional[bytes], dialect) -> Optional[str]:
         """Decrypt value when reading from database."""
         if value is not None:
-            return self.encryption_service.decrypt(value)
+            return self.encryption_service.decrypt(value)  # Decrypt when reading
         return None
 
 # Initialize encryption service (singleton)
@@ -102,8 +96,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(100))
     
-    # Encrypted fields
-    email = Column(EncryptedString(encryption_service))  # Automatically encrypted
+    # Encrypted fields: Automatically encrypted/decrypted by SQLAlchemy type.
+    email = Column(EncryptedString(encryption_service))  # Automatically encrypted on write, decrypted on read
     phone = Column(EncryptedString(encryption_service))
     ssn = Column(EncryptedString(encryption_service))
 ```
@@ -119,8 +113,8 @@ class User(Base):
 
 from sqlalchemy import text
 
-# Enable pgcrypto extension
-await db.execute(text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
+# Enable pgcrypto extension: PostgreSQL extension for encryption functions.
+await db.execute(text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))  # Required for pgp_sym_encrypt/decrypt
 
 # Encrypt data using SQL
 class UserRepository:
@@ -130,8 +124,8 @@ class UserRepository:
             INSERT INTO users (username, email, phone)
             VALUES (
                 :username,
-                pgp_sym_encrypt(:email, :encryption_key),
-                pgp_sym_encrypt(:phone, :encryption_key)
+                pgp_sym_encrypt(:email, :encryption_key),  # Encrypt email at database level
+                pgp_sym_encrypt(:phone, :encryption_key)  # Encrypt phone at database level
             )
             RETURNING id
         """)
@@ -151,8 +145,8 @@ class UserRepository:
             SELECT 
                 id,
                 username,
-                pgp_sym_decrypt(email::bytea, :encryption_key) as email,
-                pgp_sym_decrypt(phone::bytea, :encryption_key) as phone
+                pgp_sym_decrypt(email::bytea, :encryption_key) as email,  # Decrypt email on read
+                pgp_sym_decrypt(phone::bytea, :encryption_key) as phone  # Decrypt phone on read
             FROM users
             WHERE id = :user_id
         """)
@@ -193,11 +187,12 @@ class AWSKMSEncryption:
         self.kms_client = boto3.client("kms")
         self.key_id = kms_key_id
     
+    # encrypt: Use AWS KMS for encryption (managed key service, no key storage needed).
     def encrypt(self, plaintext: str) -> bytes:
         """Encrypt using AWS KMS."""
         response = self.kms_client.encrypt(
-            KeyId=self.key_id,
-            Plaintext=plaintext.encode()
+            KeyId=self.key_id,  # KMS key ID (managed by AWS)
+            Plaintext=plaintext.encode()  # Data to encrypt
         )
         return response["CiphertextBlob"]
     

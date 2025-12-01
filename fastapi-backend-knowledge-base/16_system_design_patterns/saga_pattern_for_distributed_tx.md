@@ -4,26 +4,11 @@ Saga pattern manages distributed transactions across multiple services without d
 
 ## Understanding the Saga Pattern
 
-**The problem:**
-In microservices, you can't use ACID transactions across services. But you still need consistency.
+**The problem:** In microservices, you can't use ACID transactions across services. But you still need consistency.
 
-**The solution:**
-Saga pattern - break transaction into steps, each with a compensation action.
+**The solution:** Saga pattern - break transaction into steps, each with a compensation action.
 
-**Visual representation:**
-```
-Order Creation Saga:
-    │
-    ├─ Step 1: Create Order ✅
-    │      │
-    ├─ Step 2: Reserve Inventory ✅
-    │      │
-    ├─ Step 3: Process Payment ❌ (FAILS)
-    │      │
-    └─ Compensate:
-        ├─ Release Inventory ✅ (compensate Step 2)
-        └─ Cancel Order ✅ (compensate Step 1)
-```
+**Visual representation:** Order Creation Saga: Step 1: Create Order ✅ → Step 2: Reserve Inventory ✅ → Step 3: Process Payment ❌ (FAILS) → Compensate: Release Inventory ✅ (compensate Step 2), Cancel Order ✅ (compensate Step 1).
 
 ## Step 1: Orchestration Pattern
 
@@ -75,11 +60,10 @@ class OrderSagaOrchestrator:
         )
         self.steps.append(step)
     
+    # execute: Run saga steps sequentially, compensate on failure.
     async def execute(self) -> dict:
         """
-        Execute saga steps sequentially.
-        
-        If any step fails, compensate all completed steps.
+        Execute saga steps sequentially: If any step fails, compensate all completed steps.
         """
         self.status = SagaStatus.IN_PROGRESS
         
@@ -87,12 +71,12 @@ class OrderSagaOrchestrator:
             for step in self.steps:
                 logger.info(f"Executing saga step: {step.name}")
                 
-                # Execute step
+                # Execute step: Run the step's execute function.
                 result = await step.execute_func()
                 
                 step.executed = True
                 step.result = result
-                self.executed_steps.append((step.name, result))
+                self.executed_steps.append((step.name, result))  # Track for compensation
                 
                 logger.info(f"Saga step {step.name} completed")
             
@@ -102,30 +86,31 @@ class OrderSagaOrchestrator:
         except Exception as e:
             logger.error(f"Saga failed at step: {step.name}, error: {e}")
             
-            # Start compensation
+            # Start compensation: Rollback all completed steps.
             self.status = SagaStatus.COMPENSATING
-            await self.compensate()
+            await self.compensate()  # Compensate in reverse order
             
             self.status = SagaStatus.FAILED
             raise
     
+    # compensate: Rollback all executed steps in reverse order (LIFO).
     async def compensate(self):
         """Compensate all executed steps in reverse order."""
         logger.info("Starting saga compensation")
         
-        # Compensate in reverse order
+        # Compensate in reverse order: Last step first (undo in opposite order).
         for step_name, step_result in reversed(self.executed_steps):
-            # Find step
+            # Find step: Get step definition for compensation function.
             step = next(s for s in self.steps if s.name == step_name)
             
             if not step.compensated:
                 try:
                     logger.info(f"Compensating step: {step_name}")
-                    await step.compensate_func(step_result)
+                    await step.compensate_func(step_result)  # Run compensation
                     step.compensated = True
                 except Exception as e:
                     logger.error(f"Compensation failed for {step_name}: {e}")
-                    # Continue compensating other steps
+                    # Continue compensating other steps: Don't stop on compensation failure
 ```
 
 ## Step 2: Order Creation Saga Implementation

@@ -4,14 +4,9 @@ Retrying failed tasks with exponential backoff prevents overwhelming failing ser
 
 ## Understanding Exponential Backoff
 
-**What is exponential backoff?**
-A retry strategy where the wait time between retries increases exponentially: 2s, 4s, 8s, 16s, etc.
+**What is exponential backoff?** A retry strategy where the wait time between retries increases exponentially: 2s, 4s, 8s, 16s, etc.
 
-**Why use it?**
-- Prevents overwhelming failing services
-- Handles temporary outages
-- Reduces server load during recovery
-- Standard pattern for distributed systems
+**Why use it?** Prevents overwhelming failing services, handles temporary outages, reduces server load during recovery, and standard pattern for distributed systems.
 
 **Visual representation:**
 ```
@@ -54,22 +49,18 @@ def process_payment(self, payment_id: int, amount: float):
         return {"status": "success", "transaction_id": result.id}
     
     except PaymentGatewayError as exc:
-        # Calculate wait time: 2^retry_count seconds
-        wait_time = 2 ** self.request.retries
+        # Calculate wait time: Exponential backoff (2^retry_count seconds).
+        wait_time = 2 ** self.request.retries  # 1s, 2s, 4s, 8s, 16s...
         
-        # Retry with exponential backoff
+        # Retry with exponential backoff: Wait before retrying (prevents overwhelming service).
         raise self.retry(
             exc=exc,
-            countdown=wait_time,
+            countdown=wait_time,  # Wait time in seconds
             max_retries=5
         )
 ```
 
-**Understanding the retry:**
-- `self.request.retries`: Current retry count (0, 1, 2, ...)
-- `2 ** self.request.retries`: Exponential calculation (1, 2, 4, 8, 16)
-- `countdown`: Seconds to wait before retry
-- `max_retries`: Maximum number of retry attempts
+**Understanding the retry:** `self.request.retries` is current retry count (0, 1, 2, ...), `2 ** self.request.retries` is exponential calculation (1, 2, 4, 8, 16), `countdown` is seconds to wait before retry, and `max_retries` is maximum number of retry attempts.
 
 ### Retry Progression Example
 
@@ -108,10 +99,10 @@ def send_email_with_backoff(self, email: str, subject: str, body: str):
         return "Email sent successfully"
     
     except EmailServiceError as exc:
-        # Calculate wait time
-        wait_time = BASE_DELAY * (MULTIPLIER ** self.request.retries)
+        # Calculate wait time: Configurable base delay with multiplier.
+        wait_time = BASE_DELAY * (MULTIPLIER ** self.request.retries)  # 5s, 10s, 20s, 40s...
         
-        # Cap at maximum delay
+        # Cap at maximum delay: Prevent extremely long waits (max 5 minutes).
         wait_time = min(wait_time, 300)  # Max 5 minutes
         
         logger.warning(
@@ -125,19 +116,13 @@ def send_email_with_backoff(self, email: str, subject: str, body: str):
         )
 ```
 
-**Progression:**
-- Attempt 1: Wait 5 seconds
-- Attempt 2: Wait 10 seconds (5 × 2¹)
-- Attempt 3: Wait 20 seconds (5 × 2²)
-- Attempt 4: Wait 40 seconds (5 × 2³)
-- Attempt 5: Wait 80 seconds (5 × 2⁴), capped at 300s
+**Progression:** Attempt 1 waits 5 seconds, Attempt 2 waits 10 seconds (5 × 2¹), Attempt 3 waits 20 seconds (5 × 2²), Attempt 4 waits 40 seconds (5 × 2³), and Attempt 5 waits 80 seconds (5 × 2⁴), capped at 300s.
 
 ### Pattern 2: Exponential Backoff with Jitter
 
-**Problem with pure exponential backoff:**
-If many tasks fail at the same time, they'll all retry at the same time (thundering herd problem).
+**Problem with pure exponential backoff:** If many tasks fail at the same time, they'll all retry at the same time (thundering herd problem).
 
-**Solution: Add randomness (jitter):**
+**Solution: Add randomness (jitter):** Random delay prevents simultaneous retries.
 
 ```python
 import random
@@ -151,12 +136,12 @@ def api_call_with_jitter(self, endpoint: str, data: dict):
         return response.json()
     
     except requests.RequestException as exc:
-        # Calculate base wait time
-        base_wait = 2 ** self.request.retries
+        # Calculate base wait time: Exponential backoff base.
+        base_wait = 2 ** self.request.retries  # 1s, 2s, 4s, 8s...
         
-        # Add random jitter (0 to 1 second)
-        jitter = random.uniform(0, 1)
-        wait_time = base_wait + jitter
+        # Add random jitter: Random delay prevents thundering herd (0 to 1 second).
+        jitter = random.uniform(0, 1)  # Random value between 0 and 1
+        wait_time = base_wait + jitter  # Add jitter to base wait time
         
         logger.info(
             f"API call failed, retrying in {wait_time:.2f}s "
@@ -170,10 +155,7 @@ def api_call_with_jitter(self, endpoint: str, data: dict):
         )
 ```
 
-**Why jitter helps:**
-- Tasks retry at slightly different times
-- Reduces simultaneous load spikes
-- Better for distributed systems
+**Why jitter helps:** Tasks retry at slightly different times, reduces simultaneous load spikes, and better for distributed systems.
 
 **Visual comparison:**
 ```

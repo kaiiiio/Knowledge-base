@@ -48,15 +48,9 @@ async def list_users(
 
 ### Pros and Cons
 
-**Pros:**
-- ✅ Simple to implement
-- ✅ Can jump to any page
-- ✅ Easy to understand
+**Pros:** Simple to implement, can jump to any page, and easy to understand.
 
-**Cons:**
-- ❌ Performance degrades with large offsets
-- ❌ Inconsistent results if data changes
-- ❌ Total count query can be expensive
+**Cons:** Performance degrades with large offsets, inconsistent results if data changes, and total count query can be expensive.
 
 ## Cursor-Based Pagination
 
@@ -75,15 +69,18 @@ async def get_users_cursor(
     if cursor:
         stmt = stmt.where(User.id > cursor)
     
-    stmt = stmt.limit(limit + 1)  # Fetch one extra
+    # Fetch one extra: Used to detect if there's a next page.
+    stmt = stmt.limit(limit + 1)
     
     result = await session.execute(stmt)
     users = list(result.scalars().all())
     
+    # Check if there's a next page: If we got limit+1 items, there's more.
     has_next = len(users) > limit
     if has_next:
-        users = users[:-1]  # Remove extra item
+        users = users[:-1]  # Remove extra item (don't return it)
     
+    # Next cursor: ID of last item, used for next page request.
     next_cursor = users[-1].id if users and has_next else None
     
     return users, next_cursor
@@ -106,15 +103,9 @@ async def list_users(
 
 ### Pros and Cons
 
-**Pros:**
-- ✅ Consistent results even if data changes
-- ✅ Better performance for large datasets
-- ✅ No expensive count queries
+**Pros:** Consistent results even if data changes, better performance for large datasets, and no expensive count queries.
 
-**Cons:**
-- ❌ Can't jump to arbitrary pages
-- ❌ Requires ordered column (usually ID)
-- ❌ Slightly more complex
+**Cons:** Can't jump to arbitrary pages, requires ordered column (usually ID), and slightly more complex.
 
 ## Keyset Pagination (Timestamp/Composite)
 

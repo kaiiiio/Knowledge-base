@@ -4,16 +4,11 @@ Caching is one of the most effective ways to improve application performance. Th
 
 ## Understanding Caching
 
-**What is caching?**
-Storing frequently accessed data in fast storage (memory) to avoid slow operations (database queries, API calls, computations).
+**What is caching?** Storing frequently accessed data in fast storage (memory) to avoid slow operations (database queries, API calls, computations).
 
-**The goal:**
-Serve data faster by avoiding expensive operations.
+**The goal:** Serve data faster by avoiding expensive operations.
 
-**Real-world analogy:**
-- Your computer's cache: Stores recently used files in RAM (fast) instead of reading from disk (slow)
-- Web browser cache: Stores images locally so they don't need to be downloaded again
-- Application cache: Stores database query results so you don't query the database every time
+**Real-world analogy:** Your computer's cache stores recently used files in RAM (fast) instead of reading from disk (slow). Web browser cache stores images locally so they don't need to be downloaded again. Application cache stores database query results so you don't query the database every time.
 
 ## Cache-Aside Pattern (Lazy Loading)
 
@@ -27,10 +22,7 @@ Request → Check Cache → Cache Hit? → Yes → Return Cached Data
                     Query Database → Store in Cache → Return Data
 ```
 
-**Characteristics:**
-- Application controls cache
-- Cache is optional (if Redis down, app still works)
-- Data might be stale until cache expires
+**Characteristics:** Application controls cache, cache is optional (if Redis down, app still works), and data might be stale until cache expires.
 
 ### Implementation
 
@@ -55,22 +47,22 @@ async def get_user_cached(user_id: int, redis: aioredis.Redis, db: AsyncSession)
     4. Store result in cache
     5. Return data
     """
-    cache_key = f"user:{user_id}"
+    cache_key = f"user:{user_id}"  # Cache key pattern: object_type:id
     
-    # Step 1: Try cache
+    # Step 1: Try cache: Check if data exists in Redis.
     cached_data = await redis.get(cache_key)
     if cached_data:
         print("✅ Cache HIT - returning cached data")
-        return json.loads(cached_data)
+        return json.loads(cached_data)  # Return cached data (fast path)
     
-    # Step 2: Cache miss - query database
+    # Step 2: Cache miss - query database: Data not in cache, fetch from DB.
     print("❌ Cache MISS - querying database")
     user = await db.get(User, user_id)
     
     if not user:
         return None
     
-    # Step 3: Store in cache
+    # Step 3: Store in cache: Save for future requests (cache-aside pattern).
     user_data = {
         "id": user.id,
         "email": user.email,
@@ -78,18 +70,14 @@ async def get_user_cached(user_id: int, redis: aioredis.Redis, db: AsyncSession)
     }
     await redis.setex(
         cache_key,
-        3600,  # TTL: 1 hour
-        json.dumps(user_data)
+        3600,  # TTL: 1 hour (expires after 1 hour)
+        json.dumps(user_data)  # Store as JSON string
     )
     
     return user_data
 ```
 
-**When to use:**
-- ✅ Flexible cache management
-- ✅ Cache is optional
-- ✅ Data can be slightly stale
-- ✅ Most common use case
+**When to use:** Flexible cache management, cache is optional (graceful degradation), data can be slightly stale, and most common use case.
 
 ## Write-Through Pattern
 
@@ -101,10 +89,7 @@ async def get_user_cached(user_id: int, redis: aioredis.Redis, db: AsyncSession)
 Write Request → Update Database → Update Cache → Return
 ```
 
-**Characteristics:**
-- Cache always consistent with database
-- Writes are slower (two writes)
-- Reads are fast (cache hit)
+**Characteristics:** Cache always consistent with database, writes are slower (two writes - DB + cache), and reads are fast (cache hit).
 
 ### Implementation
 
@@ -120,16 +105,16 @@ async def update_user_write_through(
     
     Updates both database and cache simultaneously.
     """
-    # Step 1: Update database
+    # Step 1: Update database: Write to database first.
     user = await db.get(User, user_id)
     if not user:
         raise ValueError("User not found")
     
     for key, value in updates.items():
         setattr(user, key, value)
-    await db.commit()
+    await db.commit()  # Commit database changes
     
-    # Step 2: Update cache immediately
+    # Step 2: Update cache immediately: Keep cache in sync with database.
     cache_key = f"user:{user_id}"
     user_data = {
         "id": user.id,
@@ -139,7 +124,7 @@ async def update_user_write_through(
     await redis.setex(
         cache_key,
         3600,
-        json.dumps(user_data)
+        json.dumps(user_data)  # Update cache with new data
     )
     
     return user

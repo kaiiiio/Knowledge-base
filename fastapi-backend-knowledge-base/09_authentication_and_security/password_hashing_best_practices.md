@@ -8,30 +8,20 @@ Storing passwords securely is non-negotiable. This guide teaches you password ha
 
 **The problem:**
 ```python
-# ❌ NEVER DO THIS
+# ❌ NEVER DO THIS: Plaintext passwords are a security disaster.
 user.password = "myPassword123"  # Stored as plaintext
 # If database is breached, all passwords are exposed
 ```
 
-**The solution:**
-Hash passwords - one-way encryption that can't be reversed.
+**The solution:** Hash passwords - one-way encryption that can't be reversed. Even if database is breached, attackers can't get original passwords.
 
 ## Understanding Password Hashing
 
-**What is hashing?**
-One-way function that converts password → hash. Can't reverse hash → password.
+**What is hashing?** One-way function that converts password → hash. Can't reverse hash → password.
 
-**How it works:**
-```
-"myPassword123" → hash function → "a8f5f167f44f4964e6c998dee827110c"
-```
+**How it works:** "myPassword123" → hash function → "a8f5f167f44f4964e6c998dee827110c"
 
-**Verification:**
-```
-Login attempt: "myPassword123"
-→ Hash it → Compare with stored hash
-→ Match = correct password
-```
+**Verification:** Login attempt: "myPassword123" → Hash it → Compare with stored hash → Match = correct password
 
 ## Step 1: Using bcrypt
 
@@ -40,19 +30,21 @@ bcrypt is the industry standard for password hashing:
 ```python
 from passlib.context import CryptContext
 
-# Create password hashing context
+# Create password hashing context: bcrypt is industry standard.
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# hash_password: Creates one-way hash (can't reverse, secure).
 def hash_password(password: str) -> str:
     """
     Hash a password using bcrypt.
     
     Example:
         hashed = hash_password("myPassword123")
-        # Returns: "$2b$12$..."
+        # Returns: "$2b$12$..." (includes salt automatically)
     """
     return pwd_context.hash(password)
 
+# verify_password: Compares plain password with hash (secure comparison).
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a password against its hash.
@@ -63,10 +55,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 ```
 
-**Understanding bcrypt:**
-- Automatically generates salt (prevents rainbow table attacks)
-- Configurable rounds (how many times to hash)
-- Slow by design (prevents brute force)
+**Understanding bcrypt:** Automatically generates salt (prevents rainbow table attacks), configurable rounds (how many times to hash), and slow by design (prevents brute force).
 
 ## Step 2: Complete Authentication Flow
 
@@ -82,7 +71,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String(255), unique=True)
     
-    # Store hashed password, not plaintext
+    # Store hashed password, not plaintext: Never store original password.
     hashed_password = Column(String(255), nullable=False)
 
 # User registration
@@ -99,10 +88,10 @@ async def register_user(
     if existing.scalar_one_or_none():
         raise ValueError("Email already registered")
     
-    # Hash password
+    # Hash password: Convert plaintext to secure hash.
     hashed = hash_password(password)
     
-    # Create user
+    # Create user: Store hash, never plaintext!
     user = User(
         email=email,
         hashed_password=hashed  # Store hash, not plaintext!
@@ -129,9 +118,9 @@ async def authenticate_user(
     if not user:
         return None
     
-    # Verify password
+    # Verify password: Compare plain password with stored hash.
     if not verify_password(password, user.hashed_password):
-        return None
+        return None  # Password doesn't match
     
     return user
 ```

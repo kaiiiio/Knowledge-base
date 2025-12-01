@@ -6,10 +6,7 @@ How to design and explain a resume parsing pipeline in interviews, covering arch
 
 **Goal:** Transform unstructured resume documents into structured, searchable data with AI-powered extraction and matching.
 
-**Pipeline Stages:**
-```
-Upload → Extraction → Parsing → Enrichment → Storage → Matching
-```
+**Pipeline Stages:** Upload → Extraction → Parsing → Enrichment → Storage → Matching
 
 ## Pipeline Architecture
 
@@ -67,7 +64,7 @@ async def upload_resume(
     
     Validates file, stores temporarily, queues background task.
     """
-    # Validate file type
+    # Validate file type: Only allow PDF and DOCX (prevent malicious files).
     allowed_types = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
     if file.content_type not in allowed_types:
         raise HTTPException(
@@ -75,7 +72,7 @@ async def upload_resume(
             detail=f"Unsupported file type: {file.content_type}. Supported: PDF, DOCX"
         )
     
-    # Validate file size (max 10MB)
+    # Validate file size: Prevent large file uploads (max 10MB).
     MAX_SIZE = 10 * 1024 * 1024  # 10MB
     content = await file.read()
     if len(content) > MAX_SIZE:
@@ -84,19 +81,19 @@ async def upload_resume(
             detail=f"File too large: {len(content)} bytes. Maximum: {MAX_SIZE} bytes"
         )
     
-    # Store file temporarily
-    file_id = str(uuid.uuid4())
+    # Store file temporarily: Save to disk for background processing.
+    file_id = str(uuid.uuid4())  # Generate unique ID
     file_path = f"/tmp/resumes/{file_id}_{file.filename}"
     
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "wb") as f:
-        f.write(content)
+        f.write(content)  # Write file to disk
     
-    # Queue parsing task
+    # Queue parsing task: Send to Celery for background processing (non-blocking).
     task = celery_app.send_task(
         "tasks.parse_resume",
-        args=[file_path, user_id, file_id],
-        countdown=0
+        args=[file_path, user_id, file_id],  # Pass file path and metadata
+        countdown=0  # Process immediately
     )
     
     return JSONResponse({

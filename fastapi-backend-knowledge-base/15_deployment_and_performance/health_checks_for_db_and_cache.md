@@ -4,19 +4,11 @@ Health checks verify database and cache connectivity, enabling orchestration sys
 
 ## Understanding Health Checks
 
-**What are health checks?**
-Endpoints that verify if the application and its dependencies are functioning correctly.
+**What are health checks?** Endpoints that verify if the application and its dependencies are functioning correctly.
 
-**Types of health checks:**
-- **Liveness**: Is the application running?
-- **Readiness**: Is the application ready to serve traffic?
-- **Startup**: Has the application finished starting up?
+**Types of health checks:** **Liveness** (is the application running?), **Readiness** (is the application ready to serve traffic?), and **Startup** (has the application finished starting up?).
 
-**Why they matter:**
-- Container orchestration uses them for routing
-- Load balancers check before routing traffic
-- Monitoring systems alert on failures
-- Auto-scaling decisions
+**Why they matter:** Container orchestration uses them for routing, load balancers check before routing traffic, monitoring systems alert on failures, and auto-scaling decisions.
 
 ## Step 1: Basic Health Check Endpoints
 
@@ -45,10 +37,7 @@ async def liveness_check():
     )
 ```
 
-**When to fail:**
-- Application is crashing
-- Deadlock detected
-- Should NOT fail for dependency issues
+**When to fail:** Application is crashing, deadlock detected. Should NOT fail for dependency issues.
 
 ### Readiness Check (Is App Ready?)
 
@@ -67,9 +56,9 @@ async def readiness_check(
     checks = {}
     all_healthy = True
     
-    # Check database
+    # Check database: Simple query to verify connectivity.
     try:
-        await db.execute(text("SELECT 1"))
+        await db.execute(text("SELECT 1"))  # Minimal query to test connection
         checks["database"] = {"status": "healthy"}
     except Exception as e:
         checks["database"] = {
@@ -78,9 +67,9 @@ async def readiness_check(
         }
         all_healthy = False
     
-    # Check cache
+    # Check cache: Ping Redis to verify connectivity.
     try:
-        await redis.ping()
+        await redis.ping()  # Redis ping command
         checks["cache"] = {"status": "healthy"}
     except Exception as e:
         checks["cache"] = {
@@ -101,10 +90,7 @@ async def readiness_check(
     )
 ```
 
-**When to fail:**
-- Database is down
-- Cache is unreachable
-- Critical dependencies unavailable
+**When to fail:** Database is down, cache is unreachable, and critical dependencies unavailable.
 
 ## Step 2: Comprehensive Health Check Service
 
@@ -140,24 +126,25 @@ class HealthCheckService:
         self.db = db
         self.redis = redis
     
+    # check_database: Comprehensive database health check with response time monitoring.
     async def check_database(self) -> ComponentHealth:
         """Check database health."""
         start_time = time.time()
         
         try:
-            # Simple query to verify connectivity
+            # Simple query to verify connectivity: Minimal query to test connection.
             await self.db.execute(text("SELECT 1"))
             
-            # Optional: Check connection pool
+            # Optional: Check connection pool: Monitor pool size for diagnostics.
             pool_size = self.db.bind.pool.size() if hasattr(self.db.bind, 'pool') else None
             
-            response_time = (time.time() - start_time) * 1000
+            response_time = (time.time() - start_time) * 1000  # Calculate response time in ms
             
-            # Determine if healthy (response time threshold)
+            # Determine if healthy: Response time threshold (degraded if slow).
             if response_time > 1000:  # > 1 second is degraded
                 return ComponentHealth(
                     name="database",
-                    status=HealthStatus.DEGRADED,
+                    status=HealthStatus.DEGRADED,  # Slow but working
                     response_time_ms=response_time,
                     details={"pool_size": pool_size}
                 )
@@ -170,6 +157,7 @@ class HealthCheckService:
             )
         
         except Exception as e:
+            # Database is down: Connection failed.
             return ComponentHealth(
                 name="database",
                 status=HealthStatus.UNHEALTHY,

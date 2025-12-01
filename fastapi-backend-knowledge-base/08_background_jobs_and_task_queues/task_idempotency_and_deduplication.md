@@ -4,18 +4,11 @@ Ensuring tasks are idempotent and preventing duplicates is critical for reliable
 
 ## Understanding Idempotency
 
-**What is idempotency?**
-An idempotent operation produces the same result regardless of how many times it's executed with the same inputs.
+**What is idempotency?** An idempotent operation produces the same result regardless of how many times it's executed with the same inputs.
 
-**Mathematical analogy:**
-- `f(f(x)) = f(x)` - Applying the function twice equals applying it once
-- Example: `abs(abs(-5)) = abs(-5) = 5`
+**Mathematical analogy:** `f(f(x)) = f(x)` - applying the function twice equals applying it once. Example: `abs(abs(-5)) = abs(-5) = 5`.
 
-**Why it matters:**
-- Tasks might be retried
-- Network issues cause duplicate requests
-- Race conditions in distributed systems
-- Users accidentally clicking twice
+**Why it matters:** Tasks might be retried, network issues cause duplicate requests, race conditions in distributed systems, and users accidentally clicking twice.
 
 ## Idempotency Patterns
 
@@ -30,17 +23,15 @@ def update_user_score(user_id: int, points: int):
     Database UPDATE is idempotent - running it multiple times
     with same values produces same result.
     """
+    # Database UPDATE: Naturally idempotent - multiple executions produce same result.
     db.execute(
         "UPDATE users SET score = score + %s WHERE id = %s",
-        (points, user_id)
+        (points, user_id)  # Add points to user's score
     )
-    # Safe to retry! Multiple executions = same result
+    # Safe to retry! Multiple executions = same result: Database guarantees consistency
 ```
 
-**Why this is idempotent:**
-- Adding points multiple times = correct total
-- Database guarantees consistency
-- No side effects beyond database update
+**Why this is idempotent:** Adding points multiple times = correct total, database guarantees consistency, and no side effects beyond database update.
 
 ### Pattern 2: Check-Before-Execute
 
@@ -52,30 +43,27 @@ def send_notification(user_id: int, notification_id: str, message: str):
     
     Uses notification_id as idempotency key.
     """
-    # Check if already sent
+    # Check if already sent: Use notification_id as idempotency key.
     if db.execute(
         "SELECT id FROM notifications WHERE notification_id = %s",
-        (notification_id,)
+        (notification_id,)  # Check for existing notification
     ).first():
         logger.info(f"Notification {notification_id} already sent, skipping")
-        return "Already sent"  # Same result as if we sent it
+        return "Already sent"  # Same result as if we sent it: Idempotent return
     
-    # Send notification
+    # Send notification: Only send if not already sent.
     send_notification_logic(user_id, message)
     
-    # Mark as sent
+    # Mark as sent: Store record to prevent duplicate sends.
     db.execute(
         "INSERT INTO notifications (notification_id, user_id, sent_at) VALUES (%s, %s, NOW())",
-        (notification_id, user_id)
+        (notification_id, user_id)  # Store notification record
     )
     
     return "Sent"
 ```
 
-**Idempotency guarantee:**
-- First execution: Sends notification, stores record
-- Subsequent executions: Finds existing record, returns "Already sent"
-- Same input → Same output
+**Idempotency guarantee:** First execution sends notification and stores record. Subsequent executions find existing record and return "Already sent". Same input → Same output.
 
 ### Pattern 3: Idempotency Keys
 
@@ -89,46 +77,47 @@ def generate_idempotency_key(task_name: str, **kwargs) -> str:
     
     Same arguments = same key = same result.
     """
-    # Sort kwargs for consistent hashing
-    sorted_kwargs = json.dumps(kwargs, sort_keys=True)
+    # Sort kwargs for consistent hashing: Same arguments always produce same key.
+    sorted_kwargs = json.dumps(kwargs, sort_keys=True)  # Sort keys for consistency
     
-    # Create hash
+    # Create hash: Generate MD5 hash from task name and arguments.
     key_data = f"{task_name}:{sorted_kwargs}"
-    return hashlib.md5(key_data.encode()).hexdigest()
+    return hashlib.md5(key_data.encode()).hexdigest()  # Return hex digest
 
 @celery_app.task(bind=True)
 def process_payment_task(self, payment_id: int, amount: float):
     """
     Idempotent payment processing with idempotency key.
     """
-    # Generate idempotency key
+    # Generate idempotency key: Create unique key from task arguments.
     idempotency_key = generate_idempotency_key(
         'process_payment',
         payment_id=payment_id,
         amount=amount
     )
     
-    # Check if already processed
+    # Check if already processed: Look for existing result with same key.
     existing = db.execute(
         "SELECT result FROM payment_results WHERE idempotency_key = %s",
-        (idempotency_key,)
+        (idempotency_key,)  # Check for existing payment result
     ).first()
     
     if existing:
+        # Already processed: Return cached result (idempotent).
         logger.info(f"Payment {payment_id} already processed (key: {idempotency_key})")
-        return existing.result  # Return cached result
+        return existing.result  # Return cached result: Same input = same output
     
-    # Process payment
+    # Process payment: Only process if not already done.
     result = payment_gateway.charge(payment_id, amount)
     
-    # Store result
+    # Store result: Cache result for future idempotency checks.
     db.execute(
         """
         INSERT INTO payment_results 
         (idempotency_key, payment_id, result, created_at) 
         VALUES (%s, %s, %s, NOW())
         """,
-        (idempotency_key, payment_id, json.dumps(result))
+        (idempotency_key, payment_id, json.dumps(result))  # Store result as JSON
     )
     
     return result

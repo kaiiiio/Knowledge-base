@@ -39,11 +39,7 @@ Put related data inside the same document. Like putting a shopping list inside a
 }
 ```
 
-**When to embed:**
-- ✅ Data is always read together
-- ✅ One-to-one or one-to-few relationships
-- ✅ Data doesn't change frequently
-- ✅ Related data belongs conceptually together
+**When to embed:** Data is always read together, one-to-one or one-to-few relationships, data doesn't change frequently, and related data belongs conceptually together.
 
 ### Referencing (Separate Documents, Linked by ID)
 
@@ -76,11 +72,7 @@ Store related data in separate documents, link them with IDs. Like having a libr
 }
 ```
 
-**When to reference:**
-- ✅ One-to-many or many-to-many relationships
-- ✅ Data grows unbounded (like orders)
-- ✅ Data is accessed independently
-- ✅ Need to query referenced data separately
+**When to reference:** One-to-many or many-to-many relationships, data grows unbounded (like orders), data is accessed independently, and need to query referenced data separately.
 
 ## Step 1: Understanding Document Structure
 
@@ -115,11 +107,7 @@ Let's build our e-commerce system in MongoDB:
 }
 ```
 
-**Why embed here:**
-- Profile is always read with user
-- One profile per user (one-to-one)
-- Profile rarely accessed independently
-- Small, bounded size
+**Why embed here:** Profile is always read with user, one profile per user (one-to-one), profile rarely accessed independently, and small, bounded size.
 
 ### Pattern 2: Embedded Array (One-to-Few)
 
@@ -151,15 +139,9 @@ Let's build our e-commerce system in MongoDB:
 }
 ```
 
-**Why embed reviews:**
-- Reviews are always shown with product
-- Limited number (won't grow unbounded)
-- Quick to read (all reviews in one query)
+**Why embed reviews:** Reviews are always shown with product, limited number (won't grow unbounded), and quick to read (all reviews in one query).
 
-**When NOT to embed:**
-- Product has 10,000+ reviews (document too large)
-- Need to query reviews independently
-- Reviews updated frequently
+**When NOT to embed:** Product has 10,000+ reviews (document too large), need to query reviews independently, and reviews updated frequently.
 
 ### Pattern 3: Reference Pattern (One-to-Many)
 
@@ -191,11 +173,7 @@ Let's build our e-commerce system in MongoDB:
 }
 ```
 
-**Why reference orders:**
-- Users can have many orders (unbounded)
-- Orders are large documents
-- Orders queried independently
-- Need to query "all orders from January"
+**Why reference orders:** Users can have many orders (unbounded), orders are large documents, orders queried independently, and need to query "all orders from January".
 
 ## Step 2: Practical Patterns
 

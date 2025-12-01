@@ -4,13 +4,9 @@ RBAC restricts access based on user roles. This guide teaches you how to impleme
 
 ## Understanding RBAC
 
-**The concept:**
-Users have roles, roles have permissions. Check permissions before allowing actions.
+**The concept:** Users have roles, roles have permissions. Check permissions before allowing actions.
 
-**Example:**
-- **Admin**: Can do everything
-- **Moderator**: Can edit content, can't delete users
-- **User**: Can only edit own content
+**Example:** **Admin** can do everything, **Moderator** can edit content (can't delete users), and **User** can only edit own content.
 
 ## Step 1: Defining Roles and Permissions
 
@@ -79,36 +75,39 @@ class Permission(Base):
 ## Step 2: Permission Checking
 
 ```python
+# check_permission: Verifies if user has required permission through their roles.
 async def check_permission(
     user: User,
     required_permission: Permission,
     db: AsyncSession
 ) -> bool:
     """Check if user has required permission."""
-    # Get all user roles
+    # Get all user roles: User can have multiple roles.
     user_roles = await get_user_roles(user.id, db)
     
-    # Check if any role has the permission
+    # Check if any role has the permission: Check all roles until permission found.
     for role in user_roles:
         role_permissions = await get_role_permissions(role.id, db)
         if required_permission in [p.name for p in role_permissions]:
-            return True
+            return True  # User has permission through this role
     
-    return False
+    return False  # No role has the required permission
 
+# require_permission: FastAPI dependency factory for permission-based access control.
 async def require_permission(permission: Permission):
     """Dependency to require specific permission."""
     async def permission_checker(
-        current_user: User = Depends(get_current_user),
+        current_user: User = Depends(get_current_user),  # Get authenticated user
         db: AsyncSession = Depends(get_db)
     ) -> User:
+        # Check permission: Verify user has required permission.
         has_permission = await check_permission(current_user, permission, db)
         if not has_permission:
             raise HTTPException(
-                status_code=403,
+                status_code=403,  # Forbidden
                 detail=f"Permission denied: {permission.value} required"
             )
-        return current_user
+        return current_user  # User has permission, allow access
     
     return permission_checker
 
@@ -154,11 +153,7 @@ async def list_all_users(
 
 ## Summary
 
-RBAC provides:
-- ✅ Flexible access control
-- ✅ Permission-based authorization
-- ✅ Role management
-- ✅ Secure API endpoints
+**RBAC provides:** Flexible access control, permission-based authorization, role management, and secure API endpoints.
 
 Implement RBAC properly and you have enterprise-grade access control!
 

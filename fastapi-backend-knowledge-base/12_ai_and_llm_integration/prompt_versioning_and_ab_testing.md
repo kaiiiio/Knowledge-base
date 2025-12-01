@@ -4,17 +4,9 @@ Versioning prompts and A/B testing helps optimize AI performance and iterate on 
 
 ## Understanding Prompt Management
 
-**Why version prompts?**
-- Track prompt changes over time
-- Rollback to previous versions
-- Compare prompt performance
-- A/B test variations
+**Why version prompts?** Track prompt changes over time, rollback to previous versions, compare prompt performance, and A/B test variations.
 
-**Why A/B test?**
-- Optimize prompt effectiveness
-- Compare prompt variations
-- Measure performance improvements
-- Data-driven decisions
+**Why A/B test?** Optimize prompt effectiveness, compare prompt variations, measure performance improvements, and make data-driven decisions.
 
 ## Step 1: Prompt Versioning System
 
@@ -29,16 +21,16 @@ class PromptVersion(Base):
     
     id = Column(Integer, primary_key=True)
     
-    # Prompt identification
+    # Prompt identification: Name and version for tracking.
     name = Column(String(100), nullable=False, index=True)  # 'resume_parser', 'job_matcher'
     version = Column(String(20), nullable=False)  # 'v1.0', 'v2.0', 'A', 'B'
     
-    # Prompt content
+    # Prompt content: Template and variables.
     prompt_template = Column(Text, nullable=False)  # Full prompt template
     system_message = Column(Text, nullable=True)  # System message if separate
     prompt_variables = Column(JSON)  # Available variables: ['resume_text', 'job_description']
     
-    # Version control
+    # Version control: Track which version is active.
     is_active = Column(Boolean, default=False, index=True)  # Currently active version
     is_default = Column(Boolean, default=False)  # Default version for new requests
     
@@ -66,15 +58,17 @@ class PromptService:
     def __init__(self, db: AsyncSession):
         self.db = db
     
+    # Get active prompt: Retrieve the currently active version.
     async def get_active_prompt(self, name: str) -> PromptVersion:
         """Get currently active prompt version."""
+        # Query: Find active version by name.
         stmt = select(PromptVersion).where(
             PromptVersion.name == name,
-            PromptVersion.is_active == True
+            PromptVersion.is_active == True  # Only active versions
         )
         
         result = await self.db.execute(stmt)
-        prompt = result.scalar_one_or_none()
+        prompt = result.scalar_one_or_none()  # Get one or None
         
         if not prompt:
             raise ValueError(f"No active prompt found for: {name}")
@@ -117,26 +111,27 @@ class PromptService:
         
         return prompt
     
+    # Activate version: Switch active version (only one active at a time).
     async def activate_version(self, name: str, version: str):
         """Activate a specific prompt version."""
-        # Deactivate all versions of this prompt
+        # Deactivate all versions of this prompt: First, deactivate all versions.
         await self.db.execute(
             update(PromptVersion)
             .where(PromptVersion.name == name)
-            .values(is_active=False)
+            .values(is_active=False)  # Set all to inactive
         )
         
-        # Activate specified version
+        # Activate specified version: Then activate the target version.
         await self.db.execute(
             update(PromptVersion)
             .where(
                 PromptVersion.name == name,
                 PromptVersion.version == version
             )
-            .values(is_active=True)
+            .values(is_active=True)  # Set target to active
         )
         
-        await self.db.commit()
+        await self.db.commit()  # Commit changes
     
     async def render_prompt(
         self,

@@ -4,21 +4,11 @@ Understanding Celery's architecture is crucial for production deployments. This 
 
 ## Understanding Celery's Purpose
 
-**What is Celery?**
-Celery is a distributed task queue that allows you to execute tasks asynchronously across multiple worker processes or machines.
+**What is Celery?** Celery is a distributed task queue that allows you to execute tasks asynchronously across multiple worker processes or machines.
 
-**Why use Celery?**
-- Long-running tasks that would block HTTP requests
-- Scheduled tasks (like cron jobs)
-- Tasks that need to be distributed across multiple servers
-- Tasks that need retry logic and error handling
+**Why use Celery?** Long-running tasks that would block HTTP requests, scheduled tasks (like cron jobs), tasks that need to be distributed across multiple servers, and tasks that need retry logic and error handling.
 
-**Real-world analogy:**
-Think of Celery like a restaurant kitchen:
-- **FastAPI (Waiter)**: Takes orders (requests) from customers
-- **Celery Broker (Kitchen Order Board)**: Displays orders for chefs
-- **Celery Workers (Chefs)**: Prepare food (process tasks) in parallel
-- **Result Backend (Completed Orders Area)**: Stores finished orders
+**Real-world analogy:** Think of Celery like a restaurant kitchen. **FastAPI (Waiter)** takes orders (requests) from customers. **Celery Broker (Kitchen Order Board)** displays orders for chefs. **Celery Workers (Chefs)** prepare food (process tasks) in parallel. **Result Backend (Completed Orders Area)** stores finished orders.
 
 ## Architecture Overview
 
@@ -67,49 +57,45 @@ The Celery client serializes tasks and sends them to the broker.
 # celery_app.py
 from celery import Celery
 
-# Create Celery app instance
+# Create Celery app instance: Initialize Celery with broker and backend.
 celery_app = Celery(
-    'myapp',  # App name
-    broker='redis://localhost:6379/0',  # Message broker URL
-    backend='redis://localhost:6379/0',  # Result backend URL
+    'myapp',  # App name: Identifier for this Celery app
+    broker='redis://localhost:6379/0',  # Message broker URL: Where tasks are queued
+    backend='redis://localhost:6379/0',  # Result backend URL: Where results are stored
 )
 
-# Configure Celery
+# Configure Celery: Set serialization, timezone, and timeouts.
 celery_app.conf.update(
-    task_serializer='json',  # How to serialize tasks
-    accept_content=['json'],
-    result_serializer='json',
-    timezone='UTC',
-    enable_utc=True,
-    task_track_started=True,  # Track when task starts
-    task_time_limit=30 * 60,  # Hard timeout: 30 minutes
-    task_soft_time_limit=25 * 60,  # Soft timeout: 25 minutes
+    task_serializer='json',  # How to serialize tasks: JSON format
+    accept_content=['json'],  # Accept only JSON content
+    result_serializer='json',  # Serialize results as JSON
+    timezone='UTC',  # Use UTC timezone
+    enable_utc=True,  # Enable UTC
+    task_track_started=True,  # Track when task starts: Useful for monitoring
+    task_time_limit=30 * 60,  # Hard timeout: 30 minutes (kills task if exceeded)
+    task_soft_time_limit=25 * 60,  # Soft timeout: 25 minutes (raises exception, allows cleanup)
 )
 ```
 
-**Understanding the configuration:**
-- `broker`: Where tasks are queued (Redis/RabbitMQ)
-- `backend`: Where results are stored
-- `task_serializer`: How task data is encoded (JSON, pickle, etc.)
-- `time_limit`: Maximum execution time (kills task if exceeded)
-- `soft_time_limit`: Warning time (raises exception, allows cleanup)
+**Understanding the configuration:** `broker` is where tasks are queued (Redis/RabbitMQ). `backend` is where results are stored. `task_serializer` is how task data is encoded (JSON, pickle, etc.). `time_limit` is maximum execution time (kills task if exceeded). `soft_time_limit` is warning time (raises exception, allows cleanup).
 
 ### Defining Tasks
 
 ```python
-@celery_app.task(name='tasks.send_email')
+# Task definition: Mark function as Celery task.
+@celery_app.task(name='tasks.send_email')  # Custom task name for versioning
 def send_email_task(email: str, subject: str, body: str):
     """
     Celery task definition.
     
     This function becomes a task that can be executed asynchronously.
     """
-    # Task implementation
+    # Task implementation: Actual work done by the task.
     send_email(email, subject, body)
-    return f"Email sent to {email}"
+    return f"Email sent to {email}"  # Return value stored in result backend
 
-# Alternative: Using bind=True for access to task context
-@celery_app.task(bind=True, max_retries=3)
+# Alternative: Using bind=True for access to task context (task instance).
+@celery_app.task(bind=True, max_retries=3)  # bind=True gives access to self
 def process_payment_task(self, payment_id: int):
     """
     Task with bind=True gives access to self (task instance).
@@ -120,23 +106,19 @@ def process_payment_task(self, payment_id: int):
     - self.update_state(): Update task state
     """
     try:
+        # Process payment: Execute the actual work.
         result = process_payment(payment_id)
         return result
     except Exception as exc:
-        # Retry with exponential backoff
-        raise self.retry(exc=exc, countdown=60)
+        # Retry with exponential backoff: Retry task on failure.
+        raise self.retry(exc=exc, countdown=60)  # Retry after 60 seconds
 ```
 
-**Understanding task decorator:**
-- `@celery_app.task`: Marks function as Celery task
-- `bind=True`: Passes task instance as first argument (self)
-- `max_retries`: Maximum retry attempts
-- `name`: Custom task name (useful for versioning)
+**Understanding task decorator:** `@celery_app.task` marks function as Celery task. `bind=True` passes task instance as first argument (self). `max_retries` is maximum retry attempts. `name` is custom task name (useful for versioning).
 
 ## Component 2: Broker (Message Queue)
 
-**What it does:**
-The broker stores tasks in a queue until workers pick them up.
+**What it does:** The broker stores tasks in a queue until workers pick them up.
 
 ### Broker Options
 

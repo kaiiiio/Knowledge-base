@@ -31,7 +31,7 @@ Choosing the right backend framework depends on your project requirements, team 
 | JavaScript Team | ⚠️ New language | ❌ Not ideal | ✅ Perfect |
 | Type Safety | ✅ Excellent | ✅ Excellent | ⚠️ With TypeScript |
 
-**Verdict:** Choose the framework your team knows best.
+**Verdict:** Choose the framework your team knows best. Team expertise matters more than framework features.
 
 ### 2. **Performance Requirements**
 
@@ -42,7 +42,7 @@ Choosing the right backend framework depends on your project requirements, team 
 | Startup Time | ⚡ Fast (~100ms) | 🐌 Slow (2-5s) | ⚡ Fast (~50ms) |
 | Memory Usage | ✅ Low | ⚠️ Medium-High | ✅ Low |
 
-**Verdict:** All three perform well. FastAPI and Express excel in async scenarios.
+**Verdict:** All three perform well. FastAPI and Express excel in async scenarios. Spring Boot is slower to start but handles high load well.
 
 ### 3. **Type Safety & Validation**
 
@@ -55,8 +55,9 @@ class User(BaseModel):
     age: int = Field(gt=0, lt=150)
 
 @app.post("/users/")
+# FastAPI: Automatic validation & type checking (Pydantic handles it).
 async def create_user(user: User):
-    # Automatic validation & type checking
+    # Automatic validation & type checking: No manual validation needed.
     pass
 ```
 
@@ -85,7 +86,7 @@ app.post("/users/", (req: Request<{}, {}, User>, res) => {
 });
 ```
 
-**Verdict:** FastAPI and Spring Boot have built-in validation. Express needs additional libraries.
+**Verdict:** FastAPI and Spring Boot have built-in validation. Express needs additional libraries (Zod, Joi, etc.).
 
 ### 4. **Ecosystem & Libraries**
 

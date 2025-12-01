@@ -6,26 +6,15 @@ pgvector is a PostgreSQL extension that enables storing and searching vector emb
 
 Before we dive into pgvector, let's understand what embeddings are and why they matter:
 
-**In simple terms:**
-An embedding is a list of numbers that represents the meaning of text, images, or other data. Similar things have similar embeddings (close numbers).
+**In simple terms:** An embedding is a list of numbers that represents the meaning of text, images, or other data. Similar things have similar embeddings (close numbers).
 
-**Example:**
-- "dog" → [0.2, 0.8, 0.1, ...] (1536 numbers)
-- "puppy" → [0.21, 0.79, 0.12, ...] (very similar numbers)
-- "airplane" → [0.9, 0.1, 0.8, ...] (very different numbers)
+**Example:** "dog" → [0.2, 0.8, 0.1, ...] (1536 numbers), "puppy" → [0.21, 0.79, 0.12, ...] (very similar numbers), "airplane" → [0.9, 0.1, 0.8, ...] (very different numbers).
 
-**Why embeddings matter:**
-- Traditional search: "dog" only matches "dog"
-- Embedding search: "dog" matches "puppy", "canine", "pet" (semantic similarity)
+**Why embeddings matter:** Traditional search: "dog" only matches "dog". Embedding search: "dog" matches "puppy", "canine", "pet" (semantic similarity).
 
 ## Why Use pgvector?
 
-You could store embeddings in a separate vector database (like Pinecone or Weaviate), but pgvector lets you:
-
-1. **Keep everything together** - Embeddings and relational data in one database
-2. **Use SQL** - Leverage existing PostgreSQL knowledge
-3. **Transactions** - Ensure consistency between embeddings and metadata
-4. **Cost savings** - One database instead of multiple services
+You could store embeddings in a separate vector database (like Pinecone or Weaviate), but pgvector lets you keep everything together (embeddings and relational data in one database), use SQL (leverage existing PostgreSQL knowledge), ensure transactions (consistency between embeddings and metadata), and save costs (one database instead of multiple services).
 
 ## Installation
 
@@ -61,10 +50,7 @@ Connect to your PostgreSQL database and run:
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-**What this does:**
-- Loads the vector extension
-- Adds the `vector` data type
-- Adds vector operators (for similarity search)
+**What this does:** Loads the vector extension, adds the `vector` data type, and adds vector operators (for similarity search).
 
 **Verify installation:**
 ```sql
@@ -86,10 +72,7 @@ CREATE TABLE documents (
 );
 ```
 
-**Understanding the vector type:**
-- `vector(1536)` means each vector has exactly 1536 numbers
-- The number must match your embedding model's output dimension
-- Common dimensions: 384, 768, 1536
+**Understanding the vector type:** `vector(1536)` means each vector has exactly 1536 numbers. The number must match your embedding model's output dimension. Common dimensions: 384, 768, 1536.
 
 **In SQLAlchemy:**
 ```python
@@ -102,7 +85,7 @@ class Document(Base):
     
     id = Column(Integer, primary_key=True)
     content = Column(Text)
-    embedding = Column(Vector(1536))  # 1536-dimensional vector
+    embedding = Column(Vector(1536))  # 1536-dimensional vector (matches OpenAI embeddings)
 ```
 
 ### Step 2: Generate and Insert Embeddings
@@ -132,11 +115,7 @@ def get_embedding(text: str, model: str = "text-embedding-ada-002") -> list:
     return response.data[0].embedding  # Returns list like [0.1, 0.2, ...]
 ```
 
-**Understanding what happens:**
-1. Your text goes to OpenAI's API
-2. Their model converts it to 1536 numbers
-3. You get back a list of floats
-4. You store this list in PostgreSQL
+**Understanding what happens:** Your text goes to OpenAI's API, their model converts it to 1536 numbers, you get back a list of floats, and you store this list in PostgreSQL. pgvector handles the conversion automatically.
 
 **Inserting the embedding:**
 ```python
@@ -156,10 +135,7 @@ async def create_document(content: str, session: AsyncSession):
     return document
 ```
 
-**What pgvector does:**
-- Takes your Python list `[0.1, 0.2, ...]`
-- Converts it to PostgreSQL's vector format
-- Stores it efficiently
+**What pgvector does:** Takes your Python list `[0.1, 0.2, ...]`, converts it to PostgreSQL's vector format, and stores it efficiently for fast similarity searches.
 
 ## Similarity Search
 
@@ -169,23 +145,13 @@ This is where pgvector shines. Let's learn how to find similar documents.
 
 pgvector supports three ways to measure "how similar" two vectors are:
 
-**1. Cosine Distance** (most common for embeddings)
-- Measures the angle between vectors
-- Range: 0 (identical) to 2 (opposite)
-- Best for: Text embeddings, semantic search
+**1. Cosine Distance (most common for embeddings):** Measures the angle between vectors. Range: 0 (identical) to 2 (opposite). Best for: Text embeddings, semantic search.
 
-**2. L2 Distance (Euclidean)**
-- Measures straight-line distance
-- Range: 0 (identical) to infinity
-- Best for: Image embeddings, coordinates
+**2. L2 Distance (Euclidean):** Measures straight-line distance. Range: 0 (identical) to infinity. Best for: Image embeddings, coordinates.
 
-**3. Inner Product**
-- Measures how aligned vectors are
-- Range: -infinity to infinity
-- Best for: Specific ML models that use it
+**3. Inner Product:** Measures how aligned vectors are. Range: -infinity to infinity. Best for: Specific ML models that use it.
 
-**Which to use?**
-For most embedding use cases (like OpenAI, Cohere, etc.), use **cosine distance**.
+**Which to use?** For most embedding use cases (like OpenAI, Cohere, etc.), use cosine distance.
 
 ### Basic Similarity Query
 
@@ -202,17 +168,7 @@ ORDER BY embedding <=> '[0.1,0.2,...]'::vector
 LIMIT 5;
 ```
 
-**Breaking down the syntax:**
-
-**`embedding <=> '[0.1,0.2,...]'::vector`**
-- `<=>` is the cosine distance operator
-- It calculates distance between stored embedding and query vector
-- Lower distance = more similar
-
-**`1 - (embedding <=> ...)`**
-- Converts distance to similarity
-- Distance 0 → Similarity 1.0 (100% similar)
-- Distance 1 → Similarity 0.0 (0% similar)
+**Breaking down the syntax:** `embedding <=> '[0.1,0.2,...]'::vector` uses `<=>` (cosine distance operator) to calculate distance between stored embedding and query vector (lower distance = more similar). `1 - (embedding <=> ...)` converts distance to similarity (distance 0 → similarity 1.0 (100% similar), distance 1 → similarity 0.0 (0% similar)).
 
 **In SQLAlchemy:**
 ```python

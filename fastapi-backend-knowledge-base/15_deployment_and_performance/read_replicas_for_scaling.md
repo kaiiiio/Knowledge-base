@@ -4,26 +4,11 @@ Read replicas distribute read load across multiple database servers, enabling ho
 
 ## Understanding Read Replicas
 
-**What are read replicas?**
-Duplicate database servers that receive copies of data from the primary (master) database and serve read queries.
+**What are read replicas?** Duplicate database servers that receive copies of data from the primary (master) database and serve read queries.
 
-**Architecture:**
-```
-Primary Database (Write)
-    │
-    │ Replication
-    ├──────────────┐
-    │              │
-    ▼              ▼
-Replica 1      Replica 2
-(Read)         (Read)
-```
+**Architecture:** Primary Database (Write) → Replication → Replica 1 (Read) and Replica 2 (Read).
 
-**Benefits:**
-- Distribute read load
-- Scale horizontally
-- Improve read performance
-- Geographic distribution
+**Benefits:** Distribute read load, scale horizontally, improve read performance, and geographic distribution.
 
 ## Step 1: Setting Up Read Replicas
 
@@ -61,7 +46,7 @@ READ_REPLICA_2_URL = "postgresql+asyncpg://user:password@replica-2:5432/mydb"
 ```python
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-# Primary engine (writes)
+# Primary engine: Handles all write operations (must be consistent).
 write_engine = create_async_engine(
     WRITE_DATABASE_URL,
     pool_size=10,
@@ -69,10 +54,10 @@ write_engine = create_async_engine(
     pool_pre_ping=True
 )
 
-# Read replica engines
+# Read replica engines: Handle read operations (can have larger pools for more concurrent reads).
 read_replica_1_engine = create_async_engine(
     READ_REPLICA_1_URL,
-    pool_size=20,  # Larger pool for reads
+    pool_size=20,  # Larger pool for reads (more concurrent read queries)
     max_overflow=20,
     pool_pre_ping=True
 )
@@ -117,14 +102,16 @@ class DatabaseRouter:
             expire_on_commit=False
         )
     
+    # get_read_session: Load balancing across read replicas (random selection).
     def get_read_session(self) -> AsyncSession:
         """Get session from random read replica (load balancing)."""
-        session_maker = random.choice(self.read_session_makers)
+        session_maker = random.choice(self.read_session_makers)  # Random replica
         return session_maker()
     
+    # get_write_session: Always use primary database for writes (consistency).
     def get_write_session(self) -> AsyncSession:
         """Get session for write operations."""
-        return self.write_session_maker()
+        return self.write_session_maker()  # Always primary
     
     async def close_all(self):
         """Close all engines."""
@@ -152,14 +139,15 @@ class HealthyDatabaseRouter:
         self.health_check_interval = 60  # Check every minute
         self._last_health_check = 0
     
+    # _check_replica_health: Verify replica is responding (health check).
     async def _check_replica_health(self, engine) -> bool:
         """Check if replica is healthy."""
         try:
             async with engine.begin() as conn:
-                await conn.execute(text("SELECT 1"))
+                await conn.execute(text("SELECT 1"))  # Simple query to test connectivity
             return True
         except Exception:
-            return False
+            return False  # Replica is down
     
     async def _update_healthy_replicas(self):
         """Update list of healthy replicas."""
@@ -176,13 +164,14 @@ class HealthyDatabaseRouter:
         
         self.healthy_read_engines = healthy
     
+    # get_read_session: Route to healthy replica with automatic failover.
     def get_read_session(self) -> AsyncSession:
         """Get session from healthy replica."""
         if not self.healthy_read_engines:
-            # Fallback to write database if all replicas down
+            # Fallback to write database: If all replicas down, use primary (degraded mode).
             return async_sessionmaker(self.write_engine)()
         
-        engine = random.choice(self.healthy_read_engines)
+        engine = random.choice(self.healthy_read_engines)  # Random healthy replica
         return async_sessionmaker(engine)()
     
     def get_write_session(self) -> AsyncSession:

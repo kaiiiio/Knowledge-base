@@ -10,30 +10,31 @@ Imagine a user registers on your site. You need to:
 
 If you do this synchronously in a FastAPI route, the user waits **2.5+ seconds** just to see "Account Created". This is unacceptable.
 
-**The Solution**: Do step 1 immediately. Put steps 2, 3, and 4 in a **Queue** to be done "later" (background processing). The user gets a response in 10ms.
+**The Solution:** Do step 1 immediately. Put steps 2, 3, and 4 in a **Queue** to be done "later" (background processing). The user gets a response in 10ms. This decouples slow operations from fast API responses.
 
 ---
 
 ## 2. Core Concepts
 
 ### Producer-Consumer Pattern
-- **Producer**: Your FastAPI app. It creates a "Task" (e.g., "Send Email to Bob") and pushes it to the Queue.
-- **Broker**: The middleman (RabbitMQ, Redis). It holds the tasks safely.
-- **Consumer (Worker)**: A separate process running in the background. It pulls tasks from the Broker and executes them.
+
+**Producer:** Your FastAPI app. It creates a "Task" (e.g., "Send Email to Bob") and pushes it to the Queue. Returns immediately without waiting.
+
+**Broker:** The middleman (RabbitMQ, Redis). It holds the tasks safely. Acts as a buffer between producers and consumers.
+
+**Consumer (Worker):** A separate process running in the background. It pulls tasks from the Broker and executes them. Can scale independently.
 
 ### Message Durability
-What if the power goes out?
-- **In-Memory (Redis default)**: Fast, but you might lose tasks if the server crashes.
-- **Durable (RabbitMQ)**: Writes tasks to disk. Slower, but safer.
+
+**What if the power goes out?** In-Memory (Redis default): Fast, but you might lose tasks if the server crashes. Durable (RabbitMQ): Writes tasks to disk. Slower, but safer. Choose based on your reliability requirements.
 
 ### Ack / Nack
-How do we ensure a task isn't lost if the Worker crashes *while* processing it?
-- **Ack (Acknowledgement)**: The Worker tells the Broker "I finished this task. You can delete it."
-- **Nack (Negative Acknowledgement)**: "I failed. Put it back in the queue for someone else."
-- **Visibility Timeout**: If a worker takes a task but doesn't Ack in 30 seconds, the Broker assumes the worker died and re-queues the task.
+
+**How do we ensure a task isn't lost if the Worker crashes while processing it?** Ack (Acknowledgement): The Worker tells the Broker "I finished this task. You can delete it." Nack (Negative Acknowledgement): "I failed. Put it back in the queue for someone else." Visibility Timeout: If a worker takes a task but doesn't Ack in 30 seconds, the Broker assumes the worker died and re-queues the task.
 
 ### Dead Letter Queue (DLQ)
-Where do tasks go to die? If a task fails 5 times (e.g., "Email Address Invalid"), we don't want to retry it forever. We move it to a **Dead Letter Queue** for manual inspection.
+
+**Where do tasks go to die?** If a task fails 5 times (e.g., "Email Address Invalid"), we don't want to retry it forever. We move it to a **Dead Letter Queue** for manual inspection. Prevents infinite retry loops and helps debug persistent failures.
 
 ---
 

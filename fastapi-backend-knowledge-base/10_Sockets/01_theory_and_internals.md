@@ -2,21 +2,15 @@
 
 ## 1. The "Why" of WebSockets
 
-HTTP is great for documents, but terrible for real-time.
-- **HTTP**: Request -> Response -> Close. (Stateless, High Overhead).
-- **Polling**: "Are we there yet?" every second. (Wastes bandwidth, high latency).
-- **Long Polling**: "Wake me up when we get there." (Better, but holds connections open awkwardly).
+HTTP is great for documents, but terrible for real-time. **HTTP** is request → response → close (stateless, high overhead). **Polling** asks "Are we there yet?" every second (wastes bandwidth, high latency). **Long Polling** says "Wake me up when we get there" (better, but holds connections open awkwardly).
 
-**WebSockets** provide a **persistent, full-duplex, low-latency** TCP connection.
-- **Persistent**: The connection stays open for hours/days.
-- **Full-Duplex**: Server can send to Client, Client can send to Server, simultaneously.
-- **Low-Latency**: No HTTP headers overhead per message. Just raw data.
+**WebSockets** provide a persistent, full-duplex, low-latency TCP connection. **Persistent:** The connection stays open for hours/days. **Full-Duplex:** Server can send to client, client can send to server, simultaneously. **Low-Latency:** No HTTP headers overhead per message. Just raw data.
 
 ---
 
 ## 2. The Handshake (The "Upgrade")
 
-Every WebSocket connection starts its life as an HTTP request. This ensures compatibility with existing infrastructure (port 80/443).
+Every WebSocket connection starts its life as an HTTP request. This ensures compatibility with existing infrastructure (port 80/443). The handshake upgrades the connection from HTTP to WebSocket.
 
 ### The Client Request
 ```http
@@ -38,9 +32,9 @@ Connection: Upgrade
 Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
 ```
 - `101 Switching Protocols`: "Okay, let's do it."
-- `Sec-WebSocket-Accept`: The signed key.
+- `Sec-WebSocket-Accept`: The signed key (proves server understands WebSocket).
 
-**After this empty line, the HTTP protocol ends.** The socket remains open, and binary frames start flowing.
+**After this empty line, the HTTP protocol ends.** The socket remains open, and binary frames start flowing (protocol switched to WebSocket).
 
 ---
 
@@ -52,20 +46,12 @@ Data isn't sent as a continuous stream; it's chopped into **Frames**.
 ```
 [Fin, Opcode] [Mask, Payload Length] [Masking Key] [Payload Data]
 ```
-- **Fin (1 bit)**: Is this the last frame of the message? (Messages can be fragmented).
-- **Opcode (4 bits)**: What kind of data is this?
-    - `0x1`: Text (UTF-8)
-    - `0x2`: Binary
-    - `0x8`: Close
-    - `0x9`: Ping
-    - `0xA`: Pong
+- **Fin (1 bit)**: Is this the last frame of the message? (Messages can be fragmented across multiple frames).
+- **Opcode (4 bits)**: What kind of data is this? `0x1` is text (UTF-8), `0x2` is binary, `0x8` is close, `0x9` is ping, and `0xA` is pong.
 - **Mask (1 bit)**: Is the payload masked? (Client-to-Server must always be masked to prevent cache poisoning).
 
 ### Control Frames
-These are crucial for keeping the connection healthy.
-- **Ping**: "Are you there?"
-- **Pong**: "Yes, I'm here." (Must reply to Ping immediately).
-- **Close**: "I'm leaving." Contains a 2-byte code explaining why.
+These are crucial for keeping the connection healthy. **Ping** asks "Are you there?", **Pong** replies "Yes, I'm here" (must reply to ping immediately), and **Close** says "I'm leaving" (contains a 2-byte code explaining why).
 
 ---
 

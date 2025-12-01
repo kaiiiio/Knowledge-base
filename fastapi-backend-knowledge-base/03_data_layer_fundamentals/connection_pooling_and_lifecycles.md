@@ -8,9 +8,7 @@ A connection pool maintains a cache of database connections that can be reused, 
 
 ### Why Connection Pools Matter
 
-- **Performance**: Reusing connections is much faster than creating new ones
-- **Resource Management**: Limits concurrent database connections
-- **Stability**: Prevents connection exhaustion under load
+**Performance:** Reusing connections is much faster than creating new ones. **Resource Management:** Limits concurrent database connections. **Stability:** Prevents connection exhaustion under load.
 
 ## SQLAlchemy Async Connection Pooling
 
@@ -19,14 +17,15 @@ A connection pool maintains a cache of database connections that can be reused, 
 ```python
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
+# create_async_engine: Creates connection pool for efficient connection reuse.
 engine = create_async_engine(
     "postgresql+asyncpg://user:pass@localhost/db",
-    pool_size=10,              # Number of connections to maintain
-    max_overflow=20,           # Additional connections beyond pool_size
-    pool_timeout=30,           # Seconds to wait for connection
-    pool_recycle=3600,         # Recycle connections after 1 hour
-    pool_pre_ping=True,        # Verify connections before use
-    echo=False                 # SQL logging
+    pool_size=10,              # Number of connections to maintain (always ready)
+    max_overflow=20,           # Additional connections beyond pool_size (total max = 30)
+    pool_timeout=30,           # Seconds to wait for connection (raises error if timeout)
+    pool_recycle=3600,         # Recycle connections after 1 hour (prevents stale connections)
+    pool_pre_ping=True,        # Verify connections before use (detects dead connections)
+    echo=False                 # SQL logging (set True for debugging)
 )
 ```
 
@@ -54,13 +53,14 @@ max_connections=100   # Hard limit (if database supports)
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
+# lifespan: Manages engine lifecycle (create on startup, dispose on shutdown).
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create engine
+    # Startup: Create engine (creates connection pool).
     engine = create_async_engine(DATABASE_URL)
-    app.state.engine = engine
-    yield
-    # Shutdown: Dispose engine (closes all connections)
+    app.state.engine = engine  # Store in app state for access
+    yield  # App runs here
+    # Shutdown: Dispose engine (closes all connections, returns to pool).
     await engine.dispose()
 
 app = FastAPI(lifespan=lifespan)
@@ -77,17 +77,18 @@ async_session_maker = async_sessionmaker(
     expire_on_commit=False
 )
 
+# get_db: Dependency manages session lifecycle (per-request scope).
 async def get_db() -> AsyncSession:
     """Dependency for database session"""
     async with async_session_maker() as session:
         try:
-            yield session
-            await session.commit()
+            yield session  # Session available during request
+            await session.commit()  # Commit on success
         except Exception:
-            await session.rollback()
+            await session.rollback()  # Rollback on error
             raise
         finally:
-            await session.close()  # Returns connection to pool
+            await session.close()  # Returns connection to pool (reused for next request)
 ```
 
 ### 3. Session Scope Patterns
@@ -95,15 +96,15 @@ async def get_db() -> AsyncSession:
 #### Request-Scoped (Recommended)
 
 ```python
-# One session per HTTP request
+# Request-scoped session: One session per HTTP request (recommended pattern).
 @app.get("/users/{user_id}")
 async def get_user(
     user_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db)  # Session created here
 ):
-    # Session created here
+    # Session available during request handling.
     user = await db.get(User, user_id)
-    # Session closed after response
+    # Session closed after response (automatic cleanup)
     return user
 ```
 
@@ -313,4 +314,3 @@ Connection pool management essentials:
 - ✅ Monitor pool usage and adjust as needed
 
 Proper pool management ensures your application can handle load efficiently without exhausting database connections.
-

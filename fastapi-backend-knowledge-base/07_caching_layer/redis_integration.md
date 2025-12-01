@@ -4,22 +4,11 @@ Redis is an in-memory data store that acts as a cache, session store, and messag
 
 ## Understanding Redis
 
-**What is Redis?**
-- In-memory database (extremely fast)
-- Key-value store (like a Python dict, but persistent)
-- Supports multiple data structures (strings, lists, sets, hashes, etc.)
+**What is Redis?** In-memory database (extremely fast), key-value store (like a Python dict, but persistent), supports multiple data structures (strings, lists, sets, hashes, etc.).
 
-**Why use Redis in FastAPI?**
-- **Caching**: Store frequently accessed data (avoid database queries)
-- **Sessions**: Store user session data
-- **Rate limiting**: Track API request counts
-- **Real-time features**: Pub/sub for notifications
-- **Task queues**: Background job queues
+**Why use Redis in FastAPI?** Caching (store frequently accessed data, avoid database queries), sessions (store user session data), rate limiting (track API request counts), real-time features (pub/sub for notifications), and task queues (background job queues).
 
-**Think of Redis as:**
-- Super-fast temporary storage
-- Like your app's "memory" - things you need quickly
-- Complementary to your database (not a replacement)
+**Think of Redis as:** Super-fast temporary storage, like your app's "memory" - things you need quickly, complementary to your database (not a replacement).
 
 ## Step 1: Installation and Basic Setup
 
@@ -42,16 +31,18 @@ from typing import Optional
 # Basic connection
 redis_client: Optional[aioredis.Redis] = None
 
+# init_redis: Creates async Redis connection for FastAPI.
 async def init_redis():
     """Initialize Redis connection."""
     global redis_client
     redis_client = await aioredis.from_url(
-        "redis://localhost:6379",
-        encoding="utf-8",
+        "redis://localhost:6379",  # Default Redis URL
+        encoding="utf-8",  # Text encoding
         decode_responses=True  # Automatically decode bytes to strings
     )
     print("Redis connected!")
 
+# close_redis: Cleanup connection on app shutdown.
 async def close_redis():
     """Close Redis connection."""
     global redis_client
@@ -71,18 +62,19 @@ async def close_redis():
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
+# lifespan: Manages Redis connection lifecycle (startup/shutdown).
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage Redis connection lifecycle."""
-    # Startup
+    # Startup: Connect to Redis when app starts.
     await init_redis()
-    yield
-    # Shutdown
+    yield  # App runs here
+    # Shutdown: Close connection when app stops.
     await close_redis()
 
 app = FastAPI(lifespan=lifespan)
 
-# Dependency to get Redis client
+# Dependency to get Redis client: Inject Redis into routes.
 async def get_redis() -> aioredis.Redis:
     """Dependency to get Redis client."""
     return redis_client
@@ -99,24 +91,24 @@ async def basic_operations():
     """Basic Redis string operations."""
     redis = await get_redis()
     
-    # SET - Store a value
+    # SET: Store a value (key-value pair).
     await redis.set("user:1:name", "John Doe")
     
-    # GET - Retrieve a value
+    # GET: Retrieve a value by key.
     name = await redis.get("user:1:name")
     print(name)  # "John Doe"
     
-    # GET with default if not found
+    # GET with default: Returns None if key doesn't exist.
     age = await redis.get("user:1:age") or "Unknown"
     
-    # SET with expiration (TTL - Time To Live)
+    # SET with expiration: TTL (Time To Live) in seconds.
     await redis.setex("session:abc123", 3600, "user_data")  # Expires in 1 hour
     
-    # Check if key exists
+    # Check if key exists: Returns 1 if exists, 0 if not.
     exists = await redis.exists("user:1:name")
     print(exists)  # 1 if exists, 0 if not
     
-    # Delete a key
+    # Delete a key: Removes key-value pair.
     await redis.delete("user:1:name")
 ```
 

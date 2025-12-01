@@ -4,17 +4,9 @@ Tracking LLM API costs is crucial for budget management and optimization. This c
 
 ## Understanding AI Costs
 
-**Why track costs?**
-- LLM APIs charge per token (input + output)
-- Costs can scale quickly with usage
-- Need to stay within budget
-- Optimize expensive operations
+**Why track costs?** LLM APIs charge per token (input + output), costs can scale quickly with usage, need to stay within budget, and optimize expensive operations.
 
-**Cost factors:**
-- Model pricing (different models have different costs)
-- Input tokens (prompt length)
-- Output tokens (response length)
-- API overhead
+**Cost factors:** Model pricing (different models have different costs), input tokens (prompt length), output tokens (response length), and API overhead.
 
 ## Step 1: Basic Cost Tracking
 
@@ -30,24 +22,24 @@ class LLMCallLog(Base):
     
     id = Column(Integer, primary_key=True)
     
-    # Request details
+    # Request details: Model and provider information.
     model = Column(String(50), nullable=False, index=True)  # 'gpt-4', 'gpt-3.5-turbo'
     provider = Column(String(50), nullable=False)  # 'openai', 'anthropic'
     
-    # Token usage
-    input_tokens = Column(Integer, nullable=False)
-    output_tokens = Column(Integer, nullable=False)
-    total_tokens = Column(Integer, nullable=False)
+    # Token usage: Track input, output, and total tokens.
+    input_tokens = Column(Integer, nullable=False)  # Tokens in prompt
+    output_tokens = Column(Integer, nullable=False)  # Tokens in response
+    total_tokens = Column(Integer, nullable=False)  # Total tokens used
     
-    # Cost calculation
+    # Cost calculation: Calculate cost based on token usage and model pricing.
     input_cost = Column(Float, nullable=False)  # Cost for input tokens
     output_cost = Column(Float, nullable=False)  # Cost for output tokens
-    total_cost = Column(Float, nullable=False, index=True)  # Total cost
+    total_cost = Column(Float, nullable=False, index=True)  # Total cost (indexed for queries)
     
-    # Context
+    # Context: Track who made the call and where.
     user_id = Column(Integer, nullable=True, index=True)  # Who made the call
     endpoint = Column(String(255), nullable=True, index=True)  # Which endpoint
-    prompt_hash = Column(String(64), index=True)  # Hash for deduplication
+    prompt_hash = Column(String(64), index=True)  # Hash for deduplication (detect duplicate prompts)
     
     # Metadata
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
@@ -64,7 +56,7 @@ class LLMCallLog(Base):
 ### Pricing Configuration
 
 ```python
-# Pricing per 1M tokens (as of 2024 - update regularly!)
+# Pricing per 1M tokens (as of 2024 - update regularly!): Model pricing configuration.
 LLM_PRICING = {
     "openai": {
         "gpt-4": {
@@ -72,21 +64,21 @@ LLM_PRICING = {
             "output": 60.0   # $60 per 1M output tokens
         },
         "gpt-4-turbo": {
-            "input": 10.0,
+            "input": 10.0,   # Cheaper than gpt-4
             "output": 30.0
         },
         "gpt-3.5-turbo": {
-            "input": 0.5,    # $0.50 per 1M input tokens
+            "input": 0.5,    # $0.50 per 1M input tokens (much cheaper)
             "output": 1.5    # $1.50 per 1M output tokens
         },
         "text-embedding-3-large": {
-            "input": 0.13,   # $0.13 per 1M tokens
-            "output": 0.0
+            "input": 0.13,   # $0.13 per 1M tokens (embeddings are cheap)
+            "output": 0.0    # No output for embeddings
         }
     },
     "anthropic": {
         "claude-3-opus": {
-            "input": 15.0,
+            "input": 15.0,   # Anthropic pricing
             "output": 75.0
         },
         "claude-3-sonnet": {
@@ -96,6 +88,7 @@ LLM_PRICING = {
     }
 }
 
+# Cost calculation: Calculate cost based on token usage and model pricing.
 def calculate_cost(
     model: str,
     provider: str,
@@ -103,14 +96,16 @@ def calculate_cost(
     output_tokens: int
 ) -> dict:
     """Calculate cost for LLM call."""
+    # Get pricing: Look up model pricing from configuration.
     pricing = LLM_PRICING[provider][model]
     
-    input_cost = (input_tokens / 1_000_000) * pricing["input"]
-    output_cost = (output_tokens / 1_000_000) * pricing["output"]
-    total_cost = input_cost + output_cost
+    # Calculate costs: Convert tokens to cost (pricing is per 1M tokens).
+    input_cost = (input_tokens / 1_000_000) * pricing["input"]  # Input token cost
+    output_cost = (output_tokens / 1_000_000) * pricing["output"]  # Output token cost
+    total_cost = input_cost + output_cost  # Total cost
     
     return {
-        "input_cost": round(input_cost, 6),
+        "input_cost": round(input_cost, 6),  # Round to 6 decimal places
         "output_cost": round(output_cost, 6),
         "total_cost": round(total_cost, 6)
     }
@@ -136,15 +131,15 @@ def log_llm_cost(
             start_time = time.time()
             
             try:
-                # Call LLM
+                # Call LLM: Execute the wrapped function (LLM API call).
                 response = await func(*args, **kwargs)
                 
-                # Extract usage information
-                usage = response.usage
-                model = kwargs.get("model") or "gpt-4"
-                provider = "openai"  # Extract from client
+                # Extract usage information: Get token usage from API response.
+                usage = response.usage  # OpenAI response includes usage object
+                model = kwargs.get("model") or "gpt-4"  # Get model from kwargs or default
+                provider = "openai"  # Extract from client (could be dynamic)
                 
-                # Calculate cost
+                # Calculate cost: Compute cost based on token usage.
                 costs = calculate_cost(
                     model=model,
                     provider=provider,

@@ -4,21 +4,11 @@ Generating and storing embeddings is fundamental for semantic search and AI appl
 
 ## Understanding Embeddings
 
-**What are embeddings?**
-Dense vector representations of text that capture semantic meaning. Similar texts have similar vectors.
+**What are embeddings?** Dense vector representations of text that capture semantic meaning. Similar texts have similar vectors.
 
-**Why use embeddings?**
-- Semantic search (find similar content)
-- Clustering and classification
-- Recommendation systems
-- Anomaly detection
+**Why use embeddings?** Semantic search (find similar content), clustering and classification, recommendation systems, and anomaly detection.
 
-**How they work:**
-```
-Text: "Python programming language"
-        ↓ Embedding Model
-Vector: [0.123, -0.456, 0.789, ...] (1536 dimensions)
-```
+**How they work:** Text → Embedding Model → Vector. Example: "Python programming language" → [0.123, -0.456, 0.789, ...] with 1536 dimensions.
 
 ## Step 1: Generating Embeddings
 
@@ -36,6 +26,7 @@ class EmbeddingService:
         self.model = "text-embedding-3-small"  # 1536 dimensions
         # Alternative: "text-embedding-3-large" (3072 dimensions)
     
+    # generate_embedding: Converts text to vector representation.
     async def generate_embedding(self, text: str) -> List[float]:
         """
         Generate embedding for single text.
@@ -46,14 +37,16 @@ class EmbeddingService:
         Returns:
             List of floats representing the embedding vector
         """
+        # OpenAI embeddings API: Converts text to vector representation.
         response = await self.client.embeddings.create(
-            model=self.model,
-            input=text,
+            model=self.model,  # Embedding model (e.g., text-embedding-3-small)
+            input=text,  # Text to embed (max 8191 tokens)
             encoding_format="float"  # Or "base64" for smaller size
         )
         
-        return response.data[0].embedding
+        return response.data[0].embedding  # Returns list of floats (vector)
     
+    # generate_embeddings_batch: Process multiple texts efficiently (batch API).
     async def generate_embeddings_batch(
         self,
         texts: List[str],
@@ -71,18 +64,20 @@ class EmbeddingService:
         """
         all_embeddings = []
         
-        # Process in batches
+        # Process in batches: More efficient than individual calls (batch API supports up to 2048 texts).
         for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
+            batch = texts[i:i + batch_size]  # Slice texts into batches
             
+            # Batch API call: Process multiple texts in one request (faster and cheaper).
             response = await self.client.embeddings.create(
                 model=self.model,
-                input=batch,  # Batch input
+                input=batch,  # Batch input (multiple texts at once)
                 encoding_format="float"
             )
             
+            # Extract embeddings: Each item in response.data contains one embedding vector.
             batch_embeddings = [item.embedding for item in response.data]
-            all_embeddings.extend(batch_embeddings)
+            all_embeddings.extend(batch_embeddings)  # Add to result list
         
         return all_embeddings
 ```
@@ -143,17 +138,18 @@ class Document(Base):
     
     id = Column(Integer, primary_key=True)
     content = Column(Text, nullable=False)
-    embedding = Column(Vector(1536), nullable=False)  # OpenAI embedding dimension
+    # Vector column: Stores embedding as pgvector type (1536 dimensions for OpenAI).
+    embedding = Column(Vector(1536), nullable=False)  # OpenAI embedding dimension (pgvector)
     
-    # Metadata
+    # Metadata: Additional document information.
     title = Column(String(255))
     author = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    # Index for fast similarity search
+    # Index for fast similarity search: HNSW index for efficient vector similarity queries.
     __table_args__ = (
         Index('idx_document_embedding', 'embedding', postgresql_using='hnsw',
-              postgresql_ops={'embedding': 'vector_cosine_ops'}),
+              postgresql_ops={'embedding': 'vector_cosine_ops'}),  # Cosine similarity index
     )
 
 class DocumentRepository:
