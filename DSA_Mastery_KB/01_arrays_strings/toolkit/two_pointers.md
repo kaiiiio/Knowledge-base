@@ -1,68 +1,68 @@
-# Toolkit: Two Pointers (Advanced)
+# Blueprint: Two Pointers
 
-## 1. 3-Way Partitioning (Dutch National Flag)
+**The Analogy**: Two people walking on a path.
+*   **Opposite Ends**: Walking towards each other to meet.
+*   **Same Direction**: One fast runner, one slow walker.
 
-**Problem**: Sort array of 0s, 1s, and 2s in one pass.
-**Logic**: Three pointers. `low` (0 boundary), `mid` (scanner), `high` (2 boundary).
+## 1. Opposite Ends (The "Pincer")
+
+**Use Case**: Two Sum (Sorted), Reverse Array, Palindrome.
+**Requirement**: Array is usually **Sorted**.
 
 ```python
-def sort_colors(nums):
-    low, mid, high = 0, 0, len(nums) - 1
+def two_sum_sorted(nums, target):
+    left = 0
+    right = len(nums) - 1
     
-    while mid <= high:
-        if nums[mid] == 0:
-            nums[low], nums[mid] = nums[mid], nums[low]
-            low += 1
-            mid += 1
-        elif nums[mid] == 1:
-            mid += 1
-        else: # nums[mid] == 2
-            nums[high], nums[mid] = nums[mid], nums[high]
-            high -= 1
-            # Do NOT increment mid, we need to check swapped value
-```
-
-## 2. Floyd's Cycle Detection (Tortoise and Hare)
-
-**Problem**: Detect cycle in Linked List or Array (Duplicate Number).
-**Logic**: Fast pointer moves 2x speed. If cycle exists, they will meet.
-
-```python
-def has_cycle(head):
-    slow, fast = head, head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            return True
-    return False
-```
-
-**Find Start of Cycle**:
-1.  Detect meeting point.
-2.  Reset `slow` to head. Keep `fast` at meeting point.
-3.  Move both 1 step at a time. They meet at cycle start.
-
-## 3. Trapping Rain Water
-
-**Problem**: Compute how much water can be trapped.
-**Logic**: Water at index `i` = `min(max_left, max_right) - height[i]`.
-**Optimization**: Two Pointers. Maintain `left_max` and `right_max`.
-
-```python
-def trap(height):
-    l, r = 0, len(height) - 1
-    left_max, right_max = 0, 0
-    res = 0
-    
-    while l < r:
-        if height[l] < height[r]:
-            if height[l] >= left_max: left_max = height[l]
-            else: res += left_max - height[l]
-            l += 1
+    while left < right:
+        current_sum = nums[left] + nums[right]
+        
+        if current_sum == target:
+            return [left, right]
+        elif current_sum < target:
+            left += 1  # Need bigger number -> Move Left forward
         else:
-            if height[r] >= right_max: right_max = height[r]
-            else: res += right_max - height[r]
-            r -= 1
+            right -= 1 # Need smaller number -> Move Right backward
+            
+    return []
+```
+
+## 2. Same Direction (The "Race")
+
+**Use Case**: Remove Duplicates, Move Zeroes.
+**Logic**: `Fast` explores, `Slow` builds the result.
+
+```python
+def remove_duplicates(nums):
+    slow = 0
+    
+    for fast in range(1, len(nums)):
+        if nums[fast] != nums[slow]:
+            slow += 1
+            nums[slow] = nums[fast] # Overwrite
+            
+    return slow + 1 # New length
+```
+
+## 3. Merging (The "Zipper")
+
+**Use Case**: Merge Sorted Array, Merge Sort.
+
+```python
+def merge(arr1, arr2):
+    p1, p2 = 0, 0
+    res = []
+    
+    while p1 < len(arr1) and p2 < len(arr2):
+        if arr1[p1] < arr2[p2]:
+            res.append(arr1[p1])
+            p1 += 1
+        else:
+            res.append(arr2[p2])
+            p2 += 1
+            
+    # Add leftovers
+    res.extend(arr1[p1:])
+    res.extend(arr2[p2:])
     return res
 ```

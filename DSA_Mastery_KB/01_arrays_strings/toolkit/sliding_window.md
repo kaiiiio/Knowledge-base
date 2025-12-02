@@ -1,77 +1,68 @@
-# Toolkit: Sliding Window (Advanced)
+# Blueprint: Sliding Window
 
-## 1. "At Most K" Pattern
+**The Analogy**: Think of a **Worm** crawling along a tape.
+*   The **Head** (Right Pointer) moves forward to eat (expand).
+*   The **Tail** (Left Pointer) moves forward to poop (shrink).
+*   The worm stretches and shrinks to satisfy a condition.
 
-**Problem**: Longest substring with **at most** `k` distinct characters.
-**Logic**: Standard dynamic sliding window. Shrink when `count > k`.
+## 1. Fixed Size Window (The "Box")
+
+**Use Case**: "Find max sum of subarray of size K".
+**Logic**: The window size never changes. We just slide it one step.
 
 ```python
-def at_most_k(s, k):
-    count = {}
+def fixed_window(nums, k):
+    current_sum = 0
+    max_sum = float('-inf')
+    
+    # 1. Build first window
+    for i in range(k):
+        current_sum += nums[i]
+    max_sum = current_sum
+    
+    # 2. Slide
+    for i in range(k, len(nums)):
+        current_sum += nums[i]       # Add Head
+        current_sum -= nums[i - k]   # Remove Tail
+        max_sum = max(max_sum, current_sum)
+        
+    return max_sum
+```
+
+## 2. Dynamic Window (The "Caterpillar")
+
+**Use Case**: "Longest substring with...", "Smallest subarray with..."
+**Logic**: Expand `right` until invalid, then shrink `left` until valid again.
+
+```python
+def dynamic_window(s):
     left = 0
-    res = 0
+    max_len = 0
+    window_counts = {}
     
     for right in range(len(s)):
-        count[s[right]] = count.get(s[right], 0) + 1
+        # 1. EXPAND (Add Head)
+        char = s[right]
+        window_counts[char] = window_counts.get(char, 0) + 1
         
-        while len(count) > k:
-            count[s[left]] -= 1
-            if count[s[left]] == 0:
-                del count[s[left]]
+        # 2. SHRINK (Remove Tail) - While condition is BROKEN
+        while window_counts[char] > 1: # Example: No duplicates allowed
+            remove_char = s[left]
+            window_counts[remove_char] -= 1
             left += 1
             
-        res = max(res, right - left + 1)
-    return res
+        # 3. UPDATE RESULT (Window is now Valid)
+        max_len = max(max_len, right - left + 1)
+        
+    return max_len
 ```
 
-## 2. "Exactly K" Pattern
+## 3. Common Pitfalls
 
-**Problem**: Number of subarrays with **exactly** `k` distinct integers.
-**Logic**: It's hard to maintain "exactly k" directly.
-**Trick**: `Exactly(K) = AtMost(K) - AtMost(K-1)`.
+> [!WARNING]
+> **Negative Numbers**: If the problem involves "Sum" and "Negative Numbers", Sliding Window **DOES NOT WORK**.
+> *   Why? Adding a number doesn't guarantee the sum increases.
+> *   Fix: Use **Prefix Sum**.
 
-```python
-def subarrays_with_k_distinct(nums, k):
-    return at_most_k(nums, k) - at_most_k(nums, k - 1)
-
-def at_most_k(nums, k):
-    count = {}
-    left = 0
-    res = 0
-    for right in range(len(nums)):
-        count[nums[right]] = count.get(nums[right], 0) + 1
-        while len(count) > k:
-            count[nums[left]] -= 1
-            if count[nums[left]] == 0:
-                del count[nums[left]]
-            left += 1
-        res += (right - left + 1) # Count subarrays ending at right
-    return res
-```
-
-## 3. Handling Negative Numbers (Why Sliding Window Fails)
-
-**Scenario**: Subarray Sum equals `k`.
-*   **If Positive Only**: Sliding Window works (Sum increases monotonically).
-*   **If Negatives Allowed**: Sum fluctuates. Window logic breaks.
-*   **Solution**: Use **Prefix Sum + Hash Map**.
-
-## 4. Optimization: Index Mapping
-
-Instead of shrinking one by one (`left += 1`), jump `left` to the next valid position.
-**Scenario**: Longest Substring Without Repeating Characters.
-
-```python
-def lengthOfLongestSubstring(s):
-    seen = {} # char -> index
-    left = 0
-    res = 0
-    
-    for right, char in enumerate(s):
-        if char in seen and seen[char] >= left:
-            left = seen[char] + 1 # Jump!
-            
-        seen[char] = right
-        res = max(res, right - left + 1)
-    return res
-```
+> [!TIP]
+> **Window Size**: `Length = Right - Left + 1`.

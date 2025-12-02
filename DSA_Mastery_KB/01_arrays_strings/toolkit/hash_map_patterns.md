@@ -1,79 +1,64 @@
-# Toolkit: Hash Map Patterns (Advanced)
+# Blueprint: Hash Map Patterns
 
-## 1. Rolling Hash (Rabin-Karp)
+**The Concept**: The "Magic Lookup".
+Find anything in $O(1)$ time.
 
-**Problem**: Find substring pattern in text.
-**Logic**: Compute hash of window in O(1) using sliding window.
-`H_new = (H_old - val_out * base^L) * base + val_in`.
+## 1. Frequency Counter (The Cheat Code)
+
+**Use Case**: Anagrams, Top K Elements, "Most Frequent...".
+**Tool**: `collections.Counter`.
 
 ```python
-def search(text, pattern):
-    d = 256 # Alphabet size
-    q = 101 # Prime number
-    M = len(pattern)
-    N = len(text)
-    p = 0 # Hash pattern
-    t = 0 # Hash text
-    h = 1 # d^(M-1) % q
+from collections import Counter
+
+s = "banana"
+counts = Counter(s) 
+# Counter({'a': 3, 'n': 2, 'b': 1})
+
+print(counts['a']) # 3
+print(counts['z']) # 0 (Safe! Returns 0, doesn't crash)
+```
+
+## 2. The "Two Sum" Lookup
+
+**Use Case**: Find pair `(A, B)` such that `A + B = Target`.
+**Logic**: We are at `A`. We need `B`. Is `B` in the map?
+
+```python
+def two_sum(nums, target):
+    seen = {} # {Value : Index}
     
-    for i in range(M-1):
-        h = (h * d) % q
+    for i, num in enumerate(nums):
+        diff = target - num
         
-    # Calculate initial hashes
-    for i in range(M):
-        p = (d * p + ord(pattern[i])) % q
-        t = (d * t + ord(text[i])) % q
-        
-    for i in range(N - M + 1):
-        if p == t:
-            if text[i:i+M] == pattern:
-                print(f"Match at {i}")
-                
-        if i < N - M:
-            t = (d*(t - ord(text[i])*h) + ord(text[i+M])) % q
-            if t < 0: t += q
+        if diff in seen:
+            return [seen[diff], i]
+            
+        seen[num] = i
+    return []
 ```
 
-## 2. Sparse Vectors
+## 3. Grouping (Anagrams)
 
-**Problem**: Dot product of two huge vectors with mostly 0s.
-**Storage**: Hash Map `{index: value}`.
-
-```python
-class SparseVector:
-    def __init__(self, nums):
-        self.data = {i: n for i, n in enumerate(nums) if n != 0}
-
-    def dotProduct(self, vec):
-        res = 0
-        # Iterate over the smaller map for efficiency
-        if len(self.data) < len(vec.data):
-            for i, val in self.data.items():
-                if i in vec.data:
-                    res += val * vec.data[i]
-        else:
-            for i, val in vec.data.items():
-                if i in self.data:
-                    res += val * self.data[i]
-        return res
-```
-
-## 3. Isomorphic Strings
-
-**Problem**: Check if `s` can be replaced to get `t`.
-**Logic**: Two Maps `s->t` and `t->s`.
+**Use Case**: "Group strings that are..."
+**Tool**: `collections.defaultdict`.
 
 ```python
-def isIsomorphic(s, t):
-    map_s_t = {}
-    map_t_s = {}
+from collections import defaultdict
+
+def group_anagrams(strs):
+    # Default value is an empty list []
+    groups = defaultdict(list)
     
-    for c1, c2 in zip(s, t):
-        if (c1 in map_s_t and map_s_t[c1] != c2) or \
-           (c2 in map_t_s and map_t_s[c2] != c1):
-            return False
-        map_s_t[c1] = c2
-        map_t_s[c2] = c1
+    for s in strs:
+        # Key must be immutable (Tuple)
+        key = tuple(sorted(s))
+        groups[key].append(s)
         
-    return True
+    return list(groups.values())
 ```
+
+> [!CAUTION]
+> **Mutable Keys**: You cannot use a `list` as a key in a dictionary.
+> *   Bad: `d[[1, 2]] = "val"` -> Error.
+> *   Good: `d[(1, 2)] = "val"` -> OK (Tuple).
