@@ -252,3 +252,153 @@ PostgreSQL connection URIs provide a standardized way to configure connections. 
 - Study [Sequelize Deep Dive](../04_relational_databases_sql/sequelize_deep_dive.md) for ORM usage
 - Master [Security Best Practices](../09_authentication_and_security/) for comprehensive security
 
+---
+
+## 🎯 Interview Questions: Database Connection & Security
+
+### Q1: Explain PostgreSQL connection URI format. How do you configure SSL for production?
+
+**Answer:**
+
+**Connection URI Format:**
+
+```
+postgresql://[user[:password]@][host][:port][/database][?params]
+```
+
+**Examples:**
+
+```javascript
+// Basic
+const uri = 'postgresql://user:password@localhost:5432/mydb';
+
+// With SSL
+const uri = 'postgresql://user:password@localhost:5432/mydb?sslmode=require';
+
+// With connection pool settings
+const uri = 'postgresql://user:password@localhost:5432/mydb?sslmode=require&connection_limit=20&pool_timeout=10';
+```
+
+**SSL Modes:**
+
+```javascript
+// sslmode options:
+// - disable: No SSL
+// - allow: Try SSL, fallback if fails
+// - prefer: Prefer SSL, fallback if fails
+// - require: Require SSL (production)
+// - verify-ca: Require SSL + verify CA
+// - verify-full: Require SSL + verify CA + hostname
+
+// Production configuration
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: true,  // Verify certificate
+        ca: fs.readFileSync('ca-certificate.crt').toString()
+    }
+});
+```
+
+**Environment-Based Configuration:**
+
+```javascript
+// Development
+const devConfig = {
+    connectionString: 'postgresql://user:pass@localhost:5432/mydb',
+    ssl: false
+};
+
+// Production
+const prodConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: true,
+        ca: process.env.DB_CA_CERT
+    }
+};
+
+const config = process.env.NODE_ENV === 'production' ? prodConfig : devConfig;
+const pool = new Pool(config);
+```
+
+---
+
+### Q2: How do you handle database connection failures and retries in Express.js?
+
+**Answer:**
+
+**Connection Failure Handling:**
+
+```javascript
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000
+});
+
+// Handle pool errors
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+    // Don't exit - pool will create new connections
+});
+
+// Retry logic
+async function queryWithRetry(query, params, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await pool.query(query, params);
+        } catch (error) {
+            if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+                if (i === maxRetries - 1) throw error;
+                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+                continue;
+            }
+            throw error; // Don't retry other errors
+        }
+    }
+}
+
+// Usage
+app.get('/users/:id', async (req, res) => {
+    try {
+        const result = await queryWithRetry(
+            'SELECT * FROM users WHERE id = $1',
+            [req.params.id]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(503).json({ error: 'Database unavailable' });
+    }
+});
+```
+
+**Health Checks:**
+
+```javascript
+// Periodic health check
+setInterval(async () => {
+    try {
+        await pool.query('SELECT 1');
+        console.log('Database connection healthy');
+    } catch (error) {
+        console.error('Database connection unhealthy:', error);
+        // Alert monitoring system
+    }
+}, 30000);
+```
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Connection URI format and SSL configuration
+- ✅ Connection failure handling and retries
+- ✅ Production security best practices
+- ✅ Health monitoring
+
+Master these for senior-level interviews focusing on database connectivity and reliability.
+

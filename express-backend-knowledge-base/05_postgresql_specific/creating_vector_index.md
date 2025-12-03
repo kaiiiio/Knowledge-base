@@ -223,3 +223,80 @@ Vector indexes are essential for fast similarity search on large datasets. Use I
 - Study [Hybrid Search](hybrid_search_sql_plus_vector.md) for combined search
 - Master [Performance Optimization](../15_deployment_and_performance/performance_optimization.md) for tuning
 
+---
+
+## 🎯 Interview Questions: Vector Indexing
+
+### Q1: Compare IVFFlat vs HNSW indexes. How do you choose the right index type?
+
+**Answer:**
+
+**IVFFlat Index:**
+
+```sql
+CREATE INDEX ON documents 
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+```
+
+**Characteristics:**
+- Fast to build
+- Lower memory
+- Approximate search
+- Good for large datasets (> 1M vectors)
+
+**HNSW Index:**
+
+```sql
+CREATE INDEX ON documents 
+USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+```
+
+**Characteristics:**
+- Slower to build
+- Higher memory
+- Better recall
+- Good for quality-critical applications
+
+**Decision Matrix:**
+
+```
+Dataset Size    Quality Needs    → Index Type
+─────────────────────────────────────────────
+< 1M vectors   High quality     → HNSW
+< 1M vectors    Fast build       → IVFFlat
+> 1M vectors    High quality     → HNSW (if memory allows)
+> 1M vectors    Fast build       → IVFFlat
+> 10M vectors   Any              → IVFFlat (HNSW too slow)
+```
+
+**Parameter Tuning:**
+
+```sql
+-- IVFFlat: lists parameter
+-- Rule: lists = rows / 1000 (for 1M rows, use 1000 lists)
+CREATE INDEX ON documents 
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 1000);
+
+-- HNSW: m and ef_construction
+-- m: Number of connections (16-64)
+-- ef_construction: Build quality (64-200)
+CREATE INDEX ON documents 
+USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+```
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ IVFFlat vs HNSW comparison
+- ✅ Index selection criteria
+- ✅ Parameter tuning
+- ✅ Performance considerations
+
+Master these for senior-level interviews focusing on vector search optimization.
+

@@ -1870,3 +1870,1207 @@ Each topic includes:
 
 Use this guide to prepare for interviews and deepen your understanding of Express.js and Node.js.
 
+---
+
+## 11. Advanced Node.js Topics
+
+### Q17: Explain the Node.js Event Loop in detail. How does it handle asynchronous operations?
+
+**Answer:**
+
+The **Event Loop** is Node.js's core mechanism for handling asynchronous operations. It's a single-threaded loop that continuously processes callbacks.
+
+**Event Loop Phases:**
+
+```
+┌─────────────────────────────────────────┐
+│         EVENT LOOP CYCLE                │
+└─────────────────────────────────────────┘
+
+Phase 1: TIMERS
+├─ Execute setTimeout() and setInterval() callbacks
+└─ Only callbacks scheduled before this phase
+
+Phase 2: PENDING CALLBACKS
+├─ Execute I/O callbacks deferred to next iteration
+└─ System-level callbacks (TCP errors, etc.)
+
+Phase 3: IDLE, PREPARE
+├─ Internal use only
+└─ Preparation for next phase
+
+Phase 4: POLL
+├─ Fetch new I/O events
+├─ Execute I/O-related callbacks
+└─ Block here if no timers scheduled
+
+Phase 5: CHECK
+├─ Execute setImmediate() callbacks
+└─ After poll phase completes
+
+Phase 6: CLOSE CALLBACKS
+├─ Execute close callbacks (socket.on('close'))
+└─ Cleanup operations
+
+Between each phase:
+├─ process.nextTick() queue (drains completely)
+└─ Promise microtasks (drains completely)
+```
+
+**Visual Flow:**
+
+```
+┌─────────────────────────────────────────┐
+│   Synchronous Code                      │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│   process.nextTick() queue              │ ← Highest priority
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│   Promise microtasks                     │ ← High priority
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│   TIMERS Phase                          │
+│   (setTimeout, setInterval)             │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│   POLL Phase                            │
+│   (I/O callbacks)                       │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│   CHECK Phase                           │
+│   (setImmediate)                        │
+└─────────────────────────────────────────┘
+```
+
+**Example:**
+
+```javascript
+console.log('1');
+
+setTimeout(() => console.log('2'), 0);
+setImmediate(() => console.log('3'));
+process.nextTick(() => console.log('4'));
+Promise.resolve().then(() => console.log('5'));
+
+console.log('6');
+
+// Output: 1, 6, 4, 5, 2, 3
+// Explanation:
+// 1. '1' logs (synchronous)
+// 2. '6' logs (synchronous)
+// 3. '4' logs (nextTick - highest priority)
+// 4. '5' logs (Promise - microtask)
+// 5. '2' logs (setTimeout - timers phase)
+// 6. '3' logs (setImmediate - check phase)
+```
+
+**How Async Operations Work:**
+
+```javascript
+// Request handling
+app.get('/users/:id', async (req, res) => {
+    console.log('1: Request received');
+    
+    // Async operation (yields to event loop)
+    const user = await User.findById(req.params.id);
+    // Event loop handles other requests here
+    
+    console.log('2: User fetched');
+    res.json(user);
+});
+
+// Timeline:
+// T=0ms:   Request 1 arrives → starts DB query (yields)
+// T=1ms:   Request 2 arrives → starts DB query (yields)
+// T=2ms:   Request 3 arrives → starts DB query (yields)
+// T=50ms:  DB responds to Request 1 → resumes → sends response
+// T=51ms:  DB responds to Request 2 → resumes → sends response
+// T=52ms:  DB responds to Request 3 → resumes → sends response
+```
+
+---
+
+### Q18: What is event-driven programming? How does Node.js implement it?
+
+**Answer:**
+
+**Event-Driven Programming** = Program flow determined by events (user actions, I/O completion, messages).
+
+**Node.js Event-Driven Architecture:**
+
+```javascript
+// Node.js is built on events
+const EventEmitter = require('events');
+
+// Create event emitter
+const emitter = new EventEmitter();
+
+// Listen for events
+emitter.on('user-created', (user) => {
+    console.log('User created:', user);
+    // Send welcome email
+});
+
+emitter.on('user-created', (user) => {
+    console.log('Logging user creation:', user);
+    // Log to database
+});
+
+// Emit event
+emitter.emit('user-created', { id: 1, name: 'John' });
+// Both listeners execute
+```
+
+**Express.js Uses Events:**
+
+```javascript
+// HTTP server is event-driven
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+    // This is an event handler
+    res.end('Hello');
+});
+
+// Server listens for 'request' events
+server.on('request', (req, res) => {
+    // Handle request
+});
+
+// Start listening (triggers 'listening' event)
+server.listen(3000, () => {
+    console.log('Server listening'); // 'listening' event handler
+});
+```
+
+**Event-Driven Benefits:**
+
+```
+Event-Driven Programming:
+├─ Decoupling: Components don't know about each other
+├─ Scalability: Easy to add new listeners
+├─ Flexibility: Dynamic event handling
+└─ Asynchronous: Non-blocking operations
+```
+
+**Real-world Example:**
+
+```javascript
+// Order service emits events
+class OrderService extends EventEmitter {
+    async createOrder(orderData) {
+        const order = await Order.create(orderData);
+        
+        // Emit events
+        this.emit('order.created', order);
+        return order;
+    }
+}
+
+const orderService = new OrderService();
+
+// Multiple listeners (decoupled)
+orderService.on('order.created', async (order) => {
+    // Send confirmation email
+    await emailService.sendConfirmation(order);
+});
+
+orderService.on('order.created', async (order) => {
+    // Update inventory
+    await inventoryService.update(order);
+});
+
+orderService.on('order.created', async (order) => {
+    // Send notification
+    await notificationService.notify(order);
+});
+
+// Create order triggers all listeners
+await orderService.createOrder(orderData);
+```
+
+---
+
+### Q19: Compare building APIs with raw Node.js vs Express.js. When would you use each?
+
+**Answer:**
+
+**Raw Node.js HTTP Server:**
+
+```javascript
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+    // Manual routing
+    if (req.method === 'GET' && req.url === '/users') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ users: [] }));
+    } else if (req.method === 'POST' && req.url === '/users') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            const user = JSON.parse(body);
+            res.writeHead(201, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ id: 1, ...user }));
+        });
+    } else {
+        res.writeHead(404);
+        res.end('Not found');
+    }
+});
+
+server.listen(3000);
+```
+
+**Express.js:**
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use(express.json()); // Built-in body parser
+
+app.get('/users', (req, res) => {
+    res.json({ users: [] });
+});
+
+app.post('/users', (req, res) => {
+    const user = req.body; // Already parsed
+    res.status(201).json({ id: 1, ...user });
+});
+
+app.listen(3000);
+```
+
+**Comparison:**
+
+| Aspect | Raw Node.js | Express.js |
+|--------|-------------|------------|
+| **Code** | Verbose, manual | Concise, declarative |
+| **Routing** | Manual if/else | Built-in router |
+| **Middleware** | Manual implementation | Built-in support |
+| **Body Parsing** | Manual stream handling | Built-in parsers |
+| **Learning Curve** | Steeper | Easier |
+| **Flexibility** | Full control | Framework constraints |
+| **Use Case** | Simple APIs, learning | Production APIs |
+
+**When to Use Raw Node.js:**
+
+```javascript
+// ✅ Simple API, minimal dependencies
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+    if (req.url === '/health') {
+        res.writeHead(200);
+        res.end('OK');
+    }
+});
+
+server.listen(3000);
+```
+
+**When to Use Express.js:**
+
+```javascript
+// ✅ Production API with routing, middleware, etc.
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+app.use(cors());
+app.use('/api', router);
+
+app.listen(3000);
+```
+
+---
+
+### Q20: Explain libuv, Worker Threads, and async callbacks. How do they work together in Node.js?
+
+**Answer:**
+
+**libuv** = C++ library that provides event loop and thread pool for Node.js.
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────┐
+│         Node.js Application            │
+│  (JavaScript - Single Thread)          │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│         Event Loop (libuv)              │
+│  (Single Thread - JavaScript execution) │
+└──────────────┬──────────────────────────┘
+               │
+    ┌──────────┴──────────┐
+    │                     │
+    ▼                     ▼
+┌─────────┐        ┌──────────────┐
+│ I/O     │        │ Thread Pool  │
+│ (epoll, │        │ (libuv)      │
+│ kqueue) │        │ 4 threads    │
+└─────────┘        └──────────────┘
+    │                     │
+    │                     ▼
+    │              ┌──────────────┐
+    │              │ File I/O     │
+    │              │ DNS          │
+    │              │ Crypto       │
+    │              │ CPU-intensive│
+    │              └──────────────┘
+    │
+    ▼
+┌──────────────┐
+│ Network I/O   │
+│ (non-blocking)│
+└──────────────┘
+```
+
+**How They Work:**
+
+**1. Async Callbacks (Event Loop):**
+
+```javascript
+// Non-blocking I/O (handled by libuv)
+app.get('/users/:id', async (req, res) => {
+    // DB query uses libuv's thread pool or OS async I/O
+    const user = await User.findById(req.params.id);
+    // Event loop handles other requests while waiting
+    res.json(user);
+});
+```
+
+**2. libuv Thread Pool (CPU-intensive):**
+
+```javascript
+// File operations use thread pool
+const fs = require('fs');
+
+// Uses thread pool (4 threads by default)
+fs.readFile('large-file.txt', (err, data) => {
+    // Executed in thread pool worker
+    console.log(data);
+});
+
+// Increase thread pool size
+process.env.UV_THREADPOOL_SIZE = 8; // Default: 4
+```
+
+**3. Worker Threads (Heavy CPU work):**
+
+```javascript
+// For CPU-intensive tasks (don't block event loop)
+const { Worker } = require('worker_threads');
+
+app.get('/process', (req, res) => {
+    const worker = new Worker('./heavy-computation.js');
+    
+    worker.postMessage(req.body.data);
+    
+    worker.on('message', (result) => {
+        res.json({ result });
+    });
+    
+    // Event loop free to handle other requests
+});
+```
+
+**Comparison:**
+
+| Feature | Event Loop | libuv Thread Pool | Worker Threads |
+|---------|-----------|-------------------|----------------|
+| **Use Case** | I/O operations | File I/O, DNS | CPU-intensive |
+| **Threads** | 1 (main) | 4 (default) | Unlimited |
+| **Blocking** | Non-blocking | Blocks worker | Blocks worker |
+| **Example** | DB queries, HTTP | fs.readFile | Image processing |
+
+**Visual:**
+
+```
+Request → Event Loop
+    │
+    ├─ I/O (DB, HTTP) → OS async I/O (non-blocking)
+    │
+    ├─ File I/O → Thread Pool (4 workers)
+    │
+    └─ CPU-intensive → Worker Thread (separate thread)
+```
+
+---
+
+### Q21: What is `assert` in Node.js? How do you use it for testing and validation?
+
+**Answer:**
+
+**`assert`** = Built-in module for writing assertions (test conditions).
+
+**Basic Usage:**
+
+```javascript
+const assert = require('assert');
+
+// Assert equality
+assert.strictEqual(1 + 1, 2); // Passes
+assert.strictEqual(1 + 1, 3); // Throws AssertionError
+
+// Assert truthiness
+assert(user !== null, 'User should not be null');
+
+// Assert deep equality
+assert.deepStrictEqual({ a: 1 }, { a: 1 }); // Passes
+assert.deepStrictEqual({ a: 1 }, { a: 2 }); // Throws
+```
+
+**In Tests:**
+
+```javascript
+// tests/user.test.js
+const assert = require('assert');
+const UserService = require('../services/user.service');
+
+describe('UserService', () => {
+    test('should create user', async () => {
+        const user = await UserService.createUser({
+            email: 'test@example.com',
+            name: 'Test'
+        });
+        
+        assert(user.id !== undefined, 'User should have id');
+        assert.strictEqual(user.email, 'test@example.com');
+    });
+    
+    test('should throw error for duplicate email', async () => {
+        await UserService.createUser({ email: 'test@example.com' });
+        
+        await assert.rejects(
+            async () => {
+                await UserService.createUser({ email: 'test@example.com' });
+            },
+            { message: 'Email already exists' }
+        );
+    });
+});
+```
+
+**Assert Methods:**
+
+```javascript
+// Equality
+assert.strictEqual(actual, expected);
+assert.notStrictEqual(actual, expected);
+assert.deepStrictEqual(actual, expected);
+
+// Truthiness
+assert(value, message);
+assert.ok(value, message);
+
+// Exceptions
+assert.throws(() => { throw new Error(); });
+assert.rejects(async () => { throw new Error(); });
+
+// Comparison
+assert(actual === expected, 'Values should be equal');
+```
+
+**Best Practices:**
+
+```javascript
+// ✅ Use in tests
+assert.strictEqual(result, expected);
+
+// ✅ Use for validation (development)
+if (process.env.NODE_ENV === 'development') {
+    assert(user !== null, 'User should exist');
+}
+
+// ❌ Don't use in production (throws, crashes app)
+// Use proper error handling instead
+if (!user) {
+    throw new Error('User not found'); // Better for production
+}
+```
+
+---
+
+### Q22: Explain `setImmediate()` vs `process.nextTick()` in backend context. When would you use each?
+
+**Answer:**
+
+**Execution Order:**
+
+```
+Priority (highest to lowest):
+1. process.nextTick()
+2. Promise microtasks
+3. setImmediate()
+4. setTimeout()
+```
+
+**`process.nextTick()` - Highest Priority:**
+
+```javascript
+console.log('1');
+
+process.nextTick(() => {
+    console.log('2'); // Executes before any other async
+});
+
+console.log('3');
+
+// Output: 1, 3, 2
+```
+
+**Characteristics:**
+- Executes **before** any other async operation
+- Runs after current phase, before next phase
+- Can cause **starvation** if overused (blocks event loop)
+
+**`setImmediate()` - Check Phase:**
+
+```javascript
+console.log('1');
+
+setImmediate(() => {
+    console.log('2'); // Executes in CHECK phase
+});
+
+setTimeout(() => {
+    console.log('3'); // Executes in TIMERS phase
+}, 0);
+
+console.log('4');
+
+// Output: 1, 4, 3, 2 (or 1, 4, 2, 3 depending on phase)
+```
+
+**Characteristics:**
+- Executes in **CHECK phase** (after I/O events)
+- Designed for immediate execution after current phase
+- More predictable than `setTimeout(0)`
+
+**Backend Use Cases:**
+
+**`process.nextTick()` - Use For:**
+
+```javascript
+// 1. Error handling (before other operations)
+app.use((req, res, next) => {
+    process.nextTick(() => {
+        // Ensure error is handled before other middleware
+        if (error) {
+            next(error);
+        }
+    });
+});
+
+// 2. Cleanup (immediate)
+function cleanup() {
+    process.nextTick(() => {
+        // Cleanup before next operation
+        closeConnections();
+    });
+}
+```
+
+**`setImmediate()` - Use For:**
+
+```javascript
+// 1. After I/O operations
+fs.readFile('file.txt', (err, data) => {
+    // Process file
+    processFile(data);
+    
+    // Schedule cleanup after current phase
+    setImmediate(() => {
+        cleanup();
+    });
+});
+
+// 2. Defer heavy operations
+app.post('/process', (req, res) => {
+    res.json({ status: 'processing' });
+    
+    // Process after response sent
+    setImmediate(() => {
+        heavyProcessing(req.body);
+    });
+});
+```
+
+**Visual Comparison:**
+
+```
+Inside I/O Callback:
+┌─────────────────────┐
+│  Poll Phase (I/O)   │
+│  └─→ Your callback  │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ process.nextTick()  │ ← Executes first
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│   Check Phase       │ ← setImmediate executes here
+│   └─→ setImmediate  │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Next Iteration     │
+│  └─→ Timers Phase   │ ← setTimeout executes here
+│      └─→ setTimeout │
+└─────────────────────┘
+```
+
+**Best Practices:**
+
+```
+process.nextTick():
+├─ Use: Error handling, immediate cleanup
+├─ Avoid: Heavy operations (can starve event loop)
+└─ Limit: Don't create nextTick loops
+
+setImmediate():
+├─ Use: Defer operations after I/O
+├─ Use: Schedule work after current phase
+└─ Better: More predictable than setTimeout(0)
+```
+
+---
+
+## 12. System Design Questions
+
+### Q23: Design a High-Write Throughput Monitoring System (500,000 writes/second)
+
+**Problem:** 5,000 servers sending CPU/RAM metrics every 10 seconds = 500,000 writes/second. Database at 100% CPU, disk I/O saturated.
+
+**Solution Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              5,000 Servers                              │
+│  (Sending metrics every 10 seconds)                     │
+└──────────────┬──────────────────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────────┐
+│          API Gateway / Load Balancer                    │
+│  (Rate limiting, batching)                              │
+└──────────────┬──────────────────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────────┐
+│          Message Queue (Kafka/RabbitMQ)                 │
+│  (Buffers writes, decouples producers/consumers)       │
+└──────────────┬──────────────────────────────────────────┘
+               │
+    ┌──────────┼──────────┐
+    │          │          │
+    ▼          ▼          ▼
+┌─────────┐ ┌─────────┐ ┌─────────┐
+│ Worker  │ │ Worker  │ │ Worker  │
+│ Pool    │ │ Pool    │ │ Pool    │
+│ (Batch) │ │ (Batch) │ │ (Batch) │
+└────┬────┘ └────┬────┘ └────┬────┘
+     │           │           │
+     └───────────┼───────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────┐
+│      Time-Series Database (InfluxDB/TimescaleDB)        │
+│  (Optimized for high write throughput)                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Why This Architecture:**
+
+**1. Message Queue (Kafka):**
+- **Why**: Buffers writes, handles spikes
+- **How**: Producers write to queue, consumers batch process
+- **Benefit**: Decouples servers from database
+
+**2. Batch Processing:**
+- **Why**: Reduces database writes (500k → 50k batches)
+- **How**: Workers collect metrics, batch insert
+- **Benefit**: 10x reduction in writes
+
+**3. Time-Series Database:**
+- **Why**: Optimized for time-series data (InfluxDB, TimescaleDB)
+- **How**: Columnar storage, compression
+- **Benefit**: 10-100x faster than PostgreSQL for time-series
+
+**Implementation:**
+
+```javascript
+// 1. API receives metrics
+app.post('/metrics', async (req, res) => {
+    const metrics = req.body; // { serverId, cpu, ram, timestamp }
+    
+    // Send to Kafka (non-blocking)
+    await kafkaProducer.send({
+        topic: 'metrics',
+        messages: [{ value: JSON.stringify(metrics) }]
+    });
+    
+    res.status(202).json({ received: true }); // Accepted, not processed
+});
+
+// 2. Workers batch process
+async function processMetrics() {
+    const batch = [];
+    
+    kafkaConsumer.on('message', (message) => {
+        batch.push(JSON.parse(message.value));
+        
+        if (batch.length >= 1000) {
+            // Batch insert to InfluxDB
+            await influxDB.writePoints(batch);
+            batch.length = 0;
+        }
+    });
+}
+
+// 3. InfluxDB storage (optimized for time-series)
+// Automatically handles:
+// - Compression
+// - Retention policies
+// - Downsampling
+```
+
+**Alternative Solutions:**
+
+**Option 1: Write-Ahead Log (WAL) + Batch:**
+```
+Servers → WAL → Batch Processor → PostgreSQL
+```
+- Pros: Uses existing PostgreSQL
+- Cons: Still slower than time-series DB
+
+**Option 2: Redis + Background Worker:**
+```
+Servers → Redis (in-memory) → Background Worker → Database
+```
+- Pros: Very fast writes
+- Cons: Risk of data loss if Redis crashes
+
+**Best Solution: Kafka + Time-Series DB**
+- ✅ Handles 500k+ writes/sec
+- ✅ Durable (Kafka persistence)
+- ✅ Scalable (add workers)
+- ✅ Optimized storage (time-series DB)
+
+---
+
+### Q24: Design an Idempotent Payment System (Exactly-Once Processing)
+
+**Problem:** User clicks "Pay $50" twice due to network issues. System charges $100 instead of $50.
+
+**Solution: Idempotency Keys**
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              Client (Mobile App)                        │
+│  Generates: idempotency_key = uuid()                    │
+└──────────────┬──────────────────────────────────────────┘
+               │
+               │ POST /payments
+               │ Headers: { "Idempotency-Key": "abc-123" }
+               ▼
+┌─────────────────────────────────────────────────────────┐
+│          API Gateway / Load Balancer                     │
+└──────────────┬──────────────────────────────────────────┘
+               │
+    ┌──────────┼──────────┐
+    │          │          │
+    ▼          ▼          ▼
+┌─────────┐ ┌─────────┐ ┌─────────┐
+│ Server 1│ │ Server 2 │ │ Server 3│
+│ (Check  │ │ (Check   │ │ (Check  │
+│  Redis) │ │  Redis)   │ │  Redis) │
+└────┬────┘ └────┬────┘ └────┬────┘
+     │           │           │
+     └───────────┼───────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────┐
+│          Redis (Idempotency Store)                       │
+│  Key: "idempotency:abc-123"                             │
+│  Value: { status: "processing", paymentId: "pay_123" }  │
+└──────────────┬──────────────────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────────┐
+│          Payment Gateway (Stripe)                        │
+│  (External API)                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Implementation:**
+
+```javascript
+// 1. Generate idempotency key (client-side)
+const idempotencyKey = uuidv4();
+
+// 2. Payment endpoint with idempotency
+app.post('/payments', async (req, res) => {
+    const { idempotencyKey } = req.headers;
+    const { amount, userId } = req.body;
+    
+    if (!idempotencyKey) {
+        return res.status(400).json({ error: 'Idempotency-Key required' });
+    }
+    
+    // Check if already processed
+    const cached = await redis.get(`idempotency:${idempotencyKey}`);
+    if (cached) {
+        const result = JSON.parse(cached);
+        return res.json(result); // Return cached result
+    }
+    
+    // Lock: Prevent concurrent processing
+    const lockKey = `lock:${idempotencyKey}`;
+    const locked = await redis.set(lockKey, '1', 'EX', 30, 'NX');
+    
+    if (!locked) {
+        // Another request is processing, wait and retry
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const cached = await redis.get(`idempotency:${idempotencyKey}`);
+        return res.json(JSON.parse(cached));
+    }
+    
+    try {
+        // Process payment
+        const payment = await stripe.charges.create({
+            amount: amount * 100,
+            currency: 'usd',
+            customer: userId
+        }, {
+            idempotencyKey: idempotencyKey // Stripe also uses idempotency
+        });
+        
+        // Save to database (transaction)
+        const dbPayment = await db.transaction(async (trx) => {
+            const paymentRecord = await Payment.create({
+                id: payment.id,
+                userId,
+                amount,
+                status: 'completed'
+            }, { transaction: trx });
+            
+            // Update order
+            await Order.update(
+                { status: 'paid', paymentId: payment.id },
+                { where: { userId }, transaction: trx }
+            );
+            
+            return paymentRecord;
+        });
+        
+        // Cache result
+        const result = {
+            id: payment.id,
+            status: 'completed',
+            amount
+        };
+        await redis.setex(
+            `idempotency:${idempotencyKey}`,
+            86400, // 24 hours
+            JSON.stringify(result)
+        );
+        
+        // Release lock
+        await redis.del(lockKey);
+        
+        res.json(result);
+        
+    } catch (error) {
+        await redis.del(lockKey);
+        
+        // Handle partial failure
+        if (error.code === 'card_declined') {
+            await redis.setex(
+                `idempotency:${idempotencyKey}`,
+                86400,
+                JSON.stringify({ error: 'Payment declined' })
+            );
+        }
+        
+        throw error;
+    }
+});
+```
+
+**Handling Network Partitions:**
+
+```javascript
+// Problem: Stripe charged, but database crashed
+// Solution: Reconciliation job
+
+async function reconcilePayments() {
+    // Find payments in "processing" state > 5 minutes
+    const stuckPayments = await Payment.findAll({
+        where: {
+            status: 'processing',
+            createdAt: { [Op.lt]: new Date(Date.now() - 5 * 60 * 1000) }
+        }
+    });
+    
+    for (const payment of stuckPayments) {
+        // Check Stripe
+        const stripePayment = await stripe.charges.retrieve(payment.stripeId);
+        
+        if (stripePayment.status === 'succeeded') {
+            // Update database
+            await Payment.update(
+                { status: 'completed' },
+                { where: { id: payment.id } }
+            );
+        }
+    }
+}
+
+// Run every minute
+setInterval(reconcilePayments, 60000);
+```
+
+**Why This Works:**
+
+```
+Idempotency Key:
+├─ Client generates unique key per payment attempt
+├─ Server checks Redis before processing
+├─ If exists: Return cached result
+├─ If not: Process and cache result
+└─ Result: Same request = same result (idempotent)
+
+Distributed Lock:
+├─ Prevents concurrent processing
+├─ Redis SET with NX (only if not exists)
+├─ Expires after timeout
+└─ Ensures only one server processes
+
+Reconciliation:
+├─ Handles partial failures
+├─ Checks external payment gateway
+├─ Updates database if needed
+└─ Ensures consistency
+```
+
+---
+
+### Q25: Design Twitter Timeline System (100 Million Followers)
+
+**Problem:** Celebrity tweets → must appear in 100M followers' timelines. Inserting 100M rows would take hours.
+
+**Solution: Hybrid Approach (Push + Pull)**
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│          User Tweets                                     │
+│  (Justin Bieber tweets)                                 │
+└──────────────┬──────────────────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────────┐
+│      Timeline Service                                    │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ Check: Follower count > 1M?                      │  │
+│  └──────────┬───────────────────────────────────────┘  │
+│             │                                           │
+│    ┌────────┴────────┐                                  │
+│    │                 │                                  │
+│    ▼                 ▼                                 │
+│ ┌─────────┐     ┌─────────┐                            │
+│ │ Push    │     │ Pull    │                            │
+│ │ (Fans)  │     │ (Celeb) │                            │
+│ └─────────┘     └─────────┘                            │
+└──────────┬──────────────────┬───────────────────────────┘
+           │                  │
+           ▼                  ▼
+┌──────────────────┐  ┌──────────────────┐
+│ Fan Timelines    │  │ Celebrity Cache  │
+│ (Pre-computed)   │  │ (On-demand)     │
+└──────────────────┘  └──────────────────┘
+```
+
+**Implementation:**
+
+```javascript
+// 1. Tweet creation
+app.post('/tweets', async (req, res) => {
+    const { content, userId } = req.body;
+    
+    // Create tweet
+    const tweet = await Tweet.create({ content, userId });
+    
+    // Get follower count
+    const followerCount = await Follower.count({ where: { followingId: userId } });
+    
+    if (followerCount < 1000000) {
+        // Push model: Insert into all followers' timelines
+        await pushToTimelines(tweet, userId);
+    } else {
+        // Pull model: Store in celebrity cache, fetch on-demand
+        await storeInCelebrityCache(tweet, userId);
+    }
+    
+    res.json(tweet);
+});
+
+// Push model (for regular users)
+async function pushToTimelines(tweet, userId) {
+    const followers = await Follower.findAll({
+        where: { followingId: userId },
+        attributes: ['followerId']
+    });
+    
+    // Batch insert
+    const timelineEntries = followers.map(f => ({
+        userId: f.followerId,
+        tweetId: tweet.id,
+        createdAt: new Date()
+    }));
+    
+    await Timeline.bulkCreate(timelineEntries);
+}
+
+// Pull model (for celebrities)
+async function storeInCelebrityCache(tweet, userId) {
+    // Store in Redis (sorted set by timestamp)
+    await redis.zadd(
+        `celebrity:${userId}:tweets`,
+        Date.now(),
+        JSON.stringify(tweet)
+    );
+    
+    // Set TTL (keep last 7 days)
+    await redis.expire(`celebrity:${userId}:tweets`, 7 * 24 * 60 * 60);
+}
+
+// Timeline fetch (handles both)
+app.get('/timeline', async (req, res) => {
+    const userId = req.user.id;
+    
+    // Get regular users' tweets (pre-computed)
+    const regularTweets = await Timeline.findAll({
+        where: { userId },
+        include: [Tweet],
+        order: [['createdAt', 'DESC']],
+        limit: 20
+    });
+    
+    // Get celebrities followed (on-demand)
+    const celebrities = await Follower.findAll({
+        where: { followerId: userId },
+        include: [{
+            model: User,
+            where: { isCelebrity: true }
+        }]
+    });
+    
+    const celebrityTweets = [];
+    for (const celeb of celebrities) {
+        const tweets = await redis.zrevrange(
+            `celebrity:${celeb.followingId}:tweets`,
+            0,
+            19  // Last 20 tweets
+        );
+        celebrityTweets.push(...tweets.map(t => JSON.parse(t)));
+    }
+    
+    // Merge and sort
+    const allTweets = [...regularTweets, ...celebrityTweets]
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, 20);
+    
+    res.json(allTweets);
+});
+```
+
+**Why This Works:**
+
+```
+Push Model (Regular Users):
+├─ Pre-compute timelines
+├─ Fast reads (already in database)
+├─ Slower writes (insert into N timelines)
+└─ Good for: < 1M followers
+
+Pull Model (Celebrities):
+├─ Store tweets in cache
+├─ Fast writes (single insert)
+├─ Slower reads (fetch on-demand)
+└─ Good for: > 1M followers
+
+Hybrid:
+├─ Best of both worlds
+├─ Regular users: Push (fast reads)
+├─ Celebrities: Pull (fast writes)
+└─ Scales to millions of users
+```
+
+**Alternative Solutions:**
+
+**Option 1: Pure Push:**
+- ❌ 100M inserts per celebrity tweet
+- ❌ Takes hours
+- ❌ Database overload
+
+**Option 2: Pure Pull:**
+- ❌ Slow timeline loads (fetch from many celebrities)
+- ❌ High database load on reads
+- ❌ Poor user experience
+
+**Best Solution: Hybrid (Push + Pull)**
+- ✅ Fast writes for celebrities
+- ✅ Fast reads for regular users
+- ✅ Scales to millions
+- ✅ Good user experience
+
+---
+
+## Summary
+
+This comprehensive guide covers:
+
+**Advanced Node.js Topics:**
+- ✅ Event Loop detailed explanation
+- ✅ Event-driven programming
+- ✅ Node.js vs Express.js API building
+- ✅ libuv, Worker Threads, async callbacks
+- ✅ Assert module usage
+- ✅ setImmediate vs nextTick
+
+**System Design:**
+- ✅ High-write throughput monitoring system
+- ✅ Idempotent payment system
+- ✅ Twitter timeline architecture
+- ✅ Multiple solution approaches
+- ✅ Best practices and trade-offs
+
+Master these topics for senior-level interviews at product-based companies focusing on system design and Node.js internals.
+

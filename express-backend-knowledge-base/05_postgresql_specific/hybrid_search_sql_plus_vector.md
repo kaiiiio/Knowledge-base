@@ -242,3 +242,77 @@ Hybrid search combines SQL queries (structured filters) with vector search (sema
 - Study [JSONB and Full-Text Search](jsonb_and_full_text_search.md) for text search
 - Master [Performance Optimization](../15_deployment_and_performance/performance_optimization.md) for tuning
 
+---
+
+## 🎯 Interview Questions: Hybrid Search
+
+### Q1: Explain hybrid search. How do you combine SQL filters with vector similarity search?
+
+**Answer:**
+
+**Hybrid Search** = Combining structured SQL filters with semantic vector search.
+
+**Problem:**
+
+```
+User wants: "Find laptops under $1000 that are similar to 'gaming laptop'"
+├─ SQL Filter: price < 1000, category = 'laptops'
+└─ Vector Search: Similar to 'gaming laptop' embedding
+```
+
+**Solution:**
+
+```javascript
+app.get('/products/search', async (req, res) => {
+    const { query, maxPrice, category } = req.query;
+    
+    // 1. Generate query embedding
+    const queryEmbedding = await generateEmbedding(query);
+    
+    // 2. Hybrid search: SQL filters + vector similarity
+    const results = await pool.query(`
+        SELECT 
+            p.id,
+            p.name,
+            p.price,
+            p.category,
+            -- Vector similarity score
+            1 - (p.embedding <=> $1::vector) AS similarity,
+            -- Combined score (weighted)
+            (
+                (1 - (p.embedding <=> $1::vector)) * 0.7 +  -- 70% vector similarity
+                CASE WHEN p.price < $2 THEN 0.3 ELSE 0 END  -- 30% price filter
+            ) AS combined_score
+        FROM products p
+        WHERE 
+            -- SQL filters
+            p.category = $3
+            AND p.price < $2
+            AND p.active = true
+            -- Vector similarity threshold
+            AND 1 - (p.embedding <=> $1::vector) > 0.6
+        ORDER BY combined_score DESC
+        LIMIT 20
+    `, [JSON.stringify(queryEmbedding), maxPrice, category]);
+    
+    res.json(results.rows);
+});
+```
+
+**Benefits:**
+- ✅ Structured filtering (price, category, etc.)
+- ✅ Semantic search (similar meaning)
+- ✅ Best of both worlds
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Hybrid search architecture
+- ✅ Combining SQL and vector search
+- ✅ Score weighting strategies
+- ✅ Performance optimization
+
+Master these for senior-level interviews focusing on advanced search capabilities.
+
