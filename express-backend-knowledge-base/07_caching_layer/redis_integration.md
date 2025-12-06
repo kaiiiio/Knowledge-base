@@ -360,3 +360,56 @@ const redisClient = redis.createClient({
 
 Redis integration in Express.js requires: Installing redis package, creating connection on app startup, using basic operations (SET, GET, hashes, lists), caching database queries, storing sessions, and handling errors gracefully. Redis provides fast, temporary storage that complements your database for caching, sessions, and real-time features.
 
+---
+
+## 🎯 Interview Questions: Redis Integration
+
+### Q1: Why is Redis a good fit as a cache for Express.js backends? Focus on concepts, not commands.
+
+**Answer:**
+
+Redis is designed as an **in-memory data store**, which means:
+
+- **Latency:** Operations complete in microseconds–milliseconds (much faster than disk-based DB).  
+- **Data Structures:** Strings, hashes, lists, sets, sorted sets, streams → map naturally to many backend needs (sessions, queues, rankings).  
+- **Persistence Options:** Can act as pure cache (no persistence) or as a durable store (AOF/RDB) depending on requirements.  
+- **Single-threaded Event Loop:** Simple concurrency model, high throughput with proper sharding/cluster.
+
+Conceptually, Redis sits **between** your app and primary DB:
+
+```
+Client → Express API → Redis (cache) → (maybe) DB
+```
+
+You use it where:
+- Reads are frequent, writes less frequent.  
+- Data can be recomputed or re-fetched if lost.  
+- Low latency matters (rate limiting, feature flags, sessions).
+
+### Q2: What are the main concerns when using Redis in production?
+
+**Answer:**
+
+- **Data Loss Tolerance:**  
+  - As a cache, data loss is acceptable (can rebuild).  
+  - As a store, configure persistence and backups.
+- **Eviction Policies:**  
+  - When memory is full, Redis must evict keys (LRU, LFU, random).  
+  - You must design key TTLs and patterns so eviction doesn’t break correctness.
+- **Security:**  
+  - Never expose Redis directly to the internet.  
+  - Use AUTH, TLS, network-level restrictions (VPC, security groups).
+- **Operational Concerns:**  
+  - Monitoring memory, keyspace size, eviction stats, latency.  
+  - Planning for clustering and sharding as data grows.
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Conceptual reasons to use Redis
+- ✅ Production concerns (eviction, security, durability)
+
+They help you talk about Redis as a system component, not just a key-value store.
+

@@ -340,6 +340,89 @@ MongoDB Change Streams provide real-time notifications of database changes, enab
 - Analytics updates
 - WebSocket updates
 
+---
+
+## 🎯 Interview Questions: Change Streams
+
+### Q1: How do MongoDB Change Streams work under the hood? When are they preferable to polling?
+
+**Answer:**
+
+```
+Change Streams:
+├─ Built on MongoDB oplog (replica sets/sharded clusters only)
+├─ Streams change events (insert/update/delete/replace)
+├─ Uses tailable cursor + resume token
+├─ Client receives events in real time
+
+Polling:
+├─ Application queries database periodically
+├─ Adds load (repeated queries)
+├─ Latency between polls
+├─ Risk of missing events without proper tracking
+```
+
+**Use Change Streams When:**
+- Need sub-second latency (dashboards, notifications)
+- Want event-driven architecture
+- Need exactly-once semantics via resume tokens
+- Prefer push over pull
+
+**Use Polling When:**
+- Standalone (non-replicated) MongoDB deployment
+- Very low write volume
+- Simple cron jobs acceptable
+
+### Q2: How do you build a resilient change stream consumer in Express.js?
+
+**Answer:**
+
+```javascript
+const pipeline = [
+  { $match: { 'fullDocument.status': 'ACTIVE' } },   // Filter at server
+  { $project: { fullDocument: 1, operationType: 1 } }
+];
+
+let changeStream;
+
+async function startChangeStream() {
+  const collection = db.collection('users');
+  changeStream = collection.watch(pipeline, { fullDocument: 'updateLookup' });
+
+  changeStream.on('change', async (event) => {
+    try {
+      await processEvent(event);        // Idempotent processing
+      await storeResumeToken(event._id);
+    } catch (error) {
+      console.error('Event processing failed', error);
+    }
+  });
+
+  changeStream.on('error', async (error) => {
+    console.error('Change stream error', error);
+    await reconnectWithResumeToken();
+  });
+}
+```
+
+**Best Practices:**
+1. **Filter on Server:** Use `$match` to limit events produced.
+2. **Handle Resume Tokens:** Persist `event._id` to resume after crashes.
+3. **Idempotent Handlers:** Event processing should handle duplicates.
+4. **Backpressure Control:** Pause stream while processing heavy workloads.
+5. **Monitoring:** Track stream lag/errors, restart on network failures.
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Change Streams architecture vs polling
+- ✅ Building resilient consumers
+- ✅ Resume token and error handling
+
+Master these for mid/senior interviews focused on real-time MongoDB systems.
+
 **Next Steps:**
 - Learn [Mongoose Setup](mongoose_setup_and_basics.md) for ODM usage
 - Study [Aggregation Pipeline](aggregation_pipeline.md) for complex queries

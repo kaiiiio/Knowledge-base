@@ -376,3 +376,487 @@ catch (error) {
 
 JWT implementation in Express.js requires: Installing dependencies (jsonwebtoken, bcryptjs), configuring JWT settings (secret, algorithm, expiration), creating and verifying tokens, hashing passwords with bcrypt, implementing authentication middleware, and handling refresh tokens for long-lived sessions.
 
+---
+
+## 🎯 Interview Questions: JWT Implementation
+
+### Q1: Explain the fundamental architecture of JWT (JSON Web Tokens) and why they are stateless. What are the three parts of a JWT, and how does statelessness impact scalability in Express.js applications?
+
+**Answer:**
+
+**JWT Architecture:**
+
+A JWT is a **self-contained token** that encodes claims (user data) in a JSON format, signed to ensure integrity. It consists of three parts separated by dots: `header.payload.signature`.
+
+**Three Parts:**
+
+1. **Header**: Algorithm and token type
+   ```json
+   {
+     "alg": "HS256",
+     "typ": "JWT"
+   }
+   ```
+   - Encoded as Base64URL
+
+2. **Payload**: Claims (user data, expiration, issuer)
+   ```json
+   {
+     "sub": "user123",
+     "iat": 1234567890,
+     "exp": 1234571490
+   }
+   ```
+   - Encoded as Base64URL
+
+3. **Signature**: HMAC signature of header + payload
+   ```
+   HMACSHA256(
+     base64UrlEncode(header) + "." + base64UrlEncode(payload),
+     secret
+   )
+   ```
+
+**Statelessness:**
+
+JWTs are **stateless** because the server doesn't store session data. All necessary information (user ID, permissions) is encoded in the token itself. The server verifies the token's signature to ensure it hasn't been tampered with, but doesn't need to look up session data in a database or cache.
+
+**Impact on Scalability:**
+
+1. **Horizontal Scaling**: No shared session store needed
+   - Traditional sessions: Require Redis/database for session storage (single point of failure, scaling bottleneck)
+   - JWTs: Stateless, any server can verify token (no shared state)
+
+2. **Reduced Database Load**: No session lookups on every request
+   - Traditional: `SELECT * FROM sessions WHERE session_id = ?` on every request
+   - JWTs: Verify signature (CPU operation, no I/O)
+
+3. **Microservices**: Token can be passed between services
+   - Service A validates token, passes to Service B (no shared session store)
+   - Each service can independently verify token
+
+**Visual Comparison:**
+
+```
+Stateless (JWT):
+Client → Server1: Token → Verify Signature → Process Request
+Client → Server2: Token → Verify Signature → Process Request
+(No shared state, any server can verify)
+
+Stateful (Sessions):
+Client → Server1: Session ID → Lookup Redis → Process Request
+Client → Server2: Session ID → Lookup Redis → Process Request
+(Shared Redis required, scaling bottleneck)
+```
+
+**System Design Consideration**: Statelessness enables **horizontal scaling** (add servers without shared state) and **microservices architecture** (services don't share session store). However, JWTs cannot be revoked easily (requires blacklist or short expiration), so use refresh tokens for long-lived sessions and access tokens for short-lived operations.
+
+---
+
+### Q2: What is the difference between "access tokens" and "refresh tokens" in JWT-based authentication? Explain the security implications and when you would use each type.
+
+**Answer:**
+
+**Access Token**: Short-lived token (e.g., 15 minutes) used for API requests. Contains user identity and permissions.
+
+**Refresh Token**: Long-lived token (e.g., 7 days) used to obtain new access tokens. Stored securely (HTTP-only cookie) and not sent with every request.
+
+**Key Differences:**
+
+| Aspect | Access Token | Refresh Token |
+|--------|--------------|---------------|
+| **Lifetime** | Short (15 min - 1 hour) | Long (7-30 days) |
+| **Usage** | Every API request | Only to refresh access token |
+| **Storage** | Memory (JavaScript) | HTTP-only cookie or secure storage |
+| **Revocation** | Expires quickly | Can be revoked server-side |
+| **Scope** | Contains user data | Minimal data (just token ID) |
+
+**Security Implications:**
+
+1. **Access Token Exposure**: If stolen, short lifetime limits damage
+   - Attacker has access for only 15 minutes (vs. 7 days if access token was long-lived)
+   - Visual: Stolen token → Used for 15 min → Expires → Attacker loses access
+
+2. **Refresh Token Security**: Stored in HTTP-only cookie prevents XSS
+   - JavaScript cannot access HTTP-only cookies (XSS protection)
+   - Refresh token not exposed in client-side code
+
+3. **Token Rotation**: Refresh tokens can be rotated on each use
+   - Old refresh token invalidated, new one issued
+   - Prevents replay attacks if refresh token is stolen
+
+**Implementation Flow:**
+
+```
+1. Login:
+   POST /auth/login
+   → Verify credentials
+   → Generate access token (15 min) + refresh token (7 days)
+   → Return access token in response body
+   → Set refresh token in HTTP-only cookie
+
+2. API Request:
+   GET /api/users/me
+   Headers: { Authorization: Bearer <access_token> }
+   → Verify access token signature
+   → Process request
+
+3. Access Token Expired:
+   GET /api/users/me
+   → Access token expired (401 Unauthorized)
+   → Client calls refresh endpoint
+
+4. Refresh:
+   POST /auth/refresh
+   Cookie: refresh_token=<token>
+   → Verify refresh token
+   → Generate new access token
+   → Optionally rotate refresh token
+   → Return new access token
+```
+
+**When to Use Each:**
+
+- **Access Token**: Every authenticated API request (user data, permissions)
+- **Refresh Token**: Only when access token expires (obtain new access token)
+
+**System Design Consideration**: This two-token pattern provides **security** (short-lived access tokens limit exposure) and **usability** (refresh tokens maintain session without re-login). Access tokens are **stateless** (no revocation), while refresh tokens can be **revoked** (stored in database, can be invalidated). Essential for production systems where token theft is a concern.
+
+---
+
+### Q3: Explain how JWT signature verification works and why it prevents token tampering. What happens if someone modifies the payload of a JWT without changing the signature?
+
+**Answer:**
+
+**JWT Signature Verification:**
+
+The signature is created by hashing the header and payload with a secret key. When verifying, the server recalculates the signature and compares it with the signature in the token. If they match, the token is authentic; if not, it has been tampered with.
+
+**Signature Creation:**
+
+```
+Signature = HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  secret_key
+)
+```
+
+**Verification Process:**
+
+1. **Extract Parts**: Split token by `.` to get header, payload, signature
+2. **Recalculate Signature**: Use same algorithm and secret to hash header + payload
+3. **Compare**: If calculated signature matches token signature → valid, else → tampered
+
+**Visual Flow:**
+
+```
+Token: header.payload.signature
+
+Verification:
+1. Extract: header, payload, signature
+2. Calculate: HMACSHA256(header + "." + payload, secret) = new_signature
+3. Compare: new_signature === signature?
+   - Match → Token valid ✓
+   - Mismatch → Token tampered ✗
+```
+
+**What Happens if Payload is Modified:**
+
+If someone modifies the payload (e.g., changes `user_id` from `123` to `456`) without recalculating the signature:
+
+```
+Original Token:
+header.payload.signature
+(All parts match)
+
+Modified Token:
+header.modified_payload.signature
+(Old signature doesn't match new payload)
+
+Verification:
+HMACSHA256(header + "." + modified_payload, secret) ≠ old_signature
+→ Verification FAILS
+→ Token rejected as tampered
+```
+
+**Why This Works:**
+
+- **Cryptographic Hash**: HMAC-SHA256 is a one-way function (cannot reverse)
+- **Secret Key**: Only server knows secret (attacker cannot generate valid signature)
+- **Integrity Check**: Signature proves token hasn't been modified
+
+**Security Properties:**
+
+1. **Authenticity**: Signature proves token came from server (knows secret)
+2. **Integrity**: Any modification invalidates signature
+3. **Non-Repudiation**: Server cannot deny creating token (signature proves origin)
+
+**System Design Consideration**: Signature verification is the **core security mechanism** of JWTs. It ensures tokens cannot be tampered with (modify user ID, permissions) without detection. However, **signature verification doesn't prevent token theft** (if token is stolen, attacker can use it until expiration). Use HTTPS to prevent token interception and short expiration times to limit damage from theft.
+
+---
+
+### Q4: What are the security vulnerabilities of JWTs, and how would you mitigate them in a production Express.js application? Discuss token storage, XSS attacks, and token revocation.
+
+**Answer:**
+
+**Common JWT Vulnerabilities:**
+
+1. **XSS (Cross-Site Scripting)**: Stolen tokens from localStorage
+2. **Token Theft**: Intercepted tokens (man-in-the-middle)
+3. **No Revocation**: Cannot invalidate token until expiration
+4. **Algorithm Confusion**: Weak algorithms (HS256 vs RS256)
+5. **Token Size**: Large tokens increase request size
+
+**Mitigation Strategies:**
+
+**1. Token Storage (XSS Prevention):**
+
+**Vulnerable (localStorage):**
+```javascript
+// BAD: XSS can steal token
+localStorage.setItem('token', accessToken);
+// Attacker's script: const token = localStorage.getItem('token');
+```
+
+**Secure (HTTP-only Cookie):**
+```javascript
+// GOOD: HTTP-only cookie not accessible to JavaScript
+res.cookie('access_token', accessToken, {
+    httpOnly: true,  // Not accessible via JavaScript
+    secure: true,    // HTTPS only
+    sameSite: 'strict'  // CSRF protection
+});
+```
+
+**2. XSS Attack Prevention:**
+
+- **Input Sanitization**: Sanitize user input to prevent script injection
+- **Content Security Policy (CSP)**: Restrict script sources
+- **HTTP-only Cookies**: Tokens not accessible to JavaScript (XSS cannot steal)
+
+**3. Token Revocation:**
+
+**Problem**: JWTs are stateless, cannot be revoked until expiration.
+
+**Solutions:**
+
+**A. Token Blacklist (Redis):**
+```javascript
+// On logout or revocation
+await redis.setEx(`blacklist:${tokenId}`, expirationTime, '1');
+
+// In middleware
+const tokenId = jwt.decode(token).jti;  // JWT ID
+const blacklisted = await redis.get(`blacklist:${tokenId}`);
+if (blacklisted) {
+    return res.status(401).json({ error: 'Token revoked' });
+}
+```
+
+**B. Short Expiration + Refresh Tokens:**
+```javascript
+// Access token: 15 minutes (short-lived, no revocation needed)
+// Refresh token: 7 days (can be revoked in database)
+const refreshToken = await RefreshToken.findOne({ where: { token } });
+if (!refreshToken || refreshToken.revoked) {
+    return res.status(401).json({ error: 'Token revoked' });
+}
+```
+
+**C. Database Session Check:**
+```javascript
+// Store token ID in database, check on each request
+const tokenRecord = await Token.findOne({ where: { jti: tokenId } });
+if (!tokenRecord || tokenRecord.revoked) {
+    return res.status(401).json({ error: 'Token revoked' });
+}
+```
+
+**4. Algorithm Confusion:**
+
+**Vulnerable:**
+```javascript
+// BAD: Accepts any algorithm
+jwt.verify(token, secret);  // May accept 'none' algorithm
+```
+
+**Secure:**
+```javascript
+// GOOD: Explicitly specify algorithm
+jwt.verify(token, secret, { algorithms: ['HS256'] });
+```
+
+**5. HTTPS (Token Theft Prevention):**
+
+- **Always use HTTPS**: Prevents man-in-the-middle attacks
+- **Secure Flag**: Cookies only sent over HTTPS
+- **HSTS**: Force HTTPS connections
+
+**Complete Security Implementation:**
+
+```javascript
+// Secure JWT middleware
+async function authenticateToken(req, res, next) {
+    const token = req.cookies.access_token;  // HTTP-only cookie
+    
+    if (!token) {
+        return res.status(401).json({ error: 'No token' });
+    }
+    
+    try {
+        // Verify with explicit algorithm
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ['HS256']  // Prevent algorithm confusion
+        });
+        
+        // Check blacklist
+        const blacklisted = await redis.get(`blacklist:${decoded.jti}`);
+        if (blacklisted) {
+            return res.status(401).json({ error: 'Token revoked' });
+        }
+        
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+}
+```
+
+**System Design Consideration**: JWT security requires **defense in depth**: secure storage (HTTP-only cookies), input sanitization (XSS prevention), token revocation (blacklist or short expiration), algorithm specification (prevent confusion), and HTTPS (prevent interception). No single measure is sufficient; combine multiple strategies for production-grade security.
+
+---
+
+### Q5: Explain the concept of "JWT claims" and how you would implement role-based access control (RBAC) using JWT claims in an Express.js application. What are the trade-offs of embedding permissions in tokens vs. looking them up from a database?
+
+**Answer:**
+
+**JWT Claims:**
+
+Claims are **key-value pairs** in the JWT payload that represent information about the user (identity, permissions, metadata). Standard claims include `sub` (subject/user ID), `iat` (issued at), `exp` (expiration), while custom claims can include roles, permissions, or any application-specific data.
+
+**RBAC with JWT Claims:**
+
+**Embedding Roles in Token:**
+
+```javascript
+// Create token with roles
+const token = jwt.sign({
+    sub: user.id,
+    email: user.email,
+    roles: ['user', 'admin'],  // Custom claim
+    permissions: ['read:users', 'write:users']  // Custom claim
+}, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+// Middleware to check roles
+function requireRole(...allowedRoles) {
+    return (req, res, next) => {
+        const userRoles = req.user.roles || [];
+        const hasRole = allowedRoles.some(role => userRoles.includes(role));
+        
+        if (!hasRole) {
+            return res.status(403).json({ error: 'Insufficient permissions' });
+        }
+        next();
+    };
+}
+
+// Usage
+app.get('/admin/users', authenticateToken, requireRole('admin'), async (req, res) => {
+    // Only admins can access
+});
+```
+
+**Permission-Based Access:**
+
+```javascript
+// Check specific permission
+function requirePermission(permission) {
+    return (req, res, next) => {
+        const userPermissions = req.user.permissions || [];
+        
+        if (!userPermissions.includes(permission)) {
+            return res.status(403).json({ error: 'Permission denied' });
+        }
+        next();
+    };
+}
+
+// Usage
+app.delete('/users/:id', 
+    authenticateToken, 
+    requirePermission('delete:users'),
+    async (req, res) => {
+        // Only users with 'delete:users' permission
+    }
+);
+```
+
+**Trade-offs: Embedding vs. Database Lookup**
+
+**Embedding in Token (Stateless):**
+
+**Pros:**
+- **Performance**: No database query on each request (faster)
+- **Scalability**: Stateless, works across multiple servers
+- **Offline Validation**: Can verify permissions without database
+
+**Cons:**
+- **Token Size**: Large tokens (more data = bigger token)
+- **Stale Data**: Permissions updated in DB don't reflect in token until re-login
+- **No Revocation**: Cannot revoke permissions until token expires
+- **Security Risk**: If token stolen, attacker has permissions until expiration
+
+**Database Lookup (Stateful):**
+
+**Pros:**
+- **Real-Time Updates**: Permissions changes take effect immediately
+- **Revocation**: Can revoke permissions instantly
+- **Smaller Tokens**: Token only contains user ID
+- **Audit Trail**: Can log permission checks
+
+**Cons:**
+- **Performance**: Database query on every request (slower)
+- **Scalability**: Database becomes bottleneck (shared state)
+- **Availability**: Requires database to be available
+
+**Hybrid Approach (Best Practice):**
+
+```javascript
+// Token contains roles (lightweight)
+const token = jwt.sign({
+    sub: user.id,
+    roles: ['user', 'admin']  // Roles change infrequently
+}, process.env.JWT_SECRET);
+
+// Permissions cached in Redis (fast lookup, can be invalidated)
+async function getUserPermissions(userId) {
+    const cacheKey = `permissions:${userId}`;
+    const cached = await redis.get(cacheKey);
+    
+    if (cached) {
+        return JSON.parse(cached);
+    }
+    
+    // Fetch from database
+    const permissions = await getPermissionsFromDB(userId);
+    await redis.setEx(cacheKey, 3600, JSON.stringify(permissions));  // 1 hour TTL
+    
+    return permissions;
+}
+
+// Middleware
+async function requirePermission(permission) {
+    return async (req, res, next) => {
+        const permissions = await getUserPermissions(req.user.sub);
+        
+        if (!permissions.includes(permission)) {
+            return res.status(403).json({ error: 'Permission denied' });
+        }
+        next();
+    };
+}
+```
+
+**System Design Consideration**: Use **embedded claims** for **infrequently changing data** (roles, user ID) and **database/cache lookup** for **frequently changing data** (permissions, feature flags). Balance between **performance** (stateless tokens) and **flexibility** (real-time permission updates). For high-security systems, prefer database lookup with caching for immediate revocation; for high-performance systems, embed permissions with short token expiration.
+

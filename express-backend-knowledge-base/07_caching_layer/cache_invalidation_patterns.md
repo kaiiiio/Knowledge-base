@@ -307,6 +307,57 @@ Cache invalidation keeps cached data fresh by removing or updating cache when so
 - Tag-based: Related caches
 - Change streams: Automatic
 
+---
+
+## 🎯 Interview Questions: Cache Invalidation
+
+### Q1: Why is cache invalidation considered a hard problem? Explain the main strategies conceptually.
+
+**Answer:**
+
+Cache invalidation is hard because you must keep **fast but stale-prone** data (cache) in sync with the **source of truth** (DB) without over-complicating logic or hurting performance.
+
+**Key Strategies (Theory):**
+
+- **Time-based (TTL):**  
+  - Set expiration time; cache auto-expires.  
+  - Simple, good when data tolerance to staleness is high.  
+  - Risk: Data may be stale between writes and TTL expiry.
+- **Event-based:**  
+  - Invalidate when a **write** happens (create/update/delete).  
+  - More accurate; requires hooks in write paths or change streams.  
+  - Harder to implement across multiple services.
+- **Tag-based / Key grouping:**  
+  - Group related keys under logical tags (e.g., `user:123:*`).  
+  - Invalidate whole group when entity changes.  
+  - Useful when one write affects many cached views (profile + dashboard + recommendations).
+
+### Q2: How do you reason about consistency levels with caching?
+
+**Answer:**
+
+Think in terms of **“how fresh does this data need to be?”** rather than always requiring perfect consistency:
+
+- **Strong consistency:**  
+  - Users must never see stale data (e.g., balances, permissions).  
+  - Use **write-through** or **immediate invalidation on write**.  
+  - Might accept extra latency / complexity.
+- **Eventual consistency:**  
+  - Temporary staleness acceptable (e.g., like counts, view counters).  
+  - Use TTL + async invalidation; refresh lazily.  
+  - Much simpler and faster, good for most read-heavy data.
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Why cache invalidation is hard
+- ✅ Conceptual strategies (TTL, event-based, tag-based)
+- ✅ Consistency vs freshness trade-offs
+
+Use them to discuss reasoning, not just code, in interviews.
+
 **Next Steps:**
 - Learn [Cache Strategies](cache_strategies.md) for caching patterns
 - Study [Redis Integration](redis_integration.md) for implementation
