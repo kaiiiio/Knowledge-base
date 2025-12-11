@@ -139,6 +139,84 @@ Document database modeling balances embedding (fast reads, data duplication) wit
 - Index appropriately
 - Consider growth
 
+---
+
+## 🎯 Interview Questions: Document Data Modeling
+
+### Q1: Embed vs Reference — how do you decide in MongoDB?
+
+**Answer:**
+
+```
+Embed (Denormalize):
+├─ Small, bounded subdocuments
+├─ Frequently read together with parent
+├─ 1-to-few relationships (profile, preferences)
+├─ Read-heavy workloads
+
+Reference (Normalize):
+├─ Large or unbounded relationships (posts → comments)
+├─ Shared data across many parents (tags)
+├─ Write-heavy or frequently updated subdocs
+├─ Need independent lifecycle
+```
+
+**Decision Matrix:**
+
+| Criterion           | Embed             | Reference             |
+|---------------------|-------------------|-----------------------|
+| Data size           | Small             | Large/unbounded       |
+| Access pattern      | Read together     | Separate reads        |
+| Duplication impact  | Acceptable        | Should avoid          |
+| Update frequency    | Rare              | Frequent              |
+
+### Q2: How do you design a schema for an e-commerce order system?
+
+**Answer:**
+
+```
+User
+├─ Profile (embedded)
+└─ Orders (referenced or embedded depending on size)
+
+Order
+├─ orderItems (embedded array)
+└─ payment, shipment (embedded snapshots)
+
+Product
+└─ Current data (referenced)
+```
+
+```javascript
+// Example order document
+{
+  _id: ObjectId(),
+  userId: ObjectId('...'),            // reference
+  status: 'COMPLETED',
+  total: 129.99,
+  items: [                            // embedded (small, read with order)
+    { productId: ObjectId('...'), name: 'Laptop', qty: 1, price: 129.99 }
+  ],
+  shipping: {                         // snapshot data
+    address: '123 Main St',
+    city: 'NYC',
+    country: 'US'
+  },
+  createdAt: ISODate('2024-01-01')
+}
+```
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Embed vs reference decision-making
+- ✅ E-commerce schema design
+- ✅ Practical modeling heuristics
+
+Master these for mid/senior interviews focused on MongoDB schema design.
+
 **Next Steps:**
 - Learn [Mongoose Setup](mongoose_setup_and_basics.md) for ODM usage
 - Study [Aggregation Pipeline](aggregation_pipeline.md) for complex queries

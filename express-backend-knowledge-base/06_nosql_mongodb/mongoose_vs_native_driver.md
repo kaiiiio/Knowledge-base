@@ -355,6 +355,81 @@ Mongoose provides schema-based modeling with validation and type casting, making
 - Mongoose: Validation, type safety, team projects
 - Native Driver: Performance, simple operations, full control
 
+---
+
+## 🎯 Interview Questions: Mongoose vs Native Driver
+
+### Q1: How do you decide between Mongoose and the native MongoDB driver in a production Express.js app?
+
+**Answer:**
+
+```
+Choose Mongoose when:
+├─ Need schema validation / defaults
+├─ Want middleware hooks (pre-save, post-remove)
+├─ Working with large team (consistent patterns)
+├─ Prefer TypeScript-friendly typings
+└─ Rapid CRUD development
+
+Choose Native Driver when:
+├─ High-performance workloads (batch inserts, analytics)
+├─ Need fine-grained control over queries/pipelines
+├─ Application already enforces validation elsewhere
+└─ Want smaller dependency footprint
+```
+
+**Hybrid Strategy:**
+
+```javascript
+// Use Mongoose for core domain models
+const User = mongoose.model('User', userSchema);
+
+// Use native driver for log/event collection
+const eventsCollection = mongoose.connection.db.collection('events');
+
+app.post('/events', async (req, res) => {
+  await eventsCollection.insertOne({
+    ...req.body,
+    createdAt: new Date()
+  });
+  res.json({ success: true });
+});
+```
+
+### Q2: What are the performance considerations when using Mongoose?
+
+**Answer:**
+
+1. **Additional Overhead:** Mongoose adds validation, casting, and middleware per document (≈5-15% overhead).
+2. **Lean Queries:** Use `.lean()` for read-only operations to skip creating full Mongoose documents.
+3. **Bulk Operations:** Prefer `Model.bulkWrite()` or native driver for batch inserts/updates.
+4. **Aggregation:** For very complex pipelines, consider native driver (`mongoose.connection.db.collection('...').aggregate()`).
+5. **Memory Usage:** Populating many documents can increase memory footprint—use selective populate.
+
+```javascript
+// Performance optimized read
+const users = await User.find({ active: true })
+  .select('name email lastLogin')
+  .lean(); // returns plain JSON objects
+
+// Bulk write via native driver for speed
+await User.collection.bulkWrite([
+  { updateOne: { filter: { _id: id }, update: { $set: { active: false } } } },
+  { insertOne: { document: newUserDoc } }
+]);
+```
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Decision criteria: Mongoose vs native driver
+- ✅ Performance considerations
+- ✅ Hybrid strategies
+
+Master these for senior-level interviews focused on MongoDB integration patterns.
+
 **Next Steps:**
 - Learn [Mongoose Setup](mongoose_setup_and_basics.md) for ODM usage
 - Study [MongoDB Aggregation](../06_nosql_mongodb/aggregation_pipeline.md) for complex queries

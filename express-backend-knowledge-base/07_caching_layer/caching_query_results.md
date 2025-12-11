@@ -167,6 +167,54 @@ Caching query results reduces database load and improves response times. Use cac
 - Monitor hit rates
 - Handle cache failures
 
+---
+
+## 🎯 Interview Questions: Caching Query Results
+
+### Q1: Conceptually, how does caching query results change the performance profile of an Express.js API?
+
+**Answer:**
+
+Without caching, every request goes to the **database**, so latency and throughput are bounded by DB performance.
+
+With caching:
+
+```
+Request Flow (with Cache-Aside):
+Client → API → Cache
+              ├─ Hit  → Return value (few ms)
+              └─ Miss → Query DB → Store in cache → Return
+```
+
+- **Cold path (first request):** Same as no cache (hits DB once).  
+- **Warm path (subsequent requests):** Served from memory (Redis), often **10–100x faster**.  
+- **Effect on DB:** Fewer repeated reads → more capacity for writes / complex queries.
+
+### Q2: What are the main risks of caching query results and how do you mitigate them?
+
+**Answer:**
+
+**Risks (Theory):**
+
+- **Stale Data:** Cache may return outdated results if not invalidated.  
+  → Mitigate with TTL + event-based invalidation for critical writes.
+- **Cache Stampede:** Many concurrent requests miss at once and all hit DB.  
+  → Mitigate with request coalescing (single “leader” populates cache) or random jitter in TTL.
+- **Thundering Herd on Expiry:** Many keys expiring simultaneously cause DB spike.  
+  → Mitigate with **staggered TTLs** and background refresh.
+- **Incorrect Invalidation:** Bugs in invalidation logic cause subtle consistency issues.  
+  → Keep invalidation rules simple and close to write paths.
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ How caching reshapes latency/throughput
+- ✅ Conceptual risk analysis (staleness, stampede, herd)
+
+They help you explain not just “how to cache” but “how to think about caching safely”.
+
 **Next Steps:**
 - Learn [Cache Strategies](cache_strategies.md) for patterns
 - Study [Cache Invalidation](cache_invalidation_patterns.md) for management

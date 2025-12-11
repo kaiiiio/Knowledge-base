@@ -371,3 +371,115 @@ Caching significantly improves performance by storing frequently accessed data i
 - Study [Cache Invalidation Patterns](cache_invalidation_patterns.md) for invalidation
 - Master [Performance Optimization](../15_deployment_and_performance/) for tuning
 
+---
+
+## 🎯 Interview Questions: Caching Strategies
+
+### Q1: Explain cache-aside, write-through, and write-back caching. When would you use each?
+
+**Answer:**
+
+**Cache-Aside (Lazy Loading):**
+
+```javascript
+// Read-through pattern
+async function getUser(userId) {
+    const cacheKey = `user:${userId}`;
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+        return JSON.parse(cached); // Cache hit
+    }
+
+    // Cache miss → load from DB
+    const user = await User.findById(userId);
+    if (!user) return null;
+
+    await redis.setEx(cacheKey, 3600, JSON.stringify(user)); // 1 hour TTL
+    return user;
+}
+```
+
+**Use When:** Reads >> Writes, acceptable to have stale data until TTL or explicit invalidation.
+
+---
+
+**Write-Through:**
+
+```javascript
+// Write to DB and cache together
+async function updateUser(userId, data) {
+    const user = await User.findByIdAndUpdate(userId, data, { new: true });
+
+    await redis.setEx(`user:${userId}`, 3600, JSON.stringify(user)); // Keep cache in sync
+    return user;
+}
+```
+
+**Use When:** Strong consistency needed between cache and DB; slightly higher write latency is acceptable.
+
+---
+
+**Write-Back (Write-Behind):**
+
+```javascript
+// Write to cache, flush to DB asynchronously
+async function updateUser(userId, data) {
+    const cacheKey = `user:${userId}`;
+
+    // Update cache immediately
+    const updated = { ...data, updatedAt: new Date().toISOString() };
+    await redis.setEx(cacheKey, 3600, JSON.stringify(updated));
+
+    // Enqueue DB write (background job)
+    await queue.add('persist-user', { userId, data: updated });
+
+    return updated;
+}
+```
+
+**Use When:** Very high write throughput, some risk of data loss acceptable (e.g., analytics, counters).
+
+---
+
+### Q2: How do you decide what to cache? What metrics would you monitor in production?
+
+**Answer:**
+
+**What to Cache:**
+
+- **Hot Data:** Frequently accessed (top N items, popular products, dashboards).
+- **Expensive Computations:** Aggregations, analytics, complex joins.
+- **External API Responses:** Third-party data with rate limits.
+- **Sessions and Tokens:** User sessions, auth tokens (with TTL).
+
+**What NOT to Cache:**
+
+- Highly volatile data that changes every second (unless carefully designed).
+- Sensitive data without encryption.
+- Huge objects that exceed memory budgets.
+
+**Metrics to Monitor:**
+
+```text
+- Cache hit rate        = hits / (hits + misses)
+- Average latency       = time to serve from cache vs DB
+- Evictions             = number of keys evicted (memory pressure)
+- Memory usage          = used vs max memory
+- Key cardinality       = number of keys (by prefix)
+```
+
+**Visual:** Cache Hit/Miss Flow
+
+```text
+Request
+  │
+  ├─► Cache
+  │     ├─ Hit  ─► Return cached response  (fast)
+  │     └─ Miss ─► Query DB → Populate cache → Return (slow)
+  │
+  └─ Monitor hit rate, latency, evictions
+```
+
+Use these questions + patterns to discuss real-world caching designs in interviews.
+

@@ -391,6 +391,67 @@ MongoDB aggregation pipeline processes documents through multiple stages, enabli
 - $sort: Sort results
 - $limit/$skip: Pagination
 
+---
+
+## 🎯 Interview Questions: Aggregation Pipeline
+
+### Q1: When would you choose the aggregation pipeline over MapReduce? What are the trade-offs?
+
+**Answer:**
+
+```
+Aggregation Pipeline:
+├─ Runs inside the MongoDB engine
+├─ Stage-based ($match, $group, $project…)
+├─ Index-aware, highly optimized
+├─ Real-time analytics, dashboards, APIs
+└─ Recommended for >95% scenarios
+
+MapReduce:
+├─ Uses JavaScript map/reduce functions
+├─ Slower, executed outside core engine
+├─ Requires sharding for scale
+└─ Legacy or extremely custom logic
+```
+
+**Visual:**
+
+```
+Aggregation Pipeline:   $match → $group → $project → $sort
+MapReduce:              map() → shuffle → reduce() → finalize()
+```
+
+### Q2: How do you optimize aggregation pipelines for large datasets?
+
+**Answer:**
+
+1. **Filter Early:** Place `$match` as the first stage so fewer documents flow downstream.
+2. **Project Fields:** Use `$project` or `$unset` to remove unused fields and reduce document size.
+3. **Use Covered Indexes:** Ensure `$match` and `$sort` use compound indexes.
+4. **Limit Data:** Apply `$limit` (and `$skip` with caution) to cap result size.
+5. **Use `$facet` Carefully:** Separate heavy computations, monitor memory usage.
+
+```javascript
+const pipeline = [
+  { $match: { status: 'COMPLETED', createdAt: { $gte: start, $lte: end } } }, // early filter
+  { $project: { userId: 1, total: 1, createdAt: 1 } },                        // trim fields
+  { $group: { _id: '$userId', totalSpent: { $sum: '$total' } } },
+  { $sort: { totalSpent: -1 } },
+  { $limit: 5 }
+];
+```
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Aggregation pipeline vs MapReduce
+- ✅ Pipeline optimization strategies
+- ✅ Best practices for large datasets
+
+Master these for mid/senior MongoDB interviews focused on analytics & reporting.
+
 **Next Steps:**
 - Learn [Mongoose Setup](mongoose_setup_and_basics.md) for ODM usage
 - Study [Change Streams](change_streams_for_events.md) for real-time updates

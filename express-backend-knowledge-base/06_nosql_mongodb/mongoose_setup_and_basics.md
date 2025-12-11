@@ -478,6 +478,83 @@ Mongoose provides a schema-based solution for working with MongoDB in Express.js
 - Query building
 - Population (references)
 
+---
+
+## 🎯 Interview Questions: Mongoose Basics
+
+### Q1: How does Mongoose differ from the native MongoDB driver? When would you choose one over the other?
+
+**Answer:**
+
+```
+Mongoose (ODM):
+├─ Schema definitions with validation
+├─ Middleware hooks (pre/post save, validate…)
+├─ Virtuals, getters/setters
+├─ Populate for references
+├─ Type casting + defaults
+└─ Best when data structure is well-defined
+
+Native Driver:
+├─ Direct MongoDB API access
+├─ No schema enforcement
+├─ Lower-level control, faster for raw ops
+├─ Less overhead, smaller bundle
+└─ Best for high-performance or dynamic schemas
+```
+
+**Decision Example:**
+- Startups / CRUD APIs → **Mongoose** (faster dev, validation built-in)
+- Analytics / pipelines → **Native Driver** (manual control & performance)
+- Mixed: Use native driver for aggregation-heavy logic, Mongoose for CRUD.
+
+### Q2: How do you enforce validation and handle errors in Mongoose?
+
+**Answer:**
+
+```javascript
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: [true, 'Email required'],
+    match: [/^[^@\s]+@[^@\s]+\.[^@\s]+$/, 'Invalid email format'],
+    unique: true
+  },
+  age: {
+    type: Number,
+    min: [13, 'Must be at least 13'],
+    max: [120, 'Age seems invalid']
+  }
+}, { timestamps: true });
+
+// Centralized error handler
+app.use((err, req, res, next) => {
+  if (err instanceof mongoose.Error.ValidationError) {
+    const details = Object.values(err.errors).map(e => ({
+      field: e.path,
+      message: e.message
+    }));
+    return res.status(400).json({ error: 'Validation failed', details });
+  }
+
+  if (err.code === 11000) { // duplicate key
+    return res.status(409).json({ error: 'Duplicate key', field: Object.keys(err.keyValue)[0] });
+  }
+
+  next(err);
+});
+```
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Mongoose vs native driver trade-offs
+- ✅ Validation & error handling patterns
+
+Master these for interviews centered on ODM usage in Node.js.
+
 **Next Steps:**
 - Learn [MongoDB Aggregation](../06_nosql_mongodb/aggregation_pipeline.md) for complex queries
 - Study [Data Modeling for Document DBs](../06_nosql_mongodb/data_modeling_for_document_dbs.md) for schema design

@@ -1,45 +1,27 @@
 // "The Non-Blocking Upload System"
 // Scenario: You are building a service like Instagram or Google Drive. Users upload large files (e.g., 4K Images or PDFs), and your system needs to perform heavy processing on them (e.g., generating thumbnails, extracting text, or virus scanning).
-
 // The Problem: Currently, your MVP is synchronous.
-
 // User POSTs a file.
-
 // Server accepts file → resizes image (takes 3 seconds) → saves to disk.
-
 // Server returns "200 OK".
-
 // The Failure: When 50 users upload at once, your web server threads are all stuck resizing images. The API becomes unresponsive. Timeouts occur.
-
 // The Task: Refactor this into an Asynchronous Architecture. The API must return a "Success" response in < 200ms, even if the image processing takes 10 seconds.
 
 
 // Approach:
 
 // The API Service (The Producer)
-
 // Accepts the file.
-
 // Saves the "Raw" file to a storage location (simulate S3 with a local folder).
-
 // Creates a "Job" entry in a database with status PENDING.
-
 // Pushes a message to a Queue.
-
 // Crucial: Returns a job_id to the user immediately.
-
 // The Worker Service (The Consumer)
-
 // Watches the Queue.
-
 // Picks up the message.
-
 // Loads the file, does the heavy processing (simulated with time.sleep(5)).
-
 // Updates the database status to COMPLETED.
-
 // The Client Polling (The Feedback Loop)
-
 // Implement a /status/{job_id} endpoint so the user can check if their file is ready.
 
 

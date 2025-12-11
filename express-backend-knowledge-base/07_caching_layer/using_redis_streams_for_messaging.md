@@ -218,6 +218,69 @@ Redis Streams provide log-like messaging for event-driven architectures. Use str
 - Handle errors
 - Monitor stream health
 
+---
+
+## 🎯 Interview Questions: Redis Streams
+
+### Q1: Conceptually, how do Redis Streams compare to Kafka-style logs for event-driven systems?
+
+**Answer:**
+
+Both Redis Streams and Kafka expose an **append-only log** abstraction, but with different design goals:
+
+- **Redis Streams:**  
+  - In-memory first, optional persistence.  
+  - Simpler to operate, great for **smaller/medium** workloads.  
+  - Built-in **consumer groups**, per-consumer pending message tracking.  
+  - Tight integration with other Redis features (caching, locks, rate limiting).
+- **Kafka:**  
+  - Disk-based, horizontally scalable from day one.  
+  - Strong durability guarantees, huge throughput (millions msgs/sec).  
+  - Heavier operational footprint (brokers, Zookeeper/KRaft, schemas).
+
+Use Redis Streams when:
+- You’re already using Redis.  
+- You need **lightweight** event streaming / task queues.  
+- Data volume is moderate and in-memory model fits.
+
+Use Kafka when:
+- You need **massive scale** and long-term durable logs.  
+- Many independent consumers and teams depend on the streams.  
+- Ordering and replay over long windows is critical.
+
+### Q2: What are the main failure scenarios with Redis Streams consumers, and how do you handle them conceptually?
+
+**Answer:**
+
+Key failure scenarios:
+
+- **Consumer Crash After Reading but Before Processing:**  
+  - Message stays in the **pending entries list (PEL)**.  
+  - Another consumer in the same group can **claim** and reprocess it.
+- **Slow Consumer:**  
+  - PEL grows; messages remain un-acked.  
+  - Need monitoring and rebalancing (move partitions/streams or spin up more consumers).
+- **Consumer Group Imbalance:**  
+  - Some consumers process much more than others.  
+  - Use sharding or logical partitioning of streams.
+
+Conceptual mitigations:
+
+- Design **idempotent handlers** so reprocessing the same message is safe.  
+- Periodically scan PEL for “stuck” messages and reassign them.  
+- Use clear **dead-letter strategy** for messages that repeatedly fail.
+
+---
+
+## Summary
+
+These interview questions cover:
+- ✅ Redis Streams vs Kafka at a conceptual level
+- ✅ Failure modes and recovery strategies
+- ✅ Idempotency and consumer group design
+
+They help you reason about streaming patterns beyond just API calls.
+
 **Next Steps:**
 - Learn [Cache Strategies](cache_strategies.md) for caching
 - Study [Background Jobs](../08_background_jobs_and_task_queues/) for task processing
