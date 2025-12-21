@@ -1,132 +1,240 @@
-# Backend System Design Solutions
+# Backend System Design - Complete Collection
 
-Complete system design solutions with implementations, visualizations, and best practices.
+This directory contains 16+ comprehensive system design solutions covering real-world interview questions from top companies like Walmart, Amazon, Google, and more.
 
-## Files
+## 📚 Complete System Design Topics
 
-### 1. [Non-Blocking Upload System](./01_Non_Blocking_Upload_System.md)
-Complete system design for handling large file uploads with asynchronous processing.
+### ✅ Completed Topics (10/16)
 
-**Contents**:
-- Problem statement and requirements
-- System architecture overview
-- Detailed component design
-- Database schema
-- Message queue design
-- Challenges and solutions
-- Edge cases and handling
-- Alternative architectures
-- Best possible solution
-- Performance metrics
-- Security considerations
-- Scalability considerations
-- Deployment strategy
-- Testing strategy
-- Cost optimization
+1. **[Twitter Timeline System](./06_Twitter/06_Twitter_Timeline_System.md)** - Social media feed with hybrid push-pull architecture
+2. **[URL Shortener](./07_URL_Shortener/07_URL_Shortener_System.md)** - Scalable URL shortening service like bit.ly
+3. **[Load Balancer](./08_Load_Balancer/08_Load_Balancer_System.md)** - Traffic distribution with multiple algorithms
+4. **[Logging System](./09_Logging_System/09_Logging_System.md)** - Distributed logging with ELK stack architecture
+5. **[E-commerce Platform](./10_Ecommerce_Platform/10_Ecommerce_Platform_System.md)** - Complete online shopping platform
+6. **[Recommendation System](./11_Recommendation_System/11_Recommendation_System.md)** - ML-based product recommendations
+7. **[Order Management System](./15_Order_Management/15_Order_Management_System.md)** - Order processing with state machines
+8. **[Real-time Inventory Tracking](./20_Realtime_Inventory_Tracking/20_Realtime_Inventory_Tracking_System.md)** - Event-driven inventory management
+9. **[Parking Lot Reservation](./19_Parking_Lot_Reservation/19_Parking_Lot_Reservation_System.md)** - Reservation system with concurrency control
+10. **[Rating System for E-commerce](./21_Rating_System_Ecommerce/21_Rating_System_Ecommerce.md)** - Product reviews with spam detection
 
-### 2. [Implementation Code](./01_Non_Blocking_Upload_System_Implementation.js)
-Production-ready implementation with:
-- Express.js API server
-- RabbitMQ queue integration
-- PostgreSQL database
-- Redis caching
-- AWS S3 storage
-- Worker service
-- Error handling and retries
-- Locking mechanism
-- Status endpoints
+### 📝 Additional Topics (6 remaining)
 
-### 3. [Visual Diagrams](./01_Non_Blocking_Upload_System_Visuals.md)
-Complete visual representations:
-- System architecture diagram
-- Upload flow sequence diagram
-- Processing pipeline flow
-- Queue architecture
-- Worker processing flow
-- Failure handling flow
-- Scaling architecture
-- Data flow diagram
-- Monitoring dashboard
-- Error recovery flow
-- Cost optimization strategy
-- Security layers
+11. **Aarogya Setu** - Contact tracing application
+12. **Google Play Store** - App marketplace platform
+13. **Zoom LLD** - Video conferencing (Low-Level Design)
+14. **Waste Management App** - Route optimization and tracking
+15. **Library Management LLD** - Book management system
+16. **Warehouse Management** - Warehouse operations system
 
-## Key Concepts Covered
+---
 
-### Architecture Patterns
-- **Producer-Consumer**: API produces jobs, workers consume
-- **Async Processing**: Non-blocking uploads
-- **Queue-based**: Message queue for decoupling
-- **Horizontal Scaling**: Multiple API servers and workers
+## 🎯 What Each Topic Includes
 
-### Technologies
-- **API**: Express.js/Fastify
-- **Queue**: RabbitMQ/Redis Queue/AWS SQS
-- **Database**: PostgreSQL with read replicas
-- **Cache**: Redis
-- **Storage**: AWS S3/Google Cloud Storage
-- **Processing**: Sharp (images), PDF libraries
+Every system design document contains:
 
-### Design Principles
-- **Separation of Concerns**: Upload vs Processing
-- **Fast Response**: < 200ms API response
-- **Reliability**: Retries, DLQ, monitoring
-- **Scalability**: Auto-scaling workers
-- **Observability**: Metrics, logging, alerting
+- **Problem Statement**: Clear requirements and constraints
+- **Architecture Diagrams**: Mermaid diagrams showing system components
+- **Database Schema**: Complete SQL schemas with indexes
+- **Implementation**: Production-ready Node.js/Express code
+- **Scalability**: Caching, sharding, and performance optimizations
+- **Interview Talking Points**: Common questions and answers
+- **Trade-offs**: Comparison of different approaches
+- **Performance Metrics**: Target and achieved metrics
 
-## Problem-Solution Mapping
+---
 
-| Problem | Solution |
-|---------|----------|
-| Slow API response | Async queue processing |
-| Server thread blocking | Separate worker processes |
-| High concurrent load | Horizontal scaling |
-| Processing failures | Retry with exponential backoff |
-| Queue overflow | Backpressure and rate limiting |
-| Worker crashes | Heartbeat and recovery |
-| Storage costs | Lifecycle policies |
-| Duplicate processing | Job locking |
+## 🏗️ Common Architecture Patterns
 
-## Performance Targets
+### Microservices Architecture
+- API Gateway pattern
+- Service-to-service communication
+- Event-driven architecture
+- Message queues (Kafka, RabbitMQ)
 
-| Metric | Target | Achievement |
-|--------|--------|-------------|
-| Upload Response | < 200ms | ✅ Achieved |
-| Throughput | 1000 req/min | ✅ Scalable |
-| Processing Time | 10-30s | ✅ Acceptable |
-| Status Check | < 50ms | ✅ With caching |
-| Success Rate | > 99% | ✅ With retries |
+### Database Patterns
+- Read replicas for scaling reads
+- Sharding for horizontal scaling
+- CQRS for read-heavy systems
+- Event sourcing for audit trails
 
-## Best Practices
+### Caching Strategies
+- Multi-layer caching (L1: In-memory, L2: Redis)
+- Cache-aside pattern
+- Write-through caching
+- Cache invalidation strategies
 
-1. **Always return fast**: API should respond immediately
-2. **Use queues**: Decouple upload from processing
-3. **Implement retries**: Handle transient failures
-4. **Monitor everything**: Metrics, logs, alerts
-5. **Scale horizontally**: Add more workers as needed
-6. **Cache status**: Reduce database load
-7. **Handle failures**: DLQ for manual review
-8. **Secure files**: Validate, scan, encrypt
+### Real-time Updates
+- WebSocket connections
+- Server-Sent Events (SSE)
+- Long polling
+- Push notifications
 
-## Interview Points
+---
 
-### System Design Questions
-- How do you handle 1000 concurrent uploads?
-- What if processing takes 1 hour?
-- How do you recover from worker crashes?
-- How do you prevent duplicate processing?
-- How do you scale to 1M uploads/day?
+## 💡 Key Technologies Covered
 
-### Technical Deep Dives
-- Why RabbitMQ over Redis Queue?
-- How does job locking work?
-- What's the retry strategy?
-- How do you handle storage costs?
-- What about security?
+### Backend Frameworks
+- **Node.js/Express**: Primary framework
+- **FastAPI**: Python alternative
+- **Spring Boot**: Java alternative
 
-## References
+### Databases
+- **PostgreSQL**: Relational data, ACID transactions
+- **MongoDB**: Document store, flexible schema
+- **Redis**: Caching, real-time data
+- **Elasticsearch**: Full-text search
+- **InfluxDB**: Time-series data
 
-- [RabbitMQ Documentation](https://www.rabbitmq.com/documentation.html)
-- [AWS S3 Best Practices](https://docs.aws.amazon.com/AmazonS3/latest/userguide/best-practices.html)
-- [System Design Patterns](https://www.enterpriseintegrationpatterns.com/)
+### Message Queues
+- **Kafka**: Event streaming, high throughput
+- **RabbitMQ**: Task queues, reliable delivery
+- **AWS SQS**: Managed queue service
 
+### Monitoring & Observability
+- **Prometheus**: Metrics collection
+- **Grafana**: Visualization
+- **ELK Stack**: Logging (Elasticsearch, Logstash, Kibana)
+- **Jaeger**: Distributed tracing
+
+---
+
+## 📊 Performance Benchmarks
+
+| System | Throughput | Latency (p95) | Availability |
+|--------|-----------|---------------|--------------|
+| URL Shortener | 100K req/s | \u003c 50ms | 99.9% |
+| E-commerce | 10K orders/min | \u003c 500ms | 99.95% |
+| Logging | 1M logs/s | \u003c 100ms | 99.9% |
+| Inventory | 50K updates/s | \u003c 200ms | 99.9% |
+| Parking | 1K reservations/min | \u003c 300ms | 99.99% |
+
+---
+
+## 🎓 Interview Preparation Guide
+
+### System Design Interview Framework
+
+1. **Clarify Requirements** (5 min)
+   - Functional requirements
+   - Non-functional requirements (scale, performance)
+   - Constraints and assumptions
+
+2. **High-Level Design** (10 min)
+   - Draw architecture diagram
+   - Identify key components
+   - Explain data flow
+
+3. **Deep Dive** (20 min)
+   - Database schema
+   - API design
+   - Scalability strategies
+   - Handle edge cases
+
+4. **Trade-offs** (5 min)
+   - Discuss alternatives
+   - Explain design decisions
+   - Performance vs complexity
+
+### Common Interview Questions
+
+#### Scalability
+- How do you scale to 1M users?
+- How do you handle traffic spikes?
+- How do you shard the database?
+
+#### Reliability
+- How do you ensure high availability?
+- How do you handle failures?
+- How do you prevent data loss?
+
+#### Performance
+- How do you reduce latency?
+- How do you optimize database queries?
+- When do you use caching?
+
+#### Consistency
+- How do you handle distributed transactions?
+- How do you ensure data consistency?
+- CAP theorem trade-offs?
+
+---
+
+## 🔗 Learning Path
+
+### Beginner
+1. Start with **URL Shortener** - Simple but covers core concepts
+2. Move to **Load Balancer** - Understand traffic distribution
+3. Study **Logging System** - Learn about data pipelines
+
+### Intermediate
+4. **E-commerce Platform** - Microservices architecture
+5. **Order Management** - State machines and workflows
+6. **Parking Lot Reservation** - Concurrency control
+
+### Advanced
+7. **Recommendation System** - ML integration
+8. **Real-time Inventory** - Event-driven architecture
+9. **Rating System** - Spam detection and moderation
+
+---
+
+## 📖 Additional Resources
+
+### Books
+- "Designing Data-Intensive Applications" by Martin Kleppmann
+- "System Design Interview" by Alex Xu
+- "Building Microservices" by Sam Newman
+
+### Online Resources
+- [System Design Primer](https://github.com/donnemartin/system-design-primer)
+- [Grokking the System Design Interview](https://www.educative.io/courses/grokking-the-system-design-interview)
+- [High Scalability Blog](http://highscalability.com/)
+
+### Practice Platforms
+- LeetCode System Design
+- Pramp Mock Interviews
+- Exponent System Design Practice
+
+---
+
+## 🤝 Contributing
+
+This knowledge base is continuously updated with:
+- New system design patterns
+- Real interview questions
+- Performance optimizations
+- Best practices
+
+---
+
+## 📝 Quick Reference
+
+### Database Selection
+| Use Case | Database | Reason |
+|----------|----------|--------|
+| Transactions | PostgreSQL | ACID guarantees |
+| Flexible Schema | MongoDB | Document model |
+| Caching | Redis | In-memory speed |
+| Search | Elasticsearch | Full-text search |
+| Time-series | InfluxDB | Optimized for metrics |
+
+### When to Use What
+
+**Message Queue vs Database**
+- Use Queue: Async processing, decoupling services
+- Use Database: Persistent storage, complex queries
+
+**SQL vs NoSQL**
+- Use SQL: Structured data, complex joins, transactions
+- Use NoSQL: Flexible schema, horizontal scaling, high write throughput
+
+**Caching Strategy**
+- Cache-Aside: Read-heavy workloads
+- Write-Through: Write-heavy, consistency important
+- Write-Behind: High write throughput, eventual consistency OK
+
+---
+
+**Happy Learning! 🚀**
+
+For questions or contributions, refer to individual system design documents for detailed implementations and explanations.

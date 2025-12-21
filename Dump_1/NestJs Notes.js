@@ -1,26 +1,20 @@
-
-Ye notes cover karenge **pure documentation level tak** sab kuch (project setup se leke dependency injection, guards, interceptors, testing, CLI, etc).
-Har code example commented hoga (`#` or `//` style), aur har concept ke niche explanation hogi.
+### 📘 NESTJS FULL NOTES(BEGINNER → ADVANCED)
 
 ---
 
-### 📘 NESTJS FULL NOTES (BEGINNER → ADVANCED)
+#### 🧩 1. What is NestJS ?
 
----
+* ** NestJS ** ek ** progressive Node.js framework ** hai, jo ** TypeScript ** pe likha gaya hai.
+* Ye ** Express.js ** (default) ya ** Fastify ** ko use karta hai under the hood.
+* Architecture: ** Modular + Dependency Injection + MVC + OOP + FP + Reactive ** concepts ka mix.
 
-#### 🧩 1. What is NestJS?
-
-* **NestJS** ek **progressive Node.js framework** hai, jo **TypeScript** pe likha gaya hai.
-* Ye **Express.js** (default) ya **Fastify** ko use karta hai under the hood.
-* Architecture: **Modular + Dependency Injection + MVC + OOP + FP + Reactive** concepts ka mix.
-
-👉 Use hota hai large-scale **server-side applications**, **APIs**, **Microservices**, **GraphQL servers**, etc banane ke liye.
+👉 Use hota hai large - scale ** server - side applications **, ** APIs **, ** Microservices **, ** GraphQL servers **, etc banane ke liye.
 
 ---
 
 #### 🧱 2. Project Structure Example
 
-```
+  ```
 my-app/
 ├── src/
 │   ├── app.controller.ts
@@ -35,7 +29,7 @@ my-app/
 
 #### 🛠 3. Installation & Setup
 
-```bash
+  ```bash
 # Install Nest CLI globally
 npm i -g @nestjs/cli
 
@@ -50,9 +44,9 @@ npm run start
 
 ---
 
-#### ⚙️ 4. Main File (Bootstrap)
+#### ⚙️ 4. Main File(Bootstrap)
 
-```ts
+  ```ts
 // main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -71,7 +65,7 @@ bootstrap();
 
 #### 🧩 5. Modules
 
-* Every Nest app has at least **one root module**.
+  * Every Nest app has at least ** one root module **.
 * Modules help organize code into reusable units.
 
 ```ts
@@ -92,7 +86,7 @@ export class AppModule {}
 
 #### 🧠 6. Controllers
 
-* **Controllers** handle **incoming requests** and **return responses**.
+  * ** Controllers ** handle ** incoming requests ** and **return responses **.
 
 ```ts
 // app.controller.ts
@@ -112,14 +106,14 @@ export class AppController {
 
 👉 `@Controller('app')` = route prefix
 👉 `@Get()` = GET endpoint
-👉 `appService` injected using **Dependency Injection**
+👉 `appService` injected using ** Dependency Injection **
 
----
+  ---
 
-#### ⚙️ 7. Services (Providers)
+#### ⚙️ 7. Services(Providers)
 
-* **Services** are used to handle **business logic**.
-* They can be **injected** into controllers or other services.
+  * ** Services ** are used to handle ** business logic **.
+* They can be ** injected ** into controllers or other services.
 
 ```ts
 // app.service.ts
@@ -137,9 +131,9 @@ export class AppService {
 
 ---
 
-#### 🧩 8. Dependency Injection (DI)
+#### 🧩 8. Dependency Injection(DI)
 
-* Nest has its own **IoC (Inversion of Control)** container.
+  * Nest has its own ** IoC(Inversion of Control) ** container.
 * You just need to use `@Injectable()` and pass it in providers.
 
 ```ts
@@ -151,9 +145,9 @@ export class UserController {
 
 ---
 
-#### 🧾 9. Routing (HTTP Methods)
+#### 🧾 9. Routing(HTTP Methods)
 
-```ts
+  ```ts
 @Get('/users')
 findAll() { ... }
 
@@ -169,9 +163,9 @@ remove(@Param('id') id) { ... }
 
 ---
 
-#### 📦 10. DTO (Data Transfer Objects)
+#### 📦 10. DTO(Data Transfer Objects)
 
-* DTOs define the **shape of data** sent over network.
+  * DTOs define the ** shape of data ** sent over network.
 
 ```ts
 // create-user.dto.ts
@@ -192,9 +186,9 @@ create(@Body() createUserDto: CreateUserDto) {
 
 ---
 
-#### 🧱 11. Pipes (Validation / Transformation)
+#### 🧱 11. Pipes(Validation / Transformation)
 
-```ts
+  ```ts
 import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
 
 @Injectable()
@@ -216,9 +210,9 @@ getName(@Param('name', new UpperCasePipe()) name: string) {
 
 ---
 
-#### 🛡 12. Guards (Authorization)
+#### 🛡 12. Guards(Authorization)
 
-```ts
+  ```ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -242,7 +236,7 @@ getSecret() { return 'This is secret'; }
 
 #### 🕵️ 13. Interceptors
 
-* Intercept request/response to **modify** or **log**.
+  * Intercept request / response to ** modify ** or ** log **.
 
 ```ts
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
@@ -261,7 +255,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
 #### ⚡ 14. Middleware
 
-```ts
+  ```ts
 // logger.middleware.ts
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
@@ -269,7 +263,7 @@ import { Request, Response, NextFunction } from 'express';
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    console.log(`[${req.method}] ${req.originalUrl}`);
+    console.log(`[${ req.method }] ${ req.originalUrl } `);
     next();
   }
 }
@@ -289,7 +283,7 @@ export class AppModule implements NestModule {
 
 #### ⚙️ 15. Exception Filters
 
-```ts
+  ```ts
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
 
 @Catch(HttpException)
@@ -311,9 +305,9 @@ Use:
 
 ---
 
-#### 📡 16. Async Providers & Database Connection (Prisma/TypeORM Example)
+#### 📡 16. Async Providers & Database Connection(Prisma / TypeORM Example)
 
-```ts
+  ```ts
 @Module({
   imports: [TypeOrmModule.forRoot({
     type: 'postgres',
@@ -332,7 +326,7 @@ Use:
 
 #### 🧠 17. Lifecycle Hooks
 
-* `OnModuleInit`, `OnApplicationBootstrap`, `OnModuleDestroy` etc.
+  * `OnModuleInit`, `OnApplicationBootstrap`, `OnModuleDestroy` etc.
 
 ```ts
 @Injectable()
@@ -347,7 +341,7 @@ export class MyService implements OnModuleInit {
 
 #### 🧩 18. Configuration Management
 
-```ts
+  ```ts
 npm i @nestjs/config
 
 // app.module.ts
@@ -369,9 +363,9 @@ getValue() {
 
 ---
 
-#### 🔐 19. Authentication (JWT Example)
+#### 🔐 19. Authentication(JWT Example)
 
-```ts
+  ```ts
 npm install @nestjs/jwt passport-jwt
 
 // jwt.strategy.ts
@@ -397,10 +391,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 Nest supports multiple transport layers:
 
 * TCP
-* Redis
-* NATS
-* Kafka
-* MQTT
+  * Redis
+  * NATS
+  * Kafka
+  * MQTT
 
 Example:
 
@@ -416,7 +410,7 @@ await app.listen();
 
 #### 🧰 21. Testing
 
-```ts
+  ```ts
 npm run test
 ```
 
@@ -447,28 +441,28 @@ describe('AppService', () => {
 
 #### 💡 22. Decorators Recap
 
-| Decorator                             | Purpose                    |
+  | Decorator | Purpose |
 | ------------------------------------- | -------------------------- |
-| `@Controller()`                       | Marks class as controller  |
-| `@Get()`, `@Post()`                   | HTTP methods               |
-| `@Injectable()`                       | Marks class as provider    |
-| `@Module()`                           | Defines module             |
-| `@Param()` / `@Body()` / `@Query()`   | Extracts request data      |
-| `@UseGuards()` / `@UseInterceptors()` | Attach guards/interceptors |
+| `@Controller()` | Marks class as controller |
+| `@Get()`, `@Post()` | HTTP methods |
+| `@Injectable()` | Marks class as provider |
+| `@Module()` | Defines module |
+| `@Param()` / `@Body()` / `@Query()` | Extracts request data |
+| `@UseGuards()` / `@UseInterceptors()` | Attach guards / interceptors |
 
----
+  ---
 
 #### ⚡ 23. Nest CLI Shortcuts
 
-| Command                   | Description         |
+  | Command | Description |
 | ------------------------- | ------------------- |
-| `nest g module users`     | Generate module     |
+| `nest g module users` | Generate module |
 | `nest g controller users` | Generate controller |
-| `nest g service users`    | Generate service    |
+| `nest g service users` | Generate service |
 
----
+  ---
 
-#### 🧾 24. Decorator Flow (Request Lifecycle)
+#### 🧾 24. Decorator Flow(Request Lifecycle)
 
 1. Request hits Controller
 2. Middleware executes
@@ -476,7 +470,7 @@ describe('AppService', () => {
 4. Interceptors preprocess
 5. Pipes validate input
 6. Controller method runs
-7. Interceptors post-process response
+7. Interceptors post - process response
 8. Filter catches any error
 
 ---
@@ -486,41 +480,41 @@ describe('AppService', () => {
 ✅ Modular structure
 ✅ Dependency Injection
 ✅ Async programming
-✅ Platform-independent (Express/Fastify)
-✅ TypeScript-based
-✅ Extensible (custom decorators, guards, etc.)
+✅ Platform - independent(Express / Fastify)
+✅ TypeScript - based
+✅ Extensible(custom decorators, guards, etc.)
 
 ---
 
-Would you like me to continue with **Part 2 (Advanced Topics)** — including
-👉 GraphQL, WebSockets, Queues (Bull), EventEmitter, Swagger docs, Custom Decorators, File upload, Cron Jobs, etc.?
+  Would you like me to continue with ** Part 2(Advanced Topics) ** — including
+👉 GraphQL, WebSockets, Queues(Bull), EventEmitter, Swagger docs, Custom Decorators, File upload, Cron Jobs, etc.?
 
-If yes, I’ll write that in the same `.txt`-friendly commented format next.
-
-
+  If yes, I’ll write that in the same`.txt` - friendly commented format next.
 
 
 
-Perfect 🔥 — here comes **NestJS Notes Part 2 (Advanced Topics)** — written fully in **English**, formatted for `.txt` files (commented code, clean definitions, and structured explanations).
-These notes continue directly from Part 1 and cover **GraphQL, WebSockets, Queues, File Uploads, Cron Jobs, Events, Custom Decorators, Swagger, and Best Practices**.
+
+
+    Perfect 🔥 — here comes ** NestJS Notes Part 2(Advanced Topics) ** — written fully in ** English **, formatted for `.txt` files(commented code, clean definitions, and structured explanations).
+These notes continue directly from Part 1 and cover ** GraphQL, WebSockets, Queues, File Uploads, Cron Jobs, Events, Custom Decorators, Swagger, and Best Practices **.
 
 ---
 
-## ⚡ NESTJS ADVANCED NOTES (PART 2)
+## ⚡ NESTJS ADVANCED NOTES(PART 2)
 
 ---
 
 ### 🧩 26. GraphQL Integration
 
-NestJS has built-in GraphQL support via the `@nestjs/graphql` package.
+NestJS has built -in GraphQL support via the `@nestjs/graphql` package.
 
 ```bash
 npm install @nestjs/graphql @nestjs/apollo graphql apollo-server-express
 ```
 
-**Setup:**
+  ** Setup:**
 
-```ts
+    ```ts
 // app.module.ts
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -536,9 +530,9 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 export class AppModule {}
 ```
 
-**Resolver Example:**
+    ** Resolver Example:**
 
-```ts
+      ```ts
 // users.resolver.ts
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { UsersService } from './users.service';
@@ -560,9 +554,9 @@ export class UsersResolver {
 }
 ```
 
-**Model Example:**
+      ** Model Example:**
 
-```ts
+        ```ts
 // user.model.ts
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 
@@ -581,17 +575,17 @@ export class User {
 
 ---
 
-### 🌐 27. WebSockets (Real-time Communication)
+### 🌐 27. WebSockets(Real - time Communication)
 
-Nest provides built-in WebSocket support via `@nestjs/websockets`.
+Nest provides built -in WebSocket support via`@nestjs/websockets`.
 
 ```bash
 npm install @nestjs/websockets @nestjs/platform-socket.io
 ```
 
-**Gateway Example:**
+  ** Gateway Example:**
 
-```ts
+    ```ts
 // chat.gateway.ts
 import { WebSocketGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -613,15 +607,15 @@ export class ChatGateway {
 
 ---
 
-### 🧵 28. Task Queues (Bull / Redis)
+### 🧵 28. Task Queues(Bull / Redis)
 
-```bash
+  ```bash
 npm install @nestjs/bull bull ioredis
 ```
 
-**Setup:**
+  ** Setup:**
 
-```ts
+    ```ts
 // app.module.ts
 import { BullModule } from '@nestjs/bull';
 
@@ -636,9 +630,9 @@ import { BullModule } from '@nestjs/bull';
 export class AppModule {}
 ```
 
-**Producer:**
+    ** Producer:**
 
-```ts
+      ```ts
 // email.service.ts
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -653,9 +647,9 @@ export class EmailService {
 }
 ```
 
-**Consumer (Worker):**
+      ** Consumer(Worker):**
 
-```ts
+        ```ts
 // email.processor.ts
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
@@ -679,18 +673,18 @@ Use the `@nestjs/event-emitter` package for decoupled communication.
 npm install @nestjs/event-emitter
 ```
 
-**Setup:**
+  ** Setup:**
 
-```ts
+    ```ts
 @Module({
   imports: [EventEmitterModule.forRoot()],
 })
 export class AppModule {}
 ```
 
-**Emit event:**
+    ** Emit event:**
 
-```ts
+      ```ts
 // user.service.ts
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -704,9 +698,9 @@ export class UserService {
 }
 ```
 
-**Listen to event:**
+      ** Listen to event:**
 
-```ts
+        ```ts
 // user.listener.ts
 import { OnEvent } from '@nestjs/event-emitter';
 
@@ -721,7 +715,7 @@ export class UserListener {
 
 ---
 
-### 🕐 30. Cron Jobs (Scheduled Tasks)
+### 🕐 30. Cron Jobs(Scheduled Tasks)
 
 Nest uses `@nestjs/schedule` for CRON support.
 
@@ -729,9 +723,9 @@ Nest uses `@nestjs/schedule` for CRON support.
 npm install @nestjs/schedule
 ```
 
-**Setup:**
+  ** Setup:**
 
-```ts
+    ```ts
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -740,9 +734,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 export class AppModule {}
 ```
 
-**Use Cron:**
+    ** Use Cron:**
 
-```ts
+      ```ts
 // cron.service.ts
 import { Injectable } from '@nestjs/common';
 import { Cron, Interval, Timeout } from '@nestjs/schedule';
@@ -768,17 +762,17 @@ export class CronService {
 
 ---
 
-### 🧾 31. File Upload (Multipart)
+### 🧾 31. File Upload(Multipart)
 
-Nest uses `@nestjs/platform-express` + `multer`.
+Nest uses`@nestjs/platform-express` + `multer`.
 
 ```bash
 npm install @nestjs/platform-express multer
 ```
 
-**Example:**
+  ** Example:**
 
-```ts
+    ```ts
 import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -797,7 +791,7 @@ export class UploadController {
 
 ### 🧩 32. Custom Decorators
 
-You can create your own decorators using `createParamDecorator`.
+You can create your own decorators using`createParamDecorator`.
 
 ```ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
@@ -821,15 +815,15 @@ getUserAgent(@UserAgent() userAgent: string) {
 
 ---
 
-### 📘 33. Swagger (API Documentation)
+### 📘 33. Swagger(API Documentation)
 
-```bash
+  ```bash
 npm install @nestjs/swagger swagger-ui-express
 ```
 
-**Setup in main.ts:**
+  ** Setup in main.ts:**
 
-```ts
+    ```ts
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -856,15 +850,15 @@ Visit → `http://localhost:3000/api-docs`
 
 ### ⚙️ 34. Config + Env Variables
 
-Nest has a built-in `@nestjs/config` module.
+Nest has a built -in `@nestjs/config` module.
 
 ```bash
 npm install @nestjs/config
 ```
 
-**Example:**
+  ** Example:**
 
-```ts
+    ```ts
 // app.module.ts
 import { ConfigModule } from '@nestjs/config';
 
@@ -887,7 +881,7 @@ getDbUrl() {
 
 ### 🧩 35. Global Middlewares, Guards, and Filters
 
-You can make any middleware or guard **global**.
+You can make any middleware or guard ** global **.
 
 ```ts
 // main.ts
@@ -898,9 +892,9 @@ app.useGlobalInterceptors(new LoggingInterceptor());
 
 ---
 
-### 🔐 36. Role-based Authorization Example
+### 🔐 36. Role - based Authorization Example
 
-```ts
+  ```ts
 // roles.guard.ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -938,7 +932,7 @@ getAdminData() { return 'Admin section'; }
 
 ### 🧠 37. Exception Handling Best Practice
 
-* Throw `HttpException` with proper status codes.
+  * Throw`HttpException` with proper status codes.
 * Example:
 
 ```ts
@@ -955,14 +949,14 @@ throw new ForbiddenException('You are not allowed!');
 
 ### 🧰 38. Interceptor Use Cases
 
-* Logging
-* Transforming response
-* Caching
-* Timeout control
+  * Logging
+  * Transforming response
+    * Caching
+    * Timeout control
 
 Example: Modify response
 
-```ts
+  ```ts
 @UseInterceptors({
   intercept(context, next) {
     return next.handle().pipe(map(data => ({ success: true, data })));
@@ -974,16 +968,16 @@ Example: Modify response
 
 ### ⚡ 39. Performance Tips
 
-* Use `FastifyAdapter` for faster performance.
-* Use `CompressionMiddleware` for responses.
+  * Use`FastifyAdapter` for faster performance.
+* Use`CompressionMiddleware` for responses.
 * Always use async DB operations.
-* Split into **feature modules** for scalability.
+* Split into ** feature modules ** for scalability.
 
 ---
 
-### 🧪 40. Testing (E2E)
+### 🧪 40. Testing(E2E)
 
-```bash
+  ```bash
 npm run test:e2e
 ```
 
@@ -1019,7 +1013,7 @@ describe('AppController (e2e)', () => {
 
 ### 🧩 41. Project Structure Best Practice
 
-```
+  ```
 src/
 ├── main.ts
 ├── app.module.ts
@@ -1043,21 +1037,21 @@ src/
 
 ### 🧾 42. Summary — Core NestJS Concepts
 
-| Concept            | Description                          |
+  | Concept | Description |
 | ------------------ | ------------------------------------ |
-| Module             | Groups related providers/controllers |
-| Controller         | Handles routes                       |
-| Service (Provider) | Contains business logic              |
-| Guard              | Controls access                      |
-| Pipe               | Validates & transforms data          |
-| Interceptor        | Transforms request/response          |
-| Filter             | Handles exceptions                   |
-| Middleware         | Pre-processes requests               |
-| DTO                | Defines data shape                   |
-| Decorator          | Adds metadata or behavior            |
-| CLI                | Generates files quickly              |
+| Module | Groups related providers / controllers |
+| Controller | Handles routes |
+| Service(Provider) | Contains business logic |
+| Guard | Controls access |
+| Pipe | Validates & transforms data |
+| Interceptor | Transforms request / response |
+| Filter | Handles exceptions |
+| Middleware | Pre - processes requests |
+| DTO | Defines data shape |
+| Decorator | Adds metadata or behavior |
+| CLI | Generates files quickly |
 
----
+  ---
 
 
 
@@ -1535,17 +1529,17 @@ src/
 42. NESTJS CORE SUMMARY
 -----------------------
 
-Modules       → Organize code into logical blocks  
-Controllers   → Handle incoming requests  
-Providers     → Contain business logic (services)  
-Guards        → Protect routes (auth/roles)  
-Pipes         → Validate or transform input  
-Interceptors  → Transform request/response or add logic  
-Filters       → Catch and handle exceptions  
-Middleware    → Run before route handlers  
-DTOs          → Define data shape  
-Decorators    → Add metadata or logic  
-CLI           → Helps generate and scaffold code quickly  
+Modules       → Organize code into logical blocks
+Controllers   → Handle incoming requests
+Providers     → Contain business logic (services)
+Guards        → Protect routes (auth/roles)
+Pipes         → Validate or transform input
+Interceptors  → Transform request/response or add logic
+Filters       → Catch and handle exceptions
+Middleware    → Run before route handlers
+DTOs          → Define data shape
+Decorators    → Add metadata or logic
+CLI           → Helps generate and scaffold code quickly
 
 ------------------------------------------------------------
 
