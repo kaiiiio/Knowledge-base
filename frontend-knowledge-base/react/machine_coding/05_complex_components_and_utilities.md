@@ -45,12 +45,16 @@ function TicTacToe() {
         const gameWinner = calculateWinner(newBoard);
         if (gameWinner) {
             setWinner(gameWinner);
+        // .every(fn) = kya SAARE elements condition pass karte hain? (true/false; khali array pe true)
+        // Yahan: har cell filled + koi winner nahi => Draw. Cousin: .some(fn) = "koi EK bhi pass karta hai?"
         } else if (newBoard.every(cell => cell !== null)) {
             setWinner('Draw');
         }
     };
 
     const resetGame = () => {
+        // Array(9).fill(null) = 9 khali slots ka array [null x9] — tic-tac-toe ka fresh board.
+        // Note: sirf Array(9) "holes" banata hai (map skip karta), .fill se real values aati hain.
         setBoard(Array(9).fill(null));
         setIsXNext(true);
         setWinner(null);
@@ -468,12 +472,18 @@ function deepClone(value) {
 }
 
 // Version with circular reference handling
+// WeakMap kyun (Map kyun nahi)?
+// 1) Keys sirf objects — hume "ye object pehle dekha?" track karna hai, perfect fit.
+// 2) WEAK reference: clone ke baad original objects GC ho sakte hain; Map hota to
+//    cache unhe zinda rakhta = memory leak. Trade-off: WeakMap iterate nahi hota (yahan zaroorat bhi nahi).
 function deepCloneCircular(value, visited = new WeakMap()) {
     if (value === null || typeof value !== 'object') {
         return value;
     }
 
     // Check for circular reference
+    // Agar ye object pehle clone ho raha/chuka hai to WAHI clone lauta do — warna
+    // a.self = a jaisa cycle infinite recursion (stack overflow) karega. Yehi structuredClone bhi karta hai.
     if (visited.has(value)) {
         return visited.get(value);
     }
@@ -534,8 +544,13 @@ Implement a function that returns a memoized version of a function.
 ```jsx
 // Simple memoize for single argument
 function memoize(fn) {
+    // Map kyun, plain object {} kyun nahi? -> Map me KOI BHI type key ban sakti hai
+    // (objects, NaN, undefined samet); object keys hamesha string ban jaati hain
+    // (obj[1] aur obj["1"] same!). Plus Map ka .has/.get semantic clear hai aur size milta hai.
     const cache = new Map();
 
+    // CLOSURE: returned function `cache` ko yaad rakhta hai outer call khatam hone ke baad bhi —
+    // yehi memoization ka engine hai.
     return function memoized(arg) {
         if (cache.has(arg)) {
             return cache.get(arg);
@@ -552,6 +567,10 @@ function memoizeAdvanced(fn) {
     const cache = new Map();
 
     return function memoized(...args) {
+        // Multiple args ko ek string key me collapse kiya: [1,2] => "[1,2]".
+        // Limitation bolna interview me: object-arg ki key order pe depend karti hai
+        // ({a:1,b:2} vs {b:2,a:1} alag string!), functions/undefined drop ho jate hain.
+        // Robust version: nested Map per-argument (trie-style) ya WeakMap for object args.
         const key = JSON.stringify(args);
 
         if (cache.has(key)) {

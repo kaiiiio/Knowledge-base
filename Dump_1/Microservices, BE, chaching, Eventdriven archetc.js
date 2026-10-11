@@ -2907,7 +2907,7 @@ We’ll simulate a small e-commerce flow using **three microservices** and three
       └──────────────┘
 ```
 
-**Flow Summary:**
+**Flow Summary:**  -- IMP
 1️⃣ OrderService receives an order and publishes it to RabbitMQ.
 2️⃣ PaymentService consumes from RabbitMQ, processes payment, and emits result to Kafka.
 3️⃣ InventoryService consumes Kafka events, updates stock, and notifies via NATS.

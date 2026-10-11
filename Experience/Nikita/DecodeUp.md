@@ -716,7 +716,7 @@ async refresh(@Req() req, @Res() res) {
 
 ---
 
-## 14. High-Level System Design (Lead Level)
+## 14. High-Level System Design (Lead Level)   
 
 **Q: Design a Real-time Task Management System (like Jira/Asana).**
 **A:**
@@ -730,7 +730,7 @@ async refresh(@Req() req, @Res() res) {
     - **Redis**: For caching task details and managing real-time session presence.
 - **Infrastructure**: AWS Lambda (Serverless) for light tasks or EKS (Kubernetes) for the main API. Use **S3** for file attachments.
 
-**Q: WebSockets vs. Server-Sent Events (SSE) for Real-time apps?**
+**Q: WebSockets vs. Server-Sent Events (SSE) for Real-time apps?**  -- IMP
 **A:** 
 - **WebSockets**:
     - **Concept**: Bi-directional, full-duplex communication.

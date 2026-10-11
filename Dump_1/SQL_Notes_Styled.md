@@ -1,4 +1,4 @@
-﻿# 🐘 PostgreSQL & SQL Mastery: The Complete Guide
+# 🐘 PostgreSQL & SQL Mastery: The Complete Guide
 
 > [!IMPORTANT]
 > This document is a comprehensive technical reference for SQL and PostgreSQL, designed for Lead-level developers. It covers everything from basic CRUD to advanced architecture and performance tuning.
@@ -12,7 +12,7 @@ PostgreSQL is an open-source, object-relational database system (ORDBMS) that us
 
 ---
 
-## 📖 1. Core SQL Operations (CRUD)
+## 📖 1. Core SQL Operations (CRUD)   ---   IMP
 
 ### 1.1 Basic Query Example
 - **SELECT**: Retrieves data from the database.
@@ -49,7 +49,7 @@ Syntax: `INSERT INTO table_name (col1, col2) VALUES (val1, val2);`
 
 ```sql
 INSERT INTO cars(brand, model, year)
-VALUES 
+VALUES
   ('Volvo', 'p1800', 1968),
   ('BMW', 'M1', 1978),
   ('Toyota', 'Celica', 1975);
@@ -76,7 +76,7 @@ DELETE FROM cars WHERE brand = 'Volvo';
 
 ## 🏛️ 2. Advanced Table Definitions
 
-### 2.1 Keys and Constraints
+### 2.1 Keys and Constraints   ---   IMP
 - **PRIMARY KEY**: Uniquely identifies each row. Must be unique and NOT NULL.
 - **SERIAL**: PostgreSQL-specific auto-incrementing integer.
 - **NOT NULL**: Ensures a column cannot be empty.
@@ -93,7 +93,7 @@ LIMIT and OFFSET (for pagination):
 SELECT * FROM users LIMIT 10 OFFSET 20;  // Skip first 20, return next 10
 -- Equivalent to: "Show page 3 if 10 items per page"
 
-## 🔗 Step 4: Joins (Combining Tables)
+## 🔗 Step 4: Joins (Combining Tables)   ---   IMP
 JOIN: Combines rows from two or more tables based on related columns
 Essential for relational databases - allows you to query related data
 
@@ -120,7 +120,7 @@ CREATE TABLE orders (
   product VARCHAR(50)
 );
 
-## INNER JOIN - Most Common
+## INNER JOIN - Most Common   ---   IMP
 Returns only rows where there's a match in both tables
 If user has no orders, they won't appear
 ## If order has invalid user_id, it won't appear
@@ -131,7 +131,7 @@ JOIN orders ON users.id = orders.user_id;
 
 Result: Only users who have orders, with their products
 
-## LEFT JOIN - Keep All Left Table Rows
+## LEFT JOIN - Keep All Left Table Rows   ---   IMP
 Returns ALL rows from left table (users) + matching rows from right (orders)
 ## If user has no orders, they still appear (with NULL in order columns)
 SELECT users.name, orders.product
@@ -140,7 +140,7 @@ LEFT JOIN orders ON users.id = orders.user_id;
 
 Result: All users, even those without orders (product will be NULL)
 
-## RIGHT JOIN - Keep All Right Table Rows
+## RIGHT JOIN - Keep All Right Table Rows   ---   IMP
 Returns ALL rows from right table (orders) + matching rows from left (users)
 ## If order has invalid user_id, it still appears (name will be NULL)
 SELECT users.name, orders.product
@@ -149,7 +149,7 @@ RIGHT JOIN orders ON users.id = orders.user_id;
 
 Result: All orders, even those with invalid user_id (name will be NULL)
 
-## FULL OUTER JOIN - Keep Everything
+## FULL OUTER JOIN - Keep Everything   ---   IMP
 Returns all rows from both tables
 ## Missing matches show NULL in the other table's columns
 SELECT users.name, orders.product
@@ -158,7 +158,7 @@ FULL OUTER JOIN orders ON users.id = orders.user_id;
 
 Result: All users AND all orders, with NULLs where no match
 
-## Multiple JOINs
+## Multiple JOINs   ---   IMP
 You can join multiple tables in one query
 ## Example: users → orders → order_items → products
 SELECT users.name, products.name, order_items.quantity
@@ -172,7 +172,7 @@ JOIN products ON order_items.product_id = products.id;
 - Use WHERE clause after JOINs for filtering
 - JOIN performance: INNER JOIN is usually fastest, FULL OUTER is slowest
 
-## 📊 Step 5: Aggregation (Summaries)
+## 📊 Step 5: Aggregation (Summaries)   ---   IMP
 Aggregation Functions: Perform calculations on groups of rows
 Common functions: COUNT, SUM, AVG, MIN, MAX
 
@@ -202,10 +202,10 @@ SELECT AVG(age) AS avg_age FROM users;
 SELECT SUM(age) AS total_age, MIN(age) AS youngest, MAX(age) AS oldest
 FROM users;
 
-## GROUP BY - Group Rows by Column Values
+## GROUP BY - Group Rows by Column Values   ---   IMP
 Groups rows that have same values in specified columns
 Each group becomes one row in result
-## Must use aggregation functions with GROUP BY
+## Must use aggregation functions with GROUP BY   ---   IMP
 SELECT age, COUNT(*) AS user_count
 FROM users
 GROUP BY age;
@@ -217,13 +217,13 @@ age | user_count
 24  | 1
 30  | 1
 
-## GROUP BY Multiple Columns
+## GROUP BY Multiple Columns   ---   IMP
 SELECT department, age, COUNT(*) AS count
 FROM employees
 GROUP BY department, age;
 -- Groups by both department AND age
 
-## HAVING - Filter Groups
+## HAVING - Filter Groups   ---   IMP
 Filters groups after GROUP BY
 ## Use for conditions on aggregated values
 SELECT age, COUNT(*) AS user_count
@@ -240,7 +240,7 @@ HAVING COUNT(*) > 1   -- Filters groups AFTER grouping
 - Can't use WHERE with aggregated values - use HAVING instead
 - GROUP BY columns can appear in SELECT (others need aggregation)
 
-## ⚡ Step 6: Subqueries & Aliases
+## ⚡ Step 6: Subqueries & Aliases   ---   IMP
 Subquery (Nested Query): A query inside another query
 Used when you need data that depends on another query's result
 
@@ -250,7 +250,7 @@ Types of Subqueries:
 3. Table Subquery: Returns multiple rows (used with IN, EXISTS, etc.)
 
 Alias: Short name for table or column (improves readability)
-## Scalar Subquery Example
+## Scalar Subquery Example   ---   IMP
 ## Returns single value - can be used in WHERE, SELECT, etc.
 SELECT name
 FROM users
@@ -271,13 +271,13 @@ WHERE id IN (SELECT user_id FROM orders WHERE product = 'iPhone');
 IN: Matches if value is in the list
 NOT IN: Matches if value is NOT in the list (watch out for NULLs!)
 
-## Subquery with EXISTS
+## Subquery with EXISTS   ---   IMP
 Checks if subquery returns any rows (returns TRUE/FALSE)
 ## Often faster than IN for large datasets
 SELECT name
 FROM users u
 WHERE EXISTS (
-  SELECT 1 FROM orders o 
+  SELECT 1 FROM orders o
   WHERE o.user_id = u.id AND o.product = 'iPhone'
 );
 -- Returns users who have at least one iPhone order
@@ -285,10 +285,10 @@ WHERE EXISTS (
 EXISTS: Returns TRUE if subquery returns at least one row
 NOT EXISTS: Returns TRUE if subquery returns no rows
 
-## Correlated Subquery
+## Correlated Subquery   ---   IMP
 Inner query references outer query's columns
 ## Executes once for each row in outer query (can be slow)
-SELECT name, 
+SELECT name,
        (SELECT COUNT(*) FROM orders WHERE user_id = users.id) AS order_count
 FROM users;
 -- Returns each user with their order count
@@ -306,8 +306,8 @@ Shorthand: AS is optional
 SELECT u.name FROM users u;  -- same as "FROM users AS u"
 
 Alias - Column Alias
-## Renames column in result set (doesn't change table structure)
-SELECT 
+## Renames column in result set (doesn't change table structure) -- IMP
+SELECT
   name AS user_name,           -- Column renamed to 'user_name'
   age AS user_age,             -- Column renamed to 'user_age'
   AVG(age) AS average_age      -- Aggregation with alias
@@ -362,7 +362,7 @@ Think of it like:
 🧠 SQL = language,
 ⚙️ Postgres = program that executes it (with extra powers).
 
-âš”ï¸ SQL (Standard) vs PostgreSQL (Implementation)
+ SQL (Standard) vs PostgreSQL (Implementation)
 Concept	SQL (Standard)	PostgreSQL (Implementation)
 Definition	Query language for relational data	A database system that uses SQL
 Creator	ANSI/ISO standard	Open-source, originally by UC Berkeley
@@ -416,11 +416,11 @@ Replication	Master-slave, Group replication	Streaming, Logical, Physical, Bidire
 🧩 Extensions Limited	Rich ecosystem (PostGIS, TimescaleDB, pgVector, etc.)
 🧠 Stored Procedures / Functions	Supported (SQL/PSM)	Supported (SQL, PL/pgSQL, Python, etc.)
 🛠️ Community / Ecosystem	Huge (especially for web apps)	Developer-oriented, strong in data engineering / analytics
-ðŸŒ Used By	Facebook, YouTube, Airbnb, Shopify	Instagram, Reddit, Spotify, Apple, NASA
+ Used By	Facebook, YouTube, Airbnb, Shopify	Instagram, Reddit, Spotify, Apple, NASA
 ⚡¾ Best For	Simpler web apps (CRUD, dashboards)	Complex analytics, geospatial, fintech, data-heavy systems
 🧩 Philosophy Difference
 Philosophy	MySQL	PostgreSQL
-⚙️ "Make it simple & fast."	Prioritizes speed & ease for developers.	
+⚙️ "Make it simple & fast."	Prioritizes speed & ease for developers.
 🧠 "Follow standards & be powerful."		Prioritizes correctness, power, and extensibility.
 
 MySQL = practical and forgiving.
@@ -495,7 +495,7 @@ MySQL uses CONCAT()
 
 PostgreSQL uses || for string concatenation (more SQL-standard)
 
-ðŸ” Example 3: JSON Handling
+ Example 3: JSON Handling
 
 🟢 MySQL
 
@@ -616,7 +616,7 @@ SELECT * FROM users WHERE 'Redis' = ANY(skills);
 📘 Difference:
 MySQL doesn't have true array support — you'd need another table or store it as JSON.
 
-### 🛠️ Example 9: Upsert (Insert or Update)
+### 🛠️ Example 9: Upsert (Insert or Update)   ---   IMP
 
 🟢 MySQL
 
@@ -663,7 +663,7 @@ FROM users;
 
 📘 Same in both — this one's fully SQL-standard.
 
-ðŸ§­ Summary
+ Summary
 Feature	MySQL	PostgreSQL
 JSON support	Basic	Advanced (JSONB, indexable)
 Array support		✅
@@ -674,47 +674,50 @@ Upsert syntax	ON DUPLICATE KEY	ON CONFLICT
 Data consistency	Relaxed	Strict
 Speed	Faster for simple reads	Better for complex workloads
 
-Let's go step - by - step — here's a ** clear and complete explanation of * method overloading * in C++ **, with examples and notes on how it works under the hood.
+Let's go step by step — a **clear and complete explanation of *method overloading*, in JavaScript terms** (with a little Python), including what JS does differently under the hood.
 
 ---
-## 🧠 ** What is Method Overloading in C++ ?**  ---   IMP
+## 🧠 **What is Method Overloading — and does JavaScript have it?**  ---   IMP
 
-** Definition :**
-👉 ** Method Overloading ** (also called ** Function Overloading **) in C++ means ** defining multiple functions with the same name but different parameter lists ** (different number or types of arguments).
+**Definition:**
+👉 **Method Overloading** means **defining multiple functions with the same name but different parameter lists** (different number or types of arguments), where the language picks the right one automatically.
 
-The ** compiler decides which version to call at compile time ** — this is known as ** compile - time polymorphism **.
+**The key interview fact: JavaScript does NOT have true method overloading.**
+JS is dynamically typed and a function name is just a variable — **the last definition wins (it overwrites the earlier one)**. C++/Java pick the version at *compile time* by signature; JS has no signatures at all.
+
+```js
+function show(x) { console.log("one arg:", x); }
+function show(x, y) { console.log("two args:", x, y); }
+
+show(10);        // "two args: 10 undefined"  ← first show() is GONE
+```
+
+⭐ Say this line in the interview: *"JS doesn't overload — it overwrites. We simulate overloading inside ONE function by inspecting the arguments."*
 
 ---
-## 📘 ** Example 1: Basic Method Overloading **
+## 📘 **Example 1: Simulating Overloading by Type Checks**
 
-  ```cpp
-#include <iostream>
-using namespace std;
+The C++ style `show(int)`, `show(double)`, `show(string)` becomes one function that branches on `typeof`:
 
+```js
 class Print {
-public:
-    void show(int x) {
-        cout << "Integer: " << x << endl;
+  show(value) {
+    if (typeof value === "number") {
+      Number.isInteger(value)
+        ? console.log("Integer:", value)
+        : console.log("Double:", value);
+    } else if (typeof value === "string") {
+      console.log("String:", value);
+    } else {
+      throw new TypeError("Unsupported type");
     }
-
-    void show(double y) {
-        cout << "Double: " << y << endl;
-    }
-
-    void show(string z) {
-        cout << "String: " << z << endl;
-    }
-};
-
-int main() {
-    Print obj;
-
-    obj.show(10);         // calls show(int)
-    obj.show(12.5);       // calls show(double)
-    obj.show("Nikita");   // calls show(string)
-
-    return 0;
+  }
 }
+
+const obj = new Print();
+obj.show(10);       // Integer: 10
+obj.show(12.5);     // Double: 12.5
+obj.show("Nikita"); // String: Nikita
 ```
 
 ### 🧩 Output:
@@ -725,48 +728,39 @@ Double: 12.5
 String: Nikita
 ```
 
-✅ Here, ** all three functions have the same name`show` **, but they take different parameter types — that's ** method overloading **.
+✅ Same *call experience* as overloading — but it's **one function doing runtime dispatch**, not three functions picked by the compiler.
 
 ---
-## ⚙️ ** How It Works(Under the Hood) **
+## ⚙️ **How It Works (Under the Hood)** ---   IMP
 
-  During ** compilation **, the C++ compiler ** creates a unique function signature** for each overloaded method based on:
+* In C++, the compiler **name-mangles** each version (`show_int`, `show_double`…) and binds the call at **compile time**.
+* In JS, a method is just **a property on an object** (`Print.prototype.show`). One name = one slot = one function. Defining again simply **reassigns the slot** — that's why the last one wins.
+* Dispatch, if you want it, is **your code at runtime**: `typeof`, `Array.isArray()`, `instanceof`, `arguments.length`.
 
-* Function name
-  * Number of parameters
-    * Parameter types
-
-Example:
-For the above code, compiler internally might treat them as:
-
-```
-show_int(int)
-show_double(double)
-show_string(std::string)
-```
-
-This process is called ** Name Mangling **.
-
----
-## 📘 ** Example 2: Different Number of Arguments **
-
-  ```cpp
-class Math {
-public:
-    int add(int a, int b) {
-        return a + b;
-    }
-
-    int add(int a, int b, int c) {
-        return a + b + c;
-    }
-};
-
-int main() {
-    Math m;
-    cout << m.add(5, 10) << endl;       // calls add(int, int)
-    cout << m.add(5, 10, 15) << endl;   // calls add(int, int, int)
+```js
+// The three classic dispatch signals:
+function demo(...args) {
+  console.log(args.length);          // how many arguments?
+  console.log(typeof args[0]);       // what primitive type?
+  console.log(args[0] instanceof Date); // what class?
 }
+```
+
+---
+## 📘 **Example 2: Different Number of Arguments**
+
+The `add(a,b)` vs `add(a,b,c)` overload becomes **rest parameters** (the idiomatic JS way):
+
+```js
+class MathUtil {
+  add(...nums) {
+    return nums.reduce((sum, n) => sum + n, 0);
+  }
+}
+
+const m = new MathUtil();
+console.log(m.add(5, 10));      // 15
+console.log(m.add(5, 10, 15));  // 30  — same method handles any count
 ```
 
 ### Output:
@@ -776,66 +770,92 @@ int main() {
 30
 ```
 
----
-## 🚫 ** What cannot be overloaded **
+💡 **Default parameters** cover the "optional argument" overloads:
 
-  You ** cannot overload ** functions just by:
-
-* Changing the **return type only ** (parameters must differ)
-
-âŒ Invalid example:
-
-```cpp
-int test() {}
-double test() {}  // âŒ Error: redefinition of "˜test'
+```js
+function greet(name = "Guest", greeting = "Hello") {
+  return `${greeting}, ${name}!`;
+}
+greet();               // "Hello, Guest!"
+greet("Nikita");       // "Hello, Nikita!"
+greet("Nikita", "Yo"); // "Yo, Nikita!"
 ```
 
-Compiler can't distinguish them because parameters are identical.
+💡 And for many optional/mixed arguments, real-world JS uses an **options object** instead of overloads — this is the pattern you see in every library API:
+
+```js
+function createUser({ name, age = 18, role = "user" } = {}) { /* ... */ }
+createUser({ name: "Nikita", role: "admin" });   // order-free, self-documenting
+```
 
 ---
-## 🧱 ** Overloading vs Overriding **
+## 🚫 **What JS can't do (vs C++) **
+
+* ❌ No picking a function by **parameter types** — types don't exist until runtime.
+* ❌ No overload by **return type** (C++ can't either).
+* ❌ Two same-name declarations never coexist — **redefinition replaces, no error**. (In C++ identical signatures are a compile error; in JS it silently overwrites — arguably more dangerous!)
+
+**TypeScript note (asked in interviews):** TS has **overload *signatures*** — multiple declared shapes, but still **ONE implementation** that does runtime checks. The overloads exist only for the type-checker and are erased at compile time:
+
+```ts
+function reverse(x: string): string;
+function reverse(x: number[]): number[];
+function reverse(x: string | number[]) {          // single real body
+  return typeof x === "string" ? [...x].reverse().join("") : [...x].reverse();
+}
+```
+
+---
+## 🧱 **Overloading vs Overriding**   ---   IMP
 
 | Concept | Method Overloading | Method Overriding |
 | --- | --- | --- |
-| Type | Compile - time polymorphism | Run - time polymorphism |
+| Type | Compile-time polymorphism (JS: simulated at runtime) | Run-time polymorphism |
 | Function name | Same | Same |
-| Parameters | Must differ | Must be same |
-| Classes | Same class                | Different classes(inheritance) |
-| Keyword | None | `virtual` / `override` used |
+| Parameters | Must differ | Same |
+| Where | Same class | Parent → child class (inheritance) |
+| JS support | ❌ Not native — simulate with rest/typeof/options | ✅ Fully native via prototypes / `class extends` |
 
-  ---
-## 🧩 ** Example 3: Constructor Overloading **
+**Overriding IS native in JS** — the prototype chain does the dispatch:
 
-  Constructors can also be overloaded — they just have different parameters.
-
-```cpp
-class Student {
-public:
-    string name;
-    int age;
-
-    Student() { // default constructor
-        name = "Unknown";
-        age = 0;
-    }
-
-    Student(string n, int a) { // parameterized constructor
-        name = n;
-        age = a;
-    }
-
-    void display() {
-        cout << name << " - " << age << endl;
-    }
-};
-
-int main() {
-    Student s1;
-    Student s2("Nikita", 23);
-
-    s1.display();
-    s2.display();
+```js
+class Animal {
+  speak() { return "Some sound"; }
 }
+class Dog extends Animal {
+  speak() { return "Woof! (overrides parent)"; }   // found FIRST on the chain
+  speakBoth() { return super.speak() + " then " + this.speak(); }
+}
+new Dog().speak();  // "Woof!" — lookup: own → Dog.prototype → Animal.prototype
+```
+
+---
+## 🧩 **Example 3: Constructor "Overloading"**
+
+JS allows **only ONE `constructor`** per class. Two patterns replace constructor overloads:
+
+```js
+class Student {
+  constructor(name = "Unknown", age = 0) {   // pattern 1: defaults
+    this.name = name;
+    this.age = age;
+  }
+
+  // pattern 2: static factory methods — named "constructors" ⭐
+  static fromJSON(json) {
+    const { name, age } = JSON.parse(json);
+    return new Student(name, age);
+  }
+  static anonymous() {
+    return new Student();
+  }
+
+  display() { console.log(`${this.name} - ${this.age}`); }
+}
+
+new Student().display();                                  // Unknown - 0
+new Student("Nikita", 23).display();                      // Nikita - 23
+Student.fromJSON('{"name":"Nikita","age":23}').display(); // Nikita - 23
 ```
 
 ### Output:
@@ -843,21 +863,61 @@ int main() {
 ```
 Unknown - 0
 Nikita - 23
+Nikita - 23
+```
+
+⭐ **Static factory methods** are the professional answer — clearer than overloads (`Student.fromJSON` says *what* it builds from).
+
+---
+## 🐍 **Python side note (same story, different tools)**
+
+Python also has **no true overloading** — same "last definition wins" behavior:
+
+```python
+class MathUtil:
+    def add(self, *nums):                 # rest args, like JS ...nums
+        return sum(nums)
+
+    def greet(self, name="Guest", greeting="Hello"):   # defaults + kwargs
+        return f"{greeting}, {name}!"
+
+m = MathUtil()
+m.add(5, 10)        # 15
+m.add(5, 10, 15)    # 30
+m.greet(name="Nikita", greeting="Yo")   # keyword args ≈ JS options object
+```
+
+Python's one extra trick — **`functools.singledispatch`**: real type-based dispatch, the closest any of these dynamic languages gets to true overloading:
+
+```python
+from functools import singledispatch
+
+@singledispatch
+def show(value):          # fallback
+    print("Unsupported")
+
+@show.register
+def _(value: int):   print("Integer:", value)
+
+@show.register
+def _(value: str):   print("String:", value)
+
+show(10)        # Integer: 10
+show("Nikita")  # String: Nikita
 ```
 
 ---
-## ✅ ** Summary Table **
+## ✅ **Summary Table**   ---   IMP
 
-| Feature | Description |
-| --- | --- |
-| Purpose | To use same function name for similar operations |
-| Decided at | Compile - time |
-| Based on | Number / type / order of parameters |
-| Cannot differ by | Return type only                                 |
-| Example | `void show(int)`, `void show(string)` |
+| Feature | C++ | JavaScript | Python |
+| --- | --- | --- | --- |
+| True overloading | ✅ compile-time by signature | ❌ last definition wins | ❌ last definition wins |
+| Simulate with | — | rest params, typeof/instanceof, defaults, options object | *args/**kwargs, defaults, singledispatch |
+| Overriding | ✅ `virtual`/`override` | ✅ prototype chain / `extends` + `super` | ✅ MRO + `super()` |
+| Constructor overloads | ✅ | ❌ one constructor → defaults + static factories | ❌ one `__init__` → defaults + `@classmethod` factories |
+| TypeScript | — | Overload *signatures* only (type-level, single body) | — |
 
-  ---
-Would you like me to explain ** operator overloading ** next(e.g., `+`, `==`, `<<` custom behavior for classes)? It's the next logical topic after method overloading in C++.
+**The 20-second oral answer:** "JS doesn't have method overloading — a second same-name function silently replaces the first. We get the same ergonomics with rest parameters, default values, options objects, and runtime type checks; TypeScript adds overload signatures but they're type-level only. Overriding, on the other hand, is fully native via the prototype chain."
 
 Perfect! Let's do a ** deep - dive PostgreSQL tutorial ** covering ** complex queries, transactions, JSONB, custom data types, MVCC, joins, and more ** — all with ** real SQL examples ** in a logical flow.I'll provide ** code + short explanations ** so it's practical.
 
@@ -885,7 +945,7 @@ CREATE TYPE grade_enum AS ENUM ('A', 'B', 'C', 'D', 'F');
   ** Explanation:** `grade_enum` allows only predefined values for grade field.
 
 ---
-# ** 3️⃣ Create Tables with Constraints **
+# ** 3️⃣ Create Tables with Constraints **   ---   IMP
 
 ```sql
 -- Students table
@@ -955,7 +1015,7 @@ ORDER BY s.name, sub.subject_name;
 ** Explanation:** Shows ** student name, subject, marks ** using ** INNER JOIN **.
 
 ---
-# ** 6️⃣ JSONB Storage and Queries **
+# ** 6️⃣ JSONB Storage and Queries **   ---   IMP
 
   ```sql
 -- Add JSONB column for student profile
@@ -977,7 +1037,7 @@ WHERE profile->'hobbies' ? 'chess';  -- ? operator checks key/array element
 ```
 
 ---
-# ** 7️⃣ Transactions and Rollback **
+# ** 7️⃣ Transactions and Rollback **   ---   IMP
 
   ```sql
 BEGIN;  -- start transaction
@@ -986,7 +1046,7 @@ UPDATE students SET age = age + 1 WHERE student_id = 1;
 INSERT INTO student_subjects(student_id, subject_id, marks) VALUES (1, 3, 95);
 
 -- Rollback if something goes wrong
-ROLLBACK;  
+ROLLBACK;
 
 -- Or commit changes
 -- COMMIT;
@@ -995,11 +1055,11 @@ ROLLBACK;
   ** Explanation:** Ensures multiple operations succeed together; otherwise rollback(atomicity).
 
 ---
-# ** 8️⃣ Aggregate and Window Functions **
+# ** 8️⃣ Aggregate and Window Functions **   ---   IMP
 
   ```sql
 -- Average marks per student
-/*************  âœ¨ Windsurf Command ðŸŒŸ  *************/
+/*************   Windsurf Command   *************/
 -- Calculate average marks per student
 -- Use aggregate function AVG to calculate average
 -- Use JOIN to combine student_subjects and students tables
@@ -1025,7 +1085,7 @@ GROUP BY s.name;
 ```
 
 ---
-# ** 9️⃣ Multi - Version Concurrency Control(MVCC) Example **
+# ** 9️⃣ Multi - Version Concurrency Control(MVCC) Example **   ---   IMP
 
   ```sql
 -- Transaction 1
@@ -1041,7 +1101,7 @@ SELECT age FROM students WHERE student_id = 1;
   ** Explanation:** PostgreSQL uses ** MVCC **, so readers don't block writers and always see ** consistent snapshot **.
 
 ---
-# **10. CTEs and Recursive Queries **
+# **10. CTEs and Recursive Queries **   ---   IMP
 
   ```sql
 -- CTE example: students with average marks
@@ -1057,7 +1117,7 @@ WHERE sa.avg_marks > 80;
 ```
 
 ---
-# ** 1️⃣1️⃣ Upsert(Insert or Update) using ON CONFLICT**
+# ** 1️⃣1️⃣ Upsert(Insert or Update) using ON CONFLICT**   ---   IMP
 
   ```sql
 INSERT INTO subjects(subject_name)
@@ -1069,7 +1129,7 @@ SET subject_name = EXCLUDED.subject_name || ' (updated)';
   ** Explanation:** If`subject_name` exists, updates it; otherwise inserts.
 
 ---
-# ** 1️⃣2️⃣ Indexing for Performance **
+# ** 1️⃣2️⃣ Indexing for Performance **   ---   IMP
 
   ```sql
 CREATE INDEX idx_student_grade ON students(grade);
@@ -1212,7 +1272,7 @@ SELECT MAX(age), MIN(age) FROM students;
         * Keywords: `COUNT`, `SUM`, `AVG`, `MAX`, `MIN`, `GROUP BY`, `HAVING`
 
 ---
-## 4️⃣ Joins(Most Interview - Tricky)
+## 4️⃣ Joins(Most Interview - Tricky)   ---   IMP
 
 ** INNER JOIN ** (common rows)
 
@@ -1243,7 +1303,7 @@ LEFT JOIN subjects sub ON ss.subject_id = sub.id;
       * ** FULL ** = keep everything
 
 ---
-## 5️⃣ Transactions(Atomicity / Tough Interview Topic)
+## 5️⃣ Transactions(Atomicity / Tough Interview Topic)   ---   IMP
 
   ```sql
 BEGIN; -- start transaction
@@ -1257,14 +1317,14 @@ ROLLBACK; -- undo if error
     * Memory hook: **"Begin → do stuff → commit to save / rollback to cancel"**
 
       ---
-## 6️⃣ JSONB Storage(Postgres Unique Feature)
+## 6️⃣ JSONB Storage(Postgres Unique Feature)   ---   IMP
 
   ```sql
 ALTER TABLE students ADD COLUMN profile JSONB;
 
 UPDATE students SET profile = '{"hobbies":["reading","chess"], "city":"Delhi"}' WHERE id = 1;
-/* 
-This code snippet is using the JSONB data type in PostgreSQL to query data from a table named 'students'. 
+/*
+This code snippet is using the JSONB data type in PostgreSQL to query data from a table named 'students'.
 
 The '->>' operator is used to get a text representation of a JSONB value. In this case, it is used to get the value of the 'city' key from the 'profile' JSONB object.
 
@@ -1280,7 +1340,7 @@ SELECT name FROM students WHERE profile->'hobbies' ? 'chess';
       * `?` checks if key / array exists
 
 ---
-## 7️⃣ Complex Queries / CTEs / Window Functions
+## 7️⃣ Complex Queries / CTEs / Window Functions   ---   IMP
 
 ** Common Table Expressions(CTE) **
 
@@ -1311,7 +1371,7 @@ FROM student_subjects ss
 JOIN students s ON ss.student_id = s.id
 GROUP BY s.name;
 ```
-/*
+/*  IMP
  * WITH clause is used to create temporary result sets that are defined within the execution of a single SELECT, INSERT, UPDATE, or DELETE statement.
  * The temporary result set is referred to by a name specified in the WITH clause.
  * The WITH clause is used to break down complex queries into simpler forms.
@@ -1364,7 +1424,7 @@ GROUP BY s.name;
 💡 Tip: CTEs are "temporary result sets" → make complex queries readable.
 
 ---
-## **8️⃣ Indexing & Performance**
+## **8️⃣ Indexing & Performance**   ---   IMP
 
 ```sql
 CREATE INDEX idx_grade ON students(grade);
@@ -1375,7 +1435,7 @@ CREATE INDEX idx_marks ON student_subjects(marks);
 * Memory hook: "Index = speed boost"
 
 ---
-## **9️⃣ MVCC (High Concurrency)**
+## **9️⃣ MVCC (High Concurrency)**   ---   IMP
 
 PostgreSQL automatically uses **Multi-Version Concurrency Control**:
 
@@ -1608,7 +1668,7 @@ This helps you **recall everything in one glance during interviews**.
 Perfect! Let's do a **deep dive into modifying data and control flow in PostgreSQL**, covering **everything from basic INSERT/UPDATE to conditional logic, loops, and flow control** — with **examples, tough scenarios, and explanations** so it's interview-ready.
 
 ---
-# **1️⃣ Modifying Data — DML (INSERT, UPDATE, DELETE, UPSERT)**
+# **1️⃣ Modifying Data — DML (INSERT, UPDATE, DELETE, UPSERT)**   ---   IMP
 
 ---
 ### **1. INSERT**
@@ -1677,7 +1737,7 @@ WHERE s.student_id = ss.student_id AND ss.marks < 30;
 ```
 
 ---
-### **4. UPSERT (INSERT ON CONFLICT)**
+### **4. UPSERT (INSERT ON CONFLICT)**   ---   IMP
 
 ```sql
 INSERT INTO students(student_id, name, grade)
@@ -1696,7 +1756,7 @@ DO UPDATE SET name = EXCLUDED.name, grade = EXCLUDED.grade;
 
 ```sql
 SELECT name, age,
-CASE 
+CASE
     WHEN age < 18 THEN 'Minor'
     WHEN age BETWEEN 18 AND 25 THEN 'Youth'
     ELSE 'Adult'
@@ -1795,7 +1855,7 @@ $$;
 
 ```sql
 SELECT name,
-CASE 
+CASE
     WHEN age < 18 THEN 'Minor'
     WHEN age BETWEEN 18 AND 25 THEN 'Youth'
     ELSE 'Adult'
@@ -1895,7 +1955,7 @@ $$;
 
     ```sql
 UPDATE students
-SET grade = CASE 
+SET grade = CASE
     WHEN student_id IN (SELECT student_id FROM student_subjects GROUP BY student_id HAVING AVG(marks) > 85)
     THEN 'A+'
     ELSE grade
@@ -1960,9 +2020,9 @@ Now let's cover ** PostgreSQL Transactions, Constraints, Joins, and Schemas ** �
 everything you must know for ** interviews + real projects **, explained ** logically, deeply, and with examples ** (and tricks to remember).
 
 ---
-# 🧱 ** 1️⃣ Transactions in PostgreSQL **
+# 🧱 ** 1️⃣ Transactions in PostgreSQL **   ---   IMP
 
-### 💡 What is a Transaction ?
+### 💡 What is a Transaction ?   ---   IMP
 
   A ** Transaction ** = a group of SQL operations executed as one logical unit.
 It follows the ** ACID ** properties:
@@ -1973,7 +2033,7 @@ It follows the ** ACID ** properties:
       * ** D ** urability – Once committed, data stays even after crash
 
 ---
-### Basic Transaction Syntax
+### Basic Transaction Syntax   ---   IMP
 
   ```sql
 BEGIN;  -- start transaction
@@ -1985,7 +2045,7 @@ COMMIT;  -- make permanent
 ```
 
 ✅ Both statements succeed → changes saved.
-âŒ Any error → `ROLLBACK` undoes all.
+ Any error → `ROLLBACK` undoes all.
 
 ---
 ### ROLLBACK Example
@@ -2024,7 +2084,7 @@ COMMIT;
       * `SAVEPOINT` → partial undo
 
 ---
-# 🧩 ** 2️⃣ Constraints(Data Integrity Rules) **
+# 🧩 ** 2️⃣ Constraints(Data Integrity Rules) **   ---   IMP
 
   Constraints = rules to maintain data accuracy.
 
@@ -2125,12 +2185,12 @@ CREATE TABLE orders (
 | NOT NULL | Must have value | `NOT NULL` |
 
   ---
-# 🔗 ** 3️⃣ Joins(Combining Data) **
+# 🔗 ** 3️⃣ Joins(Combining Data) **   ---   IMP
 
   Joins combine rows from multiple tables using a related column.
 
 ---
-### 1. INNER JOIN
+### 1. INNER JOIN   ---   IMP
 
 → Only matching rows from both tables.
 
@@ -2144,7 +2204,7 @@ ON s.student_id = ss.student_id;
 📘 Result: Students who have subject entries.
 
 ---
-### 2. LEFT JOIN
+### 2. LEFT JOIN   ---   IMP
 
 → All rows from left table + matched right table.
 
@@ -2158,7 +2218,7 @@ ON s.student_id = ss.student_id;
 📘 Result: All students, even those without marks(NULLs for missing).
 
 ---
-### 3. RIGHT JOIN
+### 3. RIGHT JOIN   ---   IMP
 
 → All rows from right table + matched left.
 
@@ -2170,7 +2230,7 @@ ON s.student_id = ss.student_id;
 ```
 
 ---
-### 4. FULL OUTER JOIN
+### 4. FULL OUTER JOIN   ---   IMP
 
 → All rows from both tables(matched + unmatched).
 
@@ -2209,7 +2269,7 @@ ON e1.manager_id = e2.id;
 | SELF | Same table twice |
 
   ---
-# ðŸ—‚ï¸ ** 4️⃣ Schemas **
+#  ** 4️⃣ Schemas **   ---   IMP
 
   Schemas = ** namespaces / logical containers ** for tables, views, and functions.
 Default schema = `public`.
@@ -2269,7 +2329,7 @@ DROP SCHEMA school CASCADE;
 | Access object | `schema.table_name` |
 
   ---
-# ⚙️ ** 5️⃣ Advanced: Combining Transactions + Constraints + Joins **
+# ⚙️ ** 5️⃣ Advanced: Combining Transactions + Constraints + Joins **   ---   IMP
 
 ### ✅ Example: Safe student data update
 
@@ -2285,7 +2345,7 @@ AND s.grade = 'A';
 COMMIT;
 ```
 
-### âŒ Error Handling with Rollback
+###  Error Handling with Rollback
 
   ```sql
 BEGIN;
@@ -2338,9 +2398,9 @@ Do you want me to generate that next ?
 Aise likha hai ki ** yaad bhi rahe, confuse bhi na ho **, aur ** tough questions ** handle kar sake.
 
 ---
-## 🧩 1️⃣ ROLES & PERMISSIONS — Security & Access Control in SQL(PostgreSQL)
+## 🧩 1️⃣ ROLES & PERMISSIONS — Security & Access Control in SQL(PostgreSQL)   ---   IMP
 
-Roles â‰ˆ Users or Groups
+Roles  Users or Groups
 They control ** who can access **, ** what they can do**, and ** on which objects ** (tables, DBs, etc).
 
 ---
@@ -2352,8 +2412,8 @@ Creates a ** new role(user or group) **.
 CREATE ROLE sales_user LOGIN PASSWORD 'sales@123';
 ```
 
-ðŸ”¹ `LOGIN` → means this role can log in (like a user).
-ðŸ”¹ Without LOGIN → acts as a ** group role ** (used only for granting permissions).
+ `LOGIN` → means this role can log in (like a user).
+ Without LOGIN → acts as a ** group role ** (used only for granting permissions).
 
 ** Example 2:**
 
@@ -2382,7 +2442,7 @@ ALTER ROLE sales_user NOLOGIN;
         * `LOGIN` → can log in
 
           ---
-### âŒ DROP ROLE
+###  DROP ROLE
 
 Delete a role(must not own any objects or sessions).
 
@@ -2391,7 +2451,7 @@ DROP ROLE sales_user;
 ```
 
 ---
-### ðŸŽ GRANT(Permissions)
+###  GRANT(Permissions)
 
 Used to ** give access rights ** on DB objects or assign a role.
 
@@ -2410,7 +2470,7 @@ REVOKE INSERT ON employees FROM sales_user;
 ```
 
 ---
-### ðŸ‘¥ ROLE MEMBERSHIP(Like Group Permission)
+###  ROLE MEMBERSHIP(Like Group Permission)
 
 You can assign a ** group role ** to multiple users:
 
@@ -2423,7 +2483,7 @@ GRANT analysts TO analyst1;
 GRANT analysts TO analyst2;
 ```
 
-âž¡ï¸ Now any privilege given to `analysts` is automatically inherited by both users.
+ Now any privilege given to `analysts` is automatically inherited by both users.
 
 ---
 ### 🧠 Interview Tip:
@@ -2435,7 +2495,7 @@ GRANT analysts TO analyst2;
 | Group Role | "How to manage multiple users easily ?" | Use Role membership.                             |
 
   ---
-## 🔥 2️⃣ WORKING WITH SETS — Combining Query Results
+## 🔥 2️⃣ WORKING WITH SETS — Combining Query Results   ---   IMP
 
 These operators work ** on result sets(rows) ** of two or more queries.
 
@@ -2451,7 +2511,7 @@ UNION
 SELECT name FROM teachers;
 ```
 
-âž¡ï¸ Both queries must have ** same number of columns + compatible data types **.
+ Both queries must have ** same number of columns + compatible data types **.
 
 🧠 ** Trick:**
   `UNION ALL` → Keeps duplicates(faster).
@@ -2463,7 +2523,7 @@ SELECT name FROM teachers;
 ```
 
 ---
-### âš”ï¸ INTERSECT
+###  INTERSECT
 
 Returns ** common rows ** between queries.
 
@@ -2473,7 +2533,7 @@ INTERSECT
 SELECT name FROM alumni;
 ```
 
-âž¡ï¸ Output = names that exist in both tables.
+ Output = names that exist in both tables.
 
 ---
 ### 🚫 EXCEPT
@@ -2486,7 +2546,7 @@ EXCEPT
 SELECT name FROM alumni;
 ```
 
-âž¡ï¸ Output = current students who are not alumni.
+ Output = current students who are not alumni.
 
 ---
 ### 📊 GROUPING SETS
@@ -2504,7 +2564,7 @@ GROUP BY GROUPING SETS (
 );
 ```
 
-âž¡ï¸ It creates multiple groupings in a single query —
+ It creates multiple groupings in a single query —
 like:
 
 * Region + Product total
@@ -2523,7 +2583,7 @@ FROM sales_data
 GROUP BY CUBE (region, product);
 ```
 
-âž¡ï¸ Equivalent to all grouping sets combinations:
+ Equivalent to all grouping sets combinations:
 (region, product), (region), (product), ()
 
 💡 * Used in OLAP / BI reports.*
@@ -2539,7 +2599,7 @@ FROM sales_data
 GROUP BY ROLLUP (region, product);
 ```
 
-âž¡ï¸ Gives:
+ Gives:
 
 1. region + product totals
 2. region subtotal
@@ -2552,10 +2612,10 @@ GROUP BY ROLLUP (region, product);
 
   | Operator | Purpose | Removes Duplicates | Example Output |
 | --- | --- | --- | --- |
-| `UNION` | Combines all unique rows | ✅ Yes | A âˆª B |
-| `UNION ALL` | Combines all rows | âŒ No | A + B |
-| `INTERSECT` | Common rows | ✅ Yes | A âˆ© B |
-| `EXCEPT` | Rows in A not in B | ✅ Yes | A âˆ’ B |
+| `UNION` | Combines all unique rows | ✅ Yes | A  B |
+| `UNION ALL` | Combines all rows |  No | A + B |
+| `INTERSECT` | Common rows | ✅ Yes | A  B |
+| `EXCEPT` | Rows in A not in B | ✅ Yes | A  B |
 | `GROUPING SETS` | Custom grouping combinations | —                  | Region, Product, All |
 | `CUBE` | All combinations of group columns | —                  | (R, P), (R), (P), () |
 | `ROLLUP` | Hierarchical subtotals | —                  | (R, P), (R), () |
@@ -2599,16 +2659,16 @@ GROUP BY ROLLUP (region, product);
 | ROLLUP | "Roll up to totals." |
 
   ---
-Would you like me to continue next with ðŸ”¹** Views, Indexes & Performance Optimization ** — in the same "memory + code + interview" format ? (That's the next big SQL interview section.)
+Would you like me to continue next with ** Views, Indexes & Performance Optimization ** — in the same "memory + code + interview" format ? (That's the next big SQL interview section.)
 
 Perfect bhai 🔥 — ab tu enter kar raha hai ** advanced SQL zone ** — jahan interviewers tricky subquery & function ke question poochte hain.
 Main ye sab ** deep + easy - to - remember + example - heavy + interview - style ** way me explain kar raha hoon.
 
 ---
-## 🧩 PART 1️⃣ — SUBQUERIES & CTEs(Common Table Expressions)
+## 🧩 PART 1️⃣ — SUBQUERIES & CTEs(Common Table Expressions)   ---   IMP
 
 ---
-### ðŸ”¹ What is a Subquery ?
+###  What is a Subquery ?
 
   A ** query inside another query **.
 
@@ -2622,13 +2682,13 @@ FROM employees
 WHERE salary > (SELECT AVG(salary) FROM employees);
 ```
 
-âž¡ï¸ Finds all employees earning more than the average.
+ Finds all employees earning more than the average.
 
 🧠 Trick: Parentheses = nested query.
 Main query reads from subquery's result.
 
 ---
-### ðŸ”¸ Types of Subqueries
+###  Types of Subqueries   ---   IMP
 
   | Type | Use Case | Example |
 | --- | --- | --- |
@@ -2637,7 +2697,7 @@ Main query reads from subquery's result.
 | ** Table **      | Returns multiple rows | `(SELECT * FROM employees WHERE dept_id=10)` |
 | ** Correlated ** | Depends on outer query | See below 👇                                 |
 
-#### Example 2: Correlated Subquery
+#### Example 2: Correlated Subquery   ---   IMP
 
   ```sql
 SELECT e.name, e.salary
@@ -2649,7 +2709,7 @@ WHERE e.salary > (
 );
 ```
 
-âž¡ï¸ For each employee, inner query runs separately using outer query's value.
+ For each employee, inner query runs separately using outer query's value.
 
 🧠 Trick: "Correlated" = inner query depends on outer query.
 
@@ -2667,7 +2727,7 @@ FROM employees
 WHERE salary > ANY (SELECT salary FROM employees WHERE department_id = 2);
 ```
 
-âž¡ï¸ Means: employee whose salary > * at least one * salary in department 2.
+ Means: employee whose salary > * at least one * salary in department 2.
 
 🧠 Trick: "ANY = at least one match".
 
@@ -2682,12 +2742,12 @@ FROM employees
 WHERE salary > ALL (SELECT salary FROM employees WHERE department_id = 2);
 ```
 
-âž¡ï¸ Means: employee whose salary is greater than * everyone's * salary in department 2.
+ Means: employee whose salary is greater than * everyone's * salary in department 2.
 
 🧠 Trick: "ALL = better than everyone".
 
 ---
-### 3️⃣ `EXISTS` Operator
+### 3️⃣ `EXISTS` Operator   ---   IMP
 
 Checks **if subquery returns any row ** (boolean true / false).
 
@@ -2701,12 +2761,12 @@ WHERE EXISTS (
 );
 ```
 
-âž¡ï¸ Means: show departments having at least one employee.
+ Means: show departments having at least one employee.
 
 🧠 Trick: EXISTS = "Does any matching record exist ?"
 
 ---
-### ðŸ§¹ Deleting Duplicate Rows using Subquery
+###  Deleting Duplicate Rows using Subquery
 
 Let's say table `students(id, name, age)` has duplicates.
 
@@ -2719,12 +2779,12 @@ WHERE id NOT IN (
 );
 ```
 
-âž¡ï¸ Keeps only 1 unique record per(name, age).
+ Keeps only 1 unique record per(name, age).
 
 🧠 Trick: Always use `MIN(id)` or `ROW_NUMBER()` to preserve one row.
 
 ---
-### ðŸ“œ Common Table Expressions(CTE)
+###  Common Table Expressions(CTE)
 
 CTE = temporary result set you can reuse in a query.
 
@@ -2743,7 +2803,7 @@ ON e.department_id = a.department_id
 WHERE e.salary > a.avg_sal;
 ```
 
-âž¡ï¸ Reusable subquery with clean readability.
+ Reusable subquery with clean readability.
 
 🧠 Trick:
 `WITH name AS (subquery)`
@@ -2757,7 +2817,7 @@ WHERE e.salary > a.avg_sal;
 | Readability | Nested, messy | Clean, readable |
 | Reusability | No | Yes |
 | Performance | Sometimes slower | Sometimes optimized |
-| Recursive Queries | âŒ                | ✅                   |
+| Recursive Queries |                 | ✅                   |
 
   ---
 ## 🧩 Practice Question
@@ -2778,10 +2838,10 @@ WHERE e.salary > d.avg_salary;
 ```
 
 ---
-## 🧩 PART 2️⃣ — USER - DEFINED FUNCTIONS(UDFs)
+## 🧩 PART 2️⃣ — USER - DEFINED FUNCTIONS(UDFs)   ---   IMP
 
 ---
-### ðŸ”¹ CREATE FUNCTION Statement
+###  CREATE FUNCTION Statement
 
 Used to define reusable logic blocks(custom SQL functions).
 
@@ -2794,12 +2854,12 @@ RETURNS NUMERIC AS $$
 $$ LANGUAGE SQL;
 ```
 
-âž¡ï¸ `$1` = first parameter
+ `$1` = first parameter
 `RETURNS` defines output type
 `LANGUAGE SQL` means written in SQL(can also be PL / pgSQL).
 
 ---
-### ðŸ”¸ Function Parameter Modes
+###  Function Parameter Modes
 
   | Mode | Meaning | Example |
 | --- | --- | --- |
@@ -2816,10 +2876,10 @@ AS $$
 $$ LANGUAGE SQL;
 ```
 
-âž¡ï¸ Call: `SELECT add_numbers(5, 10);`
+ Call: `SELECT add_numbers(5, 10);`
 
 ---
-### ðŸ” Function Overloading
+###  Function Overloading
 
 You can define ** multiple functions with same name **, but different parameters.
 
@@ -2839,7 +2899,7 @@ $$ LANGUAGE SQL;
 🧠 Trick: PostgreSQL differentiates by ** parameter signature **.
 
 ---
-### ðŸ“‹ Function Returning Table
+###  Function Returning Table
 
 Used to return multiple rows and columns.
 
@@ -2850,14 +2910,14 @@ RETURNS TABLE(id INT, name TEXT, marks INT) AS $$
 $$ LANGUAGE SQL;
 ```
 
-âž¡ï¸ Call:
+ Call:
 
 ```sql
 SELECT * FROM get_top_students(80);
 ```
 
 ---
-### âŒ Drop Function
+###  Drop Function
 
   ```sql
 DROP FUNCTION get_total_sales(TEXT);
@@ -2917,10 +2977,10 @@ $$ LANGUAGE SQL;
 SELECT * FROM get_above_avg();
 ```
 
-âž¡ï¸ This combines ** function + correlated subquery ** — high - level interview pattern ⚡ª
+ This combines ** function + correlated subquery ** — high - level interview pattern ⚡ª
 
 ---
-Would you like me to continue next with ðŸ”¹** Views, Indexes, and Performance Optimization ** (covering`CREATE VIEW`, `INDEX`, `EXPLAIN ANALYZE`, `CLUSTER`, etc.) — next big interview topic after this ?
+Would you like me to continue next with ** Views, Indexes, and Performance Optimization ** (covering`CREATE VIEW`, `INDEX`, `EXPLAIN ANALYZE`, `CLUSTER`, etc.) — next big interview topic after this ?
 
     Perfect bhai 🔥 — ab tu aa gaya SQL ke **in -built functions ** ke powerhouse section pe — jahan se ** 90 % interviews me direct ya indirect question ** aate hain.
 Main tujhe ** short + deep + mnemonic - based + example - heavy ** format me samjhaata hoon taaki tu ** easily yaad rakhe + confidently explain kare ** ⚡ª
@@ -2929,12 +2989,12 @@ Main tujhe ** short + deep + mnemonic - based + example - heavy ** format me sam
 # 🧩 SQL — Important Built -in Functions(PostgreSQL Focus)
 
 ---
-## 🧩 1️⃣ Aggregate Functions
+## 🧩 1️⃣ Aggregate Functions   ---   IMP
 
   > Work on ** sets of rows ** → return ** a single result **.
 
 ---
-### ðŸ”¹ `AVG()` — Average of numeric values
+###  `AVG()` — Average of numeric values
 
   ```sql
 SELECT AVG(salary) AS avg_salary FROM employees;
@@ -2950,7 +3010,7 @@ GROUP BY department_id;
 ```
 
 ---
-### ðŸ”¹ `COUNT()` — Count rows
+###  `COUNT()` — Count rows
 
   ```sql
 SELECT COUNT(*) FROM employees;
@@ -2960,7 +3020,7 @@ SELECT COUNT(DISTINCT department_id) FROM employees;
 🧠 * COUNT(*) counts all rows; COUNT(column) skips NULLs.*
 
   ---
-### ðŸ”¹ `MAX()` — Maximum value
+###  `MAX()` — Maximum value
 
   ```sql
 SELECT MAX(salary) FROM employees;
@@ -2969,7 +3029,7 @@ SELECT MAX(salary) FROM employees;
 💡 * Find the highest salary.*
 
   ---
-### ðŸ”¹ `MIN()` — Minimum value
+###  `MIN()` — Minimum value
 
   ```sql
 SELECT MIN(salary) FROM employees;
@@ -2978,7 +3038,7 @@ SELECT MIN(salary) FROM employees;
 💡 * Find the smallest or earliest(dates) value.*
 
   ---
-### ðŸ”¹ `SUM()` — Sum of all numeric values
+###  `SUM()` — Sum of all numeric values
 
   ```sql
 SELECT SUM(salary) FROM employees WHERE department_id = 2;
@@ -2987,15 +3047,15 @@ SELECT SUM(salary) FROM employees WHERE department_id = 2;
 💡 Often used for totals, billing, sales, etc.
 
 ---
-## 🧩 2️⃣ Window(Analytic) Functions
+## 🧩 2️⃣ Window(Analytic) Functions   ---   IMP
 
   > Perform calculations across rows ** without collapsing ** into one row.
 
 ---
-### ðŸ”¹ `FIRST_VALUE()` — First value in a group / window
+###  `FIRST_VALUE()` — First value in a group / window
 
   ```sql
-SELECT 
+SELECT
   department_id,
   name,
   salary,
@@ -3006,16 +3066,16 @@ FROM employees;
 💡 * Gives top salary name per department.*
 
   ---
-### ðŸ”¹ `LAST_VALUE()` — Last value in the window
+###  `LAST_VALUE()` — Last value in the window
 
   ```sql
-SELECT 
+SELECT
   department_id,
   name,
   salary,
   LAST_VALUE(name) OVER (
-    PARTITION BY department_id 
-    ORDER BY salary DESC 
+    PARTITION BY department_id
+    ORDER BY salary DESC
     ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   ) AS lowest_earner
 FROM employees;
@@ -3024,10 +3084,10 @@ FROM employees;
 🧠 Trick: Always set ** window frame ** properly or it gives partial results.
 
 ---
-### ðŸ”¹ `NTH_VALUE()` — nth value in the ordered set
+###  `NTH_VALUE()` — nth value in the ordered set
 
   ```sql
-SELECT 
+SELECT
   department_id,
   NTH_VALUE(name, 2) OVER (PARTITION BY department_id ORDER BY salary DESC) AS second_highest
 FROM employees;
@@ -3036,12 +3096,12 @@ FROM employees;
 💡 * E.g.get 2nd highest salary name.*
 
   ---
-### ðŸ”¹ `ROW_NUMBER()` — Assigns sequential numbers
+###  `ROW_NUMBER()` — Assigns sequential numbers
 
   ```sql
-SELECT 
-  name, 
-  salary, 
+SELECT
+  name,
+  salary,
   ROW_NUMBER() OVER (ORDER BY salary DESC) AS rank
 FROM employees;
 ```
@@ -3059,10 +3119,10 @@ SELECT name, salary FROM ranked WHERE r = 3;
 🧠 * ROW_NUMBER resets if you add PARTITION BY.*
 
   ---
-## ðŸ“… 3️⃣ Date & Time Functions
+##  3️⃣ Date & Time Functions
 
 ---
-### ðŸ”¹ `CURRENT_DATE` — System's current date
+###  `CURRENT_DATE` — System's current date
 
   ```sql
 SELECT CURRENT_DATE;
@@ -3070,7 +3130,7 @@ SELECT CURRENT_DATE;
 ```
 
 ---
-### ðŸ”¹ `CURRENT_TIME` — System's current time
+###  `CURRENT_TIME` — System's current time
 
   ```sql
 SELECT CURRENT_TIME;
@@ -3078,7 +3138,7 @@ SELECT CURRENT_TIME;
 ```
 
 ---
-### ðŸ”¹ `EXTRACT()` — Extract specific part from date / time
+###  `EXTRACT()` — Extract specific part from date / time
 
   ```sql
 SELECT EXTRACT(YEAR FROM CURRENT_DATE);   -- 2025
@@ -3091,10 +3151,10 @@ SELECT EXTRACT(DAY FROM CURRENT_DATE);    -- 13
 🧠 Mnemonic: "EXTRACT pulls out date parts."
 
 ---
-## ðŸ”¤ 4️⃣ String Functions
+##  4️⃣ String Functions
 
 ---
-### ðŸ”¹ `CONCAT()` — Join multiple strings
+###  `CONCAT()` — Join multiple strings
 
   ```sql
 SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees;
@@ -3107,60 +3167,60 @@ SELECT first_name || ' ' || last_name;
 ```
 
 ---
-### ðŸ”¹ `FORMAT()` — Dynamic text formatting
+###  `FORMAT()` — Dynamic text formatting
 
   ```sql
-SELECT FORMAT('Employee %s earns â‚¹%s', name, salary) AS info FROM employees;
+SELECT FORMAT('Employee %s earns %s', name, salary) AS info FROM employees;
 ```
 
 💡 Similar to`printf()` in C.
 
 ---
-### ðŸ”¹ `UPPER()` — Convert to uppercase
+###  `UPPER()` — Convert to uppercase
 
   ```sql
 SELECT UPPER(name) FROM employees;
 ```
 
-âž¡ï¸ "nikita" → "NIKITA"
+ "nikita" → "NIKITA"
 
 ---
-### ðŸ”¹ `LOWER()` — Convert to lowercase
+###  `LOWER()` — Convert to lowercase
 
   ```sql
 SELECT LOWER('HELLO SQL');
 ```
 
-âž¡ï¸ "HELLO SQL" → "hello sql"
+ "HELLO SQL" → "hello sql"
 
 ---
-### ðŸ”¹ `REPLACE()` — Replace all occurrences of substring
+###  `REPLACE()` — Replace all occurrences of substring
 
   ```sql
 SELECT REPLACE('SQL is hard', 'hard', 'easy');
 ```
 
-âž¡ï¸ Output: "SQL is easy"
+ Output: "SQL is easy"
 
 ---
-### ðŸ”¹ `REGEXP_MATCHES()` — Extract pattern using regex
+###  `REGEXP_MATCHES()` — Extract pattern using regex
 
 ```sql
 SELECT REGEXP_MATCHES('user123@mail.com', '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}');
 ```
 
-âž¡ï¸ Returns `{"user123@mail.com"}` if matches regex.
+ Returns `{"user123@mail.com"}` if matches regex.
 
 🧠 Trick: Always returns ** array ** of matches.
 
 ---
-### ðŸ”¹ `REGEXP_REPLACE()` — Replace using regex
+###  `REGEXP_REPLACE()` — Replace using regex
 
 ```sql
 SELECT REGEXP_REPLACE('Phone: +91-9876543210', '[^0-9]', '', 'g');
 ```
 
-âž¡ï¸ Removes all non - numeric chars → "919876543210"
+ Removes all non - numeric chars → "919876543210"
 
 💡 `'g'` means "global" replacement.
 
@@ -3172,13 +3232,13 @@ SELECT
   department_id,
   COUNT(*) AS emp_count,
   ROUND(AVG(salary)) AS avg_sal,
-  CONCAT(UPPER(FIRST_VALUE(name) OVER w), ' earns â‚¹', MAX(salary)) AS top_earner
+  CONCAT(UPPER(FIRST_VALUE(name) OVER w), ' earns ', MAX(salary)) AS top_earner
 FROM employees
 WINDOW w AS (PARTITION BY department_id ORDER BY salary DESC)
 GROUP BY department_id;
 ```
 
-âž¡ï¸ Combines ** aggregate + window + string ** functions.
+ Combines ** aggregate + window + string ** functions.
 
 ---
 ## 🧠 Interview Quick Reference
@@ -3250,7 +3310,7 @@ GROUP BY department_id;
 | String | "C - F - U - L - R - RR - RM" → (Concat, Format, Upper, Lower, Replace, RegexReplace, RegexMatch) |
 
   ---
-Would you like me to move next to ðŸ”¹** Views, Indexes & Query Optimization(EXPLAIN ANALYZE, CLUSTER, PARTITION, etc.) ** — the most ** interview - heavy performance topic ** after functions ?
+Would you like me to move next to ** Views, Indexes & Query Optimization(EXPLAIN ANALYZE, CLUSTER, PARTITION, etc.) ** — the most ** interview - heavy performance topic ** after functions ?
 
     Bhai 🔥 ab tu aa gaya ** advanced PostgreSQL control structures ** pe —
 ye section interview ke "real - world database developer" part me aata hai — jahan tu variables, procedures, aur triggers samjhega(pure backend ke backbone).
@@ -3258,13 +3318,13 @@ ye section interview ke "real - world database developer" part me aata hai — j
 Main isko explain kar raha hoon ** flow + examples + interview notes + memory tricks ** ke saath 👇
 
 ---
-# 🧩 PART 1️⃣ — Variables & Constants in PostgreSQL(PL / pgSQL)
+# 🧩 PART 1️⃣ — Variables & Constants in PostgreSQL(PL / pgSQL)   ---   IMP
 
   > Ye sab ** Stored Procedures / Functions ** ke andar hi use hote hain.
 > Outside, sirf`SELECT INTO` ka limited use hota hai.
 
 ---
-## ðŸ”¹ Variable Declaration Syntax
+##  Variable Declaration Syntax
 
   ```sql
 DECLARE
@@ -3288,7 +3348,7 @@ END $$;
 🧠 Trick: Always start block with `DECLARE` → variables live inside it.
 
 ---
-## ðŸ”¹ SELECT INTO(Store Query Result into Variable)
+##  SELECT INTO(Store Query Result into Variable)   ---   IMP
 
   ```sql
 DO $$
@@ -3303,7 +3363,7 @@ END $$;
 💡 ** `SELECT INTO` ** moves query result into variable(s).
 
 ---
-## ðŸ”¹ Row Type Variables
+##  Row Type Variables
 
 Store ** an entire row ** from a table in one variable.
 
@@ -3320,7 +3380,7 @@ END $$;
 🧠 Trick: `%ROWTYPE` copies ** entire table structure **.
 
 ---
-## ðŸ”¹ Record Type Variables
+##  Record Type Variables
 
 Generic record — doesn't depend on a specific table.
 
@@ -3338,7 +3398,7 @@ END $$;
 💡 Use `RECORD` when structure unknown(dynamic queries).
 
 ---
-## ðŸ”¹ Constants
+##  Constants
 
 Value cannot be changed once set.
 
@@ -3354,15 +3414,15 @@ END $$;
 🧠 Trick: Constant = Immutable variable.
 
 ---
-# ⚙️ PART 2️⃣ — Stored Procedures
+# ⚙️ PART 2️⃣ — Stored Procedures   ---   IMP
 
 ---
-## 💡 What is a Stored Procedure ?
+## 💡 What is a Stored Procedure ?   ---   IMP
 
   A ** precompiled SQL block ** stored in the database that performs an operation(insert / update / delete/logic) and can be executed anytime.
 
 ---
-### ðŸ”¹ CREATE PROCEDURE
+###  CREATE PROCEDURE
 
   ```sql
 CREATE PROCEDURE update_salary(IN dept_id INT, IN percent_raise NUMERIC)
@@ -3378,7 +3438,7 @@ END;
 $$;
 ```
 
-âž¡ï¸ Call it using:
+ Call it using:
 
 ```sql
 CALL update_salary(3, 10);
@@ -3390,7 +3450,7 @@ CALL update_salary(3, 10);
   * Procedures → perform action(no return)
 
 ---
-### ðŸ”¹ Drop Procedure
+###  Drop Procedure
 
   ```sql
 DROP PROCEDURE update_salary(INT, NUMERIC);
@@ -3399,15 +3459,15 @@ DROP PROCEDURE update_salary(INT, NUMERIC);
 💡 You must specify argument types.
 
 ---
-### ðŸ”¹ Procedure vs Function(Interview)
+###  Procedure vs Function(Interview)
 
   | Feature | Procedure | Function |
 | --- | --- | --- |
-| Return value | âŒ No | ✅ Yes |
+| Return value |  No | ✅ Yes |
 | Call | `CALL proc()` | `SELECT func()` |
-| Used in SELECT | âŒ                | ✅                          |
+| Used in SELECT |                 | ✅                          |
 | Purpose | Operations / DML | Calculations / Data return |
-| Transaction control | ✅ allowed | âŒ not allowed |
+| Transaction control | ✅ allowed |  not allowed |
 
   ---
 ## ⚡ Example: Procedure Using Variables
@@ -3440,17 +3500,17 @@ CALL transfer_funds(1, 2, 1000);
   * Error handling
 
 ---
-# 🧩 PART 3️⃣ — Triggers(Automatic Actions)
+# 🧩 PART 3️⃣ — Triggers(Automatic Actions)   ---   IMP
 
 ---
-## 💡 What is a Trigger ?
+## 💡 What is a Trigger ?   ---   IMP
 
 > A ** special procedure ** that automatically runs on INSERT, UPDATE, or DELETE.
 
 Used for ** auditing, logging, validation, auto - update **, etc.
 
 ---
-### ðŸ”¹ CREATE TRIGGER
+###  CREATE TRIGGER   ---   IMP
 
   ```sql
 CREATE TABLE employees_audit (
@@ -3460,7 +3520,7 @@ CREATE TABLE employees_audit (
 );
 ```
 
-#### Trigger Function:
+#### Trigger Function:   ---   IMP
 
 ```sql
 CREATE OR REPLACE FUNCTION log_employee_change()
@@ -3481,7 +3541,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-#### Trigger Definition:
+#### Trigger Definition:   ---   IMP
 
 ```sql
 CREATE TRIGGER employee_audit_trigger
@@ -3497,28 +3557,28 @@ EXECUTE FUNCTION log_employee_change();
     * `TG_OP` → operation type(`INSERT`, `UPDATE`, `DELETE`)
 
 ---
-### ðŸ”¹ DROP TRIGGER
+###  DROP TRIGGER   ---   IMP
 
   ```sql
 DROP TRIGGER employee_audit_trigger ON employees;
 ```
 
 ---
-### ðŸ”¹ ALTER TRIGGER(Rename)
+###  ALTER TRIGGER(Rename)   ---   IMP
 
   ```sql
 ALTER TRIGGER employee_audit_trigger ON employees RENAME TO emp_audit_trig;
 ```
 
 ---
-### ðŸ”¹ Disabling a Trigger
+###  Disabling a Trigger   ---   IMP
 
   ```sql
 ALTER TABLE employees DISABLE TRIGGER employee_audit_trigger;
 ```
 
 ---
-### ðŸ”¹ Enabling a Trigger
+###  Enabling a Trigger   ---   IMP
 
   ```sql
 ALTER TABLE employees ENABLE TRIGGER employee_audit_trigger;
@@ -3545,7 +3605,7 @@ EXECUTE FUNCTION update_modified_time();
 💡 Automatically updates timestamp when record changes.
 
 ---
-## 🧠 INTERVIEW NOTES — Variables, Procedures, Triggers
+## 🧠 INTERVIEW NOTES — Variables, Procedures, Triggers   ---   IMP
 
   | Concept | Key Point | Example |
 | --- | --- | --- |
@@ -3621,7 +3681,7 @@ CALL delete_inactive_users();
 | Trigger | "AUTO reaction"                   |
 
   ---
-Would you like me to continue next with ðŸ”¹** Views, Indexes, Query Optimization(EXPLAIN, ANALYZE, PARTITION, CLUSTER) ** — the final "performance & tuning" section(most asked in senior - level interviews) ?
+Would you like me to continue next with ** Views, Indexes, Query Optimization(EXPLAIN, ANALYZE, PARTITION, CLUSTER) ** — the final "performance & tuning" section(most asked in senior - level interviews) ?
 
     Perfect 🔥 bhai ab tu SQL ke ** performance aur debugging ** zone me aa gaya —
 yani wo part jo ** real production systems ** me sabse zyada use hota hai(index tuning + error handling).
@@ -3631,14 +3691,14 @@ Main isko explain kar raha hoon flow me:
 → Error Handling(EXCEPTION, ASSERT)
 
 ---
-# 🧩 PART 1️⃣ — INDEXES in PostgreSQL
+# 🧩 PART 1️⃣ — INDEXES in PostgreSQL   ---   IMP
 
   > ** Index ** ek "lookup table" hota hai jo queries ko ** super fast ** banata hai.
 > Without index = full table scan
   > With index = only few rows accessed
 
 ---
-## ðŸ”¹ Syntax — CREATE INDEX
+##  Syntax — CREATE INDEX
 
   ```sql
 CREATE INDEX index_name
@@ -3651,7 +3711,7 @@ ON table_name (column_name);
 CREATE INDEX idx_employees_name ON employees(name);
 ```
 
-âž¡ï¸ Speeds up queries like:
+ Speeds up queries like:
 
 ```sql
 SELECT * FROM employees WHERE name = 'Rahul';
@@ -3667,7 +3727,7 @@ SELECT * FROM employees WHERE name = 'Rahul';
 * Needs ** maintenance ** on`INSERT`, `UPDATE`, `DELETE`(so don't overuse).
 
 ---
-## ðŸ”¹ DROP INDEX
+##  DROP INDEX
 
   ```sql
 DROP INDEX idx_employees_name;
@@ -3680,7 +3740,7 @@ DROP INDEX IF EXISTS idx_employees_name;
 ```
 
 ---
-## ðŸ”¹ List All Indexes
+##  List All Indexes   ---   IMP
 
   ** Method 1(psql command):**
 
@@ -3700,7 +3760,7 @@ WHERE schemaname = 'public';
 ```
 
 ---
-## ðŸ”¹ UNIQUE INDEX
+##  UNIQUE INDEX
 
   > Ensures all indexed values are ** unique ** (no duplicates allowed).
 
@@ -3712,7 +3772,7 @@ ON users(email);
 💡 Same effect as `UNIQUE` constraint but more flexible.
 
 ---
-## ðŸ”¹ Partial Index
+##  Partial Index   ---   IMP
 
   > Index only a ** subset of rows ** based on a condition(saves space).
 
@@ -3727,7 +3787,7 @@ WHERE active = true;
 💡 Useful when 80 % data is inactive → reduces bloat.
 
 ---
-## ðŸ”¹ Index on Expression
+##  Index on Expression
 
   > Index not on a column directly but on an ** expression or function**.
 
@@ -3747,7 +3807,7 @@ will use this index.
 🧠 Trick: Always use same expression in query as in index.
 
 ---
-## ðŸ”¹ Multicolumn Index
+##  Multicolumn Index   ---   IMP
 
   > Index on ** multiple columns **.
 
@@ -3759,10 +3819,10 @@ ON employees(department_id, salary);
 💡 Works best for queries filtering on ** both ** columns(in order).
 
 📌 Important Rule:
-Order matters → `(department_id, salary)` â‰  `(salary, department_id)`
+Order matters → `(department_id, salary)`  `(salary, department_id)`
 
 ---
-## ðŸ”¹ REINDEX(Rebuild Index)
+##  REINDEX(Rebuild Index)
 
   > Rebuilds corrupted or bloated indexes without dropping them.
 
@@ -3779,7 +3839,7 @@ REINDEX TABLE employees;
 💡 Used for ** database optimization ** after heavy updates.
 
 ---
-### 🧠 INTERVIEW CHEATSHEET — Indexes
+### 🧠 INTERVIEW CHEATSHEET — Indexes   ---   IMP
 
   | Type | Purpose | Example |
 | --- | --- | --- |
@@ -3794,20 +3854,20 @@ REINDEX TABLE employees;
 ### ⚡ Interview Questions    IMP
 
   ** Q1:** When not to use indexes ?
-âž¡ï¸ When table is small or frequently updated(indexes slow down writes).
+ When table is small or frequently updated(indexes slow down writes).
 
 ** Q2:** How does PostgreSQL pick which index to use ?
-âž¡ï¸ Using the ** query planner ** (`EXPLAIN ANALYZE` shows it).
+ Using the ** query planner ** (`EXPLAIN ANALYZE` shows it).
 
 ** Q3:** Difference between unique constraint and unique index ?
-âž¡ï¸ Constraint = logical rule; Index = physical structure.
+ Constraint = logical rule; Index = physical structure.
 Unique constraint automatically creates a unique index under the hood.
 
 ---
-# 🧩 PART 2️⃣ — Errors & Exception Handling
+# 🧩 PART 2️⃣ — Errors & Exception Handling   ---   IMP
 
 ---
-## ðŸ”¹ Exception Handling Basics
+##  Exception Handling Basics   ---   IMP
 
   > Used in ** functions / procedures ** to handle runtime errors gracefully.
 
@@ -3892,7 +3952,7 @@ END $$;
 ```
 
 ---
-## ðŸ”¹ RAISE Statement Levels
+##  RAISE Statement Levels
 
   | Level | Use Case | Example |
 | --- | --- | --- |
@@ -3901,7 +3961,7 @@ END $$;
 | EXCEPTION | Stop execution | `RAISE EXCEPTION 'Critical error';` |
 
   ---
-## ðŸ”¹ ASSERT(Debugging Helper)
+##  ASSERT(Debugging Helper)
 
   > Checks if a condition is true — otherwise throws an error.
 
@@ -3932,7 +3992,7 @@ BEGIN
 END $$;
 ```
 
-âž¡ï¸ If count â‰¥ 500 → raises an exception instantly.
+ If count >= 500 → raises an exception instantly.
 
 ---
 ## 🧠 INTERVIEW CHEATSHEET — Errors & Messages
@@ -3956,7 +4016,7 @@ END $$;
 * `ASSERT` → automatically throws if condition false.
 
 ** Q2:** Can we rollback inside an EXCEPTION block ?
-âž¡ï¸ Yes, PostgreSQL automatically rolls back to the ** beginning of the block **, unless you use ** SAVEPOINTs **.
+ Yes, PostgreSQL automatically rolls back to the ** beginning of the block **, unless you use ** SAVEPOINTs **.
 
 ** Q3:** How to handle multiple specific errors ?
 
@@ -3968,7 +4028,7 @@ EXCEPTION
 ```
 
   ** Q4 :** How to rethrow an exception ?
-âž¡ï¸ Just use `RAISE;` inside EXCEPTION block.
+ Just use `RAISE;` inside EXCEPTION block.
 
 ---
 # ✅ SUMMARY
@@ -3988,10 +4048,10 @@ Would you like me to continue next with
 👉 ** Views, Query Optimization(EXPLAIN, ANALYZE, VACUUM, CLUSTER, PARTITIONING) ** —
 the ** final performance chapter **, which covers how to read query plans & tune databases(a hot interview topic) ?
 
-## 📚 COMPREHENSIVE COMPARISON: PostgreSQL vs MySQL vs SQL Standard
+## 📚 COMPREHENSIVE COMPARISON: PostgreSQL vs MySQL vs SQL Standard   ---   IMP
 This section provides detailed comparison for interview preparation
 Understanding these differences is crucial for database selection and optimization
-## ðŸ” 1. SQL STANDARD vs PostgreSQL vs MySQL
+##  1. SQL STANDARD vs PostgreSQL vs MySQL   ---   IMP
 
 SQL (Structured Query Language):
 - Definition: ANSI/ISO standardized language for relational databases
@@ -4020,7 +4080,7 @@ MySQL:
 - Extensions: Limited (compared to PostgreSQL)
 - Compliance: Less strict SQL standard compliance (more permissive)
 
-## ðŸ” 2. ARCHITECTURAL DIFFERENCES
+##  2. ARCHITECTURAL DIFFERENCES
 
 PostgreSQL (Object-Relational):
 - Supports inheritance (tables can inherit from other tables)
@@ -4037,19 +4097,19 @@ MySQL (Relational):
 - Multiple storage engines (InnoDB, MyISAM, etc.)
 - ACID compliance depends on storage engine (InnoDB = yes, MyISAM = no)
 
-## ðŸ” 3. DATA TYPE COMPARISON
+##  3. DATA TYPE COMPARISON
 
 Feature                | SQL Standard | PostgreSQL        | MySQL
 ---|---|---|---
-Boolean                | ✅ BOOLEAN   | ✅ BOOLEAN (true) | âŒ TINYINT(1)
+Boolean                | ✅ BOOLEAN   | ✅ BOOLEAN (true) |  TINYINT(1)
 Integer Types          | INT          | INT, BIGINT, etc. | INT, BIGINT, etc.
 String Types           | VARCHAR      | VARCHAR, TEXT     | VARCHAR, TEXT
 JSON Support           | ✅ (SQL:2016)| ✅ JSONB (binary) | ✅ JSON (text)
-Array Support          | âŒ           | ✅ ARRAY[]         | âŒ
-UUID                   | âŒ           | ✅ UUID            | âŒ (v8.0+ UUID() func)
-Range Types            | âŒ           | ✅ RANGE           | âŒ
-HSTORE (key-value)     | âŒ           | ✅ HSTORE          | âŒ
-Full-Text Search       | âŒ           | ✅ tsvector/tsquery| ✅ FULLTEXT index
+Array Support          |            | ✅ ARRAY[]         |
+UUID                   |            | ✅ UUID            |  (v8.0+ UUID() func)
+Range Types            |            | ✅ RANGE           |
+HSTORE (key-value)     |            | ✅ HSTORE          |
+Full-Text Search       |            | ✅ tsvector/tsquery| ✅ FULLTEXT index
 
 PostgreSQL JSONB Example:
 CREATE TABLE users (id SERIAL, data JSONB);
@@ -4061,7 +4121,7 @@ CREATE TABLE users (id INT AUTO_INCREMENT, data JSON);
 INSERT INTO users (data) VALUES ('{"name": "John", "age": 30}');
 SELECT JSON_EXTRACT(data, '$.name') FROM users;  -- Function-based
 
-## ðŸ” 4. SYNTAX DIFFERENCES (Common Examples)
+##  4. SYNTAX DIFFERENCES (Common Examples)
 
 ### 1. AUTO_INCREMENT / SERIAL:
 MySQL:
@@ -4087,7 +4147,7 @@ SELECT 'Hello' || ' ' || 'World';  -- Returns: 'Hello World'
 
 MySQL:
 SELECT CONCAT('Hello', ' ', 'World');  -- Returns: 'Hello World'
-SELECT 'Hello' || 'World';  -- âŒ Won't work (|| is OR operator)
+SELECT 'Hello' || 'World';  --  Won't work (|| is OR operator)
 
 ### 4. Case-Insensitive String Matching:
 PostgreSQL:
@@ -4097,7 +4157,7 @@ MySQL:
 SELECT * FROM users WHERE name LIKE 'john%' COLLATE utf8_general_ci;
 -- Need to specify collation
 
-### 5. Upsert (Insert or Update):
+### 5. Upsert (Insert or Update):   ---   IMP
 PostgreSQL:
 INSERT INTO users (id, name) VALUES (1, 'John')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
@@ -4116,7 +4176,7 @@ MySQL:
 SELECT NOW();  -- Returns: 2024-01-01 12:00:00
 SELECT YEAR(date_col) FROM table;  -- Function-based
 
-## ðŸ” 5. PERFORMANCE & OPTIMIZATION
+##  5. PERFORMANCE & OPTIMIZATION
 
 PostgreSQL Strengths:
 - Excellent for complex queries (multiple JOINs, subqueries, CTEs)
@@ -4146,7 +4206,7 @@ When to Use MySQL:
 - Large community and ecosystem
 - Web frameworks with strong MySQL support
 
-## ðŸ” 6. ACID COMPLIANCE & TRANSACTIONS
+##  6. ACID COMPLIANCE & TRANSACTIONS   ---   IMP
 
 PostgreSQL:
 - Fully ACID compliant by design
@@ -4162,14 +4222,14 @@ MySQL:
 - Default isolation level: REPEATABLE READ (different from PostgreSQL!)
 - DDL statements are auto-committed (can't rollback)
 
-### Transaction Example:
+### Transaction Example:   ---   IMP
 PostgreSQL & MySQL (InnoDB):
 BEGIN;
   UPDATE users SET balance = balance - 100 WHERE id = 1;
   UPDATE users SET balance = balance + 100 WHERE id = 2;
 COMMIT;  -- or ROLLBACK;
 
-## ðŸ” 7. INDEXING COMPARISON
+##  7. INDEXING COMPARISON   ---   IMP
 
 PostgreSQL Index Types:
 - B-Tree: Default, good for equality and range queries
@@ -4195,7 +4255,7 @@ MySQL:
 CREATE INDEX idx_name ON users(name);
 CREATE FULLTEXT INDEX idx_text ON articles(content);
 
-## ðŸ” 8. STORED PROCEDURES & FUNCTIONS
+##  8. STORED PROCEDURES & FUNCTIONS   ---   IMP
 
 PostgreSQL:
 - Supports multiple languages: SQL, PL/pgSQL, Python, Perl, Tcl, etc.
@@ -4226,7 +4286,7 @@ BEGIN
 END//
 DELIMITER ;
 
-## ðŸ” 9. REPLICATION & HIGH AVAILABILITY
+##  9. REPLICATION & HIGH AVAILABILITY
 
 PostgreSQL:
 - Streaming replication (physical)
@@ -4240,7 +4300,7 @@ MySQL:
 - Group replication
 - Easier setup, widely used
 
-## ðŸ” 10. LICENSE & COMMUNITY
+##  10. LICENSE & COMMUNITY
 
 PostgreSQL:
 - License: PostgreSQL License (BSD-like, very permissive)
@@ -4255,7 +4315,7 @@ MySQL:
 ## 📚 POSTGRESQL INTERVIEW QUESTIONS - TRICKY QUERIES & THEORY
 This section covers advanced PostgreSQL questions commonly asked in interviews
 Focus on both theoretical understanding and practical query skills
-## 🔥 1. What is MVCC?
+## 🔥 1. What is MVCC?   ---   IMP
 Answer:
 MVCC is PostgreSQL's mechanism to handle concurrent transactions without locking.
 Instead of locking rows for reads, PostgreSQL maintains multiple versions of data.
@@ -4307,7 +4367,7 @@ Example: DROP TABLE users;
 Performance Comparison:
 DROP > TRUNCATE >> DELETE (when deleting all rows)
 
-## 🔥 3. INNER JOIN vs LEFT JOIN
+## 🔥 3. INNER JOIN vs LEFT JOIN   ---   IMP
 Answer with Example:
 
 Tables:
@@ -4379,7 +4439,7 @@ SELECT date, amount,
        SUM(amount) OVER (ORDER BY date) as running_total
 FROM sales;
 
-## 🔥 5. CTEs vs Subqueries
+## 🔥 5. CTEs vs Subqueries   ---   IMP
 Answer:
 
 CTE (WITH clause):
@@ -4422,7 +4482,7 @@ WITH RECURSIVE numbers AS (
 SELECT * FROM numbers;
 -- Returns: 1, 2, 3, ..., 10
 
-## 🔥 6. WHAT IS THE DIFFERENCE BETWEEN WHERE AND HAVING?
+## 🔥 6. WHAT IS THE DIFFERENCE BETWEEN WHERE AND HAVING?   ---   IMP
 Answer:
 
 WHERE:
@@ -4448,7 +4508,7 @@ ORDER BY avg_salary DESC;
 Execution Order:
 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY
 
-## 🔥 7. EXPLAIN TRANSACTION ISOLATION LEVELS
+## 🔥 7. EXPLAIN TRANSACTION ISOLATION LEVELS   ---   IMP
 Answer:
 
 Isolation Levels (from least to most strict):
@@ -4683,7 +4743,7 @@ Optimization Tips:
 - Compare estimated vs actual rows (statistics may be outdated)
 - Look for high costs (optimize those parts first)
 
-## 🔥 13. WHAT IS A PARTIAL INDEX?
+## 🔥 13. WHAT IS A PARTIAL INDEX?   ---   IMP
 Answer:
 
 Partial Index: Index on subset of rows (filtered by WHERE clause)
@@ -4801,7 +4861,7 @@ WHERE id NOT IN (
   GROUP BY email
 );
 
-### Solution 3 - Using EXISTS:
+### Solution 3 - Using EXISTS:   ---   IMP
 DELETE FROM users u1
 WHERE EXISTS (
   SELECT 1 FROM users u2
@@ -4820,7 +4880,7 @@ FROM employees e
 JOIN employees m ON e.manager_id = m.id
 WHERE e.salary > m.salary;
 
-### Alternative - Correlated Subquery:
+### Alternative - Correlated Subquery:   ---   IMP
 SELECT name, salary
 FROM employees e
 WHERE salary > (
@@ -4832,7 +4892,7 @@ Answer:
 
 Problem: Find 3 consecutive login dates for users
 
-### Solution - Using Window Functions:
+### Solution - Using Window Functions:   ---   IMP
 WITH logins AS (
   SELECT user_id, login_date,
          LAG(login_date, 1) OVER (PARTITION BY user_id ORDER BY login_date) as prev1,
@@ -4862,7 +4922,7 @@ month | A   | B
 Jan   | 100 | 200
 Feb   | 150 | NULL
 
-### Solution - Using CASE and Aggregation:
+### Solution - Using CASE and Aggregation:   ---   IMP
 SELECT month,
        SUM(CASE WHEN product = 'A' THEN amount END) AS A,
        SUM(CASE WHEN product = 'B' THEN amount END) AS B
@@ -4889,7 +4949,7 @@ Answer:
 - Data: Actual column values
 - TOAST: For large values (>2KB), stored separately
 
-### MVCC Implementation:
+### MVCC Implementation:   ---   IMP
 - xmin: Transaction that created tuple
 - xmax: Transaction that deleted tuple (or lock info)
 - Each update creates new tuple version
@@ -4923,7 +4983,7 @@ nextval('seq_name'): Get next value
 currval('seq_name'): Get current value
 setval('seq_name', value): Set value
 
-## 🔥 22. EXPLAIN JSONB vs JSON IN POSTGRESQL
+## 🔥 22. EXPLAIN JSONB vs JSON IN POSTGRESQL   ---   IMP
 Answer:
 
 JSON:
@@ -4953,7 +5013,7 @@ VALUES ('{"name": "iPhone", "price": 999}', '{"name": "iPhone", "price": 999}');
 SELECT data_json->>'name' FROM products;  -- JSON
 SELECT data_jsonb->>'name' FROM products;  -- JSONB (same syntax)
 
-### Indexing JSONB:
+### Indexing JSONB:   ---   IMP
 CREATE INDEX idx_jsonb ON products USING GIN (data_jsonb);
 SELECT * FROM products WHERE data_jsonb @> '{"name": "iPhone"}';
 
@@ -4961,7 +5021,7 @@ SELECT * FROM products WHERE data_jsonb @> '{"name": "iPhone"}';
 JSON: Need exact formatting, simple storage
 JSONB: Need querying, indexing, better performance
 
-## 🔥 23. WHAT IS A FULL OUTER JOIN AND WHEN TO USE IT?
+## 🔥 23. WHAT IS A FULL OUTER JOIN AND WHEN TO USE IT?   ---   IMP
 Answer:
 
 FULL OUTER JOIN: Returns all rows from both tables
@@ -4993,7 +5053,7 @@ When to Use:
 - Finding what's missing in either table
 - Merging data from two sources
 
-### Alternative - UNION of LEFT and RIGHT JOIN:
+### Alternative - UNION of LEFT and RIGHT JOIN:   ---   IMP
 SELECT a.name, b.city FROM table_a a LEFT JOIN table_b b ON a.id = b.id
 UNION
 SELECT a.name, b.city FROM table_a a RIGHT JOIN table_b b ON a.id = b.id;
@@ -5085,9 +5145,9 @@ Common Interview Topics:
 
 | Feature | Encoding | Encryption | Hashing |
 | ---| ---| ---| ---|
-| ** Reversible ?** | ✅ Yes(always) | ✅ Yes(with key) | âŒ No(one - way) |
+| ** Reversible ?** | ✅ Yes(always) | ✅ Yes(with key) |  No(one - way) |
 | ** Purpose ** | Data format conversion | Data protection | Data integrity / verification |
-| ** Key Required ?** | âŒ No | ✅ Yes | âŒ No |
+| ** Key Required ?** |  No | ✅ Yes |  No |
 | ** Output Size ** | Variable | Variable | Fixed(for same algorithm) |
 | ** Use Case ** | Data transmission, storage | Secure communication | Password storage, checksums |
 
@@ -5361,7 +5421,7 @@ Hashing is a **one-way function** that converts data into a **fixed-size string*
 ```javascript
 --- MD5 (Deprecated - Not Secure) ---
 128-bit hash, 32 hex characters
-âŒ DO NOT USE for security (collision vulnerabilities)
+ DO NOT USE for security (collision vulnerabilities)
 
 const crypto = require('crypto');
 
@@ -5490,7 +5550,7 @@ Server verifies: createHMAC(receivedMessage, apiKey) === receivedSignature
 ```javascript
 --- 1. Password Storage ---
 ✅ DO: Store hash of password
-âŒ DON'T: Store plaintext password
+ DON'T: Store plaintext password
 
 const userPassword = "user123";
 const passwordHash = hashSHA256(userPassword);
@@ -5563,8 +5623,8 @@ function createBlock(data, previousHash) {
 ```
 
 **Hashing Summary:**
-- âŒ NOT reversible (one-way)
-- âŒ No key needed (but can use salt/secret)
+-  NOT reversible (one-way)
+-  No key needed (but can use salt/secret)
 - ✅ For data integrity, password storage
 - ✅ Fixed output size
 - ✅ Deterministic (same input = same output)
@@ -5574,12 +5634,12 @@ function createBlock(data, previousHash) {
 
 | Aspect | Encoding | Encryption | Hashing |
 |---|---|---|---|
-| **Reversible?** | ✅ Always | ✅ With key | âŒ Never |
+| **Reversible?** | ✅ Always | ✅ With key |  Never |
 | **Purpose** | Format conversion | Data protection | Integrity/verification |
-| **Key Required?** | âŒ No | ✅ Yes | âŒ No (but salt helps) |
+| **Key Required?** |  No | ✅ Yes |  No (but salt helps) |
 | **Output Size** | Variable | Variable | Fixed |
-| **Security** | âŒ None | ✅ High | ✅ One-way security |
-| **Speed** | ⚡ Very Fast | ðŸ¢ Slower | ⚡ Fast |
+| **Security** |  None | ✅ High | ✅ One-way security |
+| **Speed** | ⚡ Very Fast |  Slower | ⚡ Fast |
 | **Use Cases** | URLs, Base64, HTML | Secure communication | Passwords, checksums |
 
 ## REAL-WORLD EXAMPLES
@@ -5650,7 +5710,7 @@ if (receivedHash === sentHash) {
 ✅ DO: Use bcrypt/argon2 for passwords
 const passwordHash = await bcrypt.hash(password, 10);
 
-âŒ DON'T: Use MD5/SHA-256 directly for passwords (no salt)
+ DON'T: Use MD5/SHA-256 directly for passwords (no salt)
 const badHash = hashSHA256(password);  // Vulnerable to rainbow tables
 
 ✅ DO: Use HTTPS (encryption) for data transmission
@@ -5658,17 +5718,17 @@ const badHash = hashSHA256(password);  // Vulnerable to rainbow tables
 ✅ DO: Use HMAC for API authentication
 const signature = createHMAC(message, secretKey);
 
-âŒ DON'T: Use encoding for security (Base64 is NOT encryption)
+ DON'T: Use encoding for security (Base64 is NOT encryption)
 const encoded = btoa("password");  // NOT secure! Easily decoded
 
 ✅ DO: Use strong encryption algorithms (AES-256, RSA-2048+)
-âŒ DON'T: Use weak encryption (DES, RC4)
+ DON'T: Use weak encryption (DES, RC4)
 
 ✅ DO: Store hashes, not plaintext passwords
-âŒ DON'T: Store passwords in plaintext
+ DON'T: Store passwords in plaintext
 
 ✅ DO: Use salt for password hashing
-âŒ DON'T: Hash passwords without salt
+ DON'T: Hash passwords without salt
 ```
 
 ---
@@ -5677,7 +5737,7 @@ const encoded = btoa("password");  // NOT secure! Easily decoded
 **Encoding:**
 - Purpose: Format conversion (Base64, URL encoding)
 - Reversible: ✅ Yes
-- Security: âŒ None
+- Security:  None
 - Example: `btoa("Hello")` → `"SGVsbG8="`
 
 **Encryption:**
@@ -5688,11 +5748,11 @@ const encoded = btoa("password");  // NOT secure! Easily decoded
 
 **Hashing:**
 - Purpose: Data integrity, password storage
-- Reversible: âŒ No (one-way)
+- Reversible:  No (one-way)
 - Security: ✅ One-way security
 - Example: SHA-256, bcrypt for passwords
 
 **Remember:**
-- ðŸ” **Encryption** = Protect data (reversible with key)
-- ðŸ”’ **Hashing** = Verify integrity (one-way, not reversible)
-- ðŸ“ **Encoding** = Format conversion (not for security)
+-  **Encryption** = Protect data (reversible with key)
+-  **Hashing** = Verify integrity (one-way, not reversible)
+-  **Encoding** = Format conversion (not for security)

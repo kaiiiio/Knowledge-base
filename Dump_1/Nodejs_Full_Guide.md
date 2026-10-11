@@ -133,7 +133,7 @@ console.log(`User ${diff.user/1000}ms System ${diff.system/1000}ms`);
 ```
 - Node’s JS executes on a single main thread, but libuv thread-pool & worker threads can use other cores for parallel work.
 
-#### OS vs Kernel vs Process
+#### OS vs Kernel vs Process  ---- IMP
 - **OS** = Kernel + userland tools.
 - **Kernel** manages scheduling, memory, syscalls.
 - **Process** = running program with isolated address space.
@@ -151,7 +151,7 @@ Core2: [Task B──────────]
 ```
 - Node achieves concurrency via event loop; parallelism via worker threads, cluster, or multiple processes.
 
-#### Worker Threads Overview
+#### Worker Threads Overview  ---- IMP
 ```javascript
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 
@@ -204,7 +204,7 @@ const db = process.env.DB_URL;
                          Future access checks
 ```
 
-#### Process Object Essentials
+#### Process Object Essentials  ---- IMP
 - `process.pid`, `process.ppid`, `process.title`.
 - `process.cwd()`, `process.chdir(path)`.
 - `process.memoryUsage()`, `process.resourceUsage()`.
@@ -233,7 +233,7 @@ library vs cli packages , local vs global packages, NPX works?, NPX, FS module, 
 
 ### Node.js Fundamentals Deep Dive
 
-#### Module Systems Overview
+#### Module Systems Overview  ---- IMP
 ```
 ┌─────────────┐
 │ CommonJS    │  require / module.exports
@@ -246,7 +246,7 @@ library vs cli packages , local vs global packages, NPX works?, NPX, FS module, 
 - Node supports CJS by default; ESM via `.mjs` or `"type":"module"`.
 - Interop: `createRequire` for requiring from ES modules; dynamic `import()` inside CJS.
 
-#### Module Object & Wrapper
+#### Module Object & Wrapper  ---- IMP
 ```javascript
 (function (exports, require, module, __filename, __dirname) {
   // Module code
@@ -256,13 +256,13 @@ library vs cli packages , local vs global packages, NPX works?, NPX, FS module, 
 - `require.cache` stores loaded modules; experimental `module.createRequire`.
 - Circular deps: Node loads partially evaluated exports.
 
-#### ES6 vs ES7 Key Differences
+#### ES6 vs ES7 Key Differences  ---- IMP
 - ES6 (2015): `let/const`, arrow functions, classes, template literals, destructuring, default params, `Promise`, `Map/Set`, modules.
 - ES7 (2016): `Array.prototype.includes`, `**` exponentiation.
 - Later: ES8 async/await, ES9 rest/spread for objects, etc.
 - Node release matrix: ensure target runtime supports features (use `core-js`/Babel for older environments).
 
-#### Accessing `__filename`/`__dirname` in ES Modules
+#### Accessing `__filename`/`__dirname` in ES Modules  ---- IMP
 ```javascript
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -271,7 +271,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 ```
 
-#### Built-in Module Taxonomy
+#### Built-in Module Taxonomy  ---- IMP
 - **System**: `fs`, `path`, `os`, `process`, `child_process`, `worker_threads`.
 - **Network**: `http`, `https`, `net`, `tls`, `dgram`, `dns`, `http2`.
 - **Data**: `buffer`, `stream`, `zlib`, `crypto`, `perf_hooks`.
@@ -279,7 +279,7 @@ const __dirname = dirname(__filename);
 - **Diagnostics**: `inspector`, `v8`, `trace_events`.
 List via `require('module').builtinModules`.
 
-#### NPM Workflow & Package Publishing
+#### NPM Workflow & Package Publishing  ---- IMP
 1. Init: `npm init` or `pnpm init`.
 2. Semantic versioning (MAJOR.MINOR.PATCH).
 3. Scripts lifecycle: `preinstall`, `postinstall`, custom `npm run`.
@@ -292,7 +292,7 @@ List via `require('module').builtinModules`.
 5. Scoped packages: `@org/pkg`.
 6. Depracating: `npm deprecate pkg@"<1.0" "message"`.
 
-#### package.json Anatomy
+#### package.json Anatomy  ---- IMP
 ```json
 {
   "name": "@scope/api",
@@ -350,18 +350,18 @@ import fs from 'fs';
 - Handle CLI args via `process.argv`, `yargs`, or `commander`.
 - Add help/usage output.
 
-#### Library vs CLI Package Design
+#### Library vs CLI Package Design  ---- IMP
 - Library: focus on exported functions/classes, semantic versioning, tree-shaking support, TypeScript types.
 - CLI: handle stdin/stdout, interactive prompts, exit codes, cross-platform paths, update notifier.
 - Provide both by exposing library API and `bin` entry.
 
-#### Local vs Global Dependencies
+#### Local vs Global Dependencies  ---- IMP
 - Local (default): `node_modules` per project; referenced via code.
 - Global (`npm i -g`): exposes binaries on PATH, not bundled with project.
 - Use `npx` to avoid global install.
 - Monorepo strategy: hoist shared deps with npm workspaces/pnpm/yarn.
 
-#### NPX Internals
+#### NPX Internals  ---- IMP
 ```
 npx cmd → check local node_modules/.bin
        → fallback to PATH/global
@@ -370,7 +370,7 @@ npx cmd → check local node_modules/.bin
 - Supports version pinning `npx eslint@8 .`.
 - In Node 18+, `corepack` handles `pnpm dlx`, `yarn dlx`.
 
-#### FS Module & File Ops
+#### FS Module & File Ops  ---- IMP
 - Sync/Async/Promise variants (`fs.readFile`, `fs.readFileSync`, `fs.promises.readFile`).
 - Streaming APIs for large files.
 - Watchers: `fs.watch`, `fs.watchFile`, `chokidar` for cross-platform.
@@ -430,7 +430,7 @@ Even versions → LTS (active 18 months + maintenance 12 months)
 Use LTS for production deployments.
 ```
 
-#### Diagram: Package Lifecycle
+#### Diagram: Package Lifecycle  ---- IMP
 ```
 Code → package.json/scripts → npm publish → npm registry → npm install → node_modules/.bin symlinks
 ```
@@ -471,7 +471,7 @@ value = (-1)^sign × 1.mantissa × 2^(exp-127)
 - Precision errors (0.1 + 0.2 ≠ 0.3); compare with tolerance.
 - Use BigInt/decimal libs for money/precision tasks.
 
-#### Character Sets vs Encodings
+#### Character Sets vs Encodings  ---- IMP
 - Character set: repertoire of symbols (Unicode, ASCII).
 - Encoding: algorithm to map code points → bytes (UTF-8/16/32, ISO-8859-1).
 - Must know both to interpret raw bytes correctly.
@@ -542,7 +542,7 @@ Little Endian: 78 56 34 12
 - Inspect bytes via `xxd`/`hexdump`; log `Buffer` contents in Node.
 - Use `iconv-lite` or ICU for legacy encodings.
 
-#### Encoding Pipeline Diagram
+#### Encoding Pipeline Diagram  ---- IMP
 ```
 Text → Unicode code points → Encoding → Bytes → Transport/Storage
 Bytes → Decoding → Code points → Rendered glyphs
@@ -565,7 +565,7 @@ Buffers -> Arraybuffers and handling, signed unsigned getRandomValues, reading a
 alloc vs allosUnsafe
 , buffer Pool, buffer methos and properties. uses of buffers and limitations
 
-### Buffers, ArrayBuffers, Typed Arrays (Extreme Detail)
+### Buffers, ArrayBuffers, Typed Arrays (Extreme Detail)  ---- IMP
 
 #### 1. Conceptual Map
 ```
@@ -575,7 +575,7 @@ ArrayBuffer = raw memory block (browser & Node)
 TypedArray/DataView = typed views on ArrayBuffer
 ```
 
-#### 2. Creating Buffers
+#### 2. Creating Buffers  ---- IMP
 ```js
 Buffer.alloc(size, fill = 0, encoding = 'utf8');        // zero-filled
 Buffer.allocUnsafe(size);                               // fast, garbage data
@@ -585,7 +585,7 @@ Buffer.from(array | string | ArrayBuffer, encoding);    // copy from source
 - `allocUnsafe` is ~2x faster but must be fully overwritten before use.
 - `Buffer.from(arrayBuffer)` shares memory; mutations visible both ways.
 
-#### 3. Buffer Pool & Memory
+#### 3. Buffer Pool & Memory  ---- IMP
 - Default `Buffer.poolSize = 8192`.
 - Requests < 4KB carve slices from pool (slab allocation) to reduce syscalls.
 - Pool refilled when depleted; GC frees slabs when no slices reference them.
@@ -625,7 +625,7 @@ buf.readDoubleLE(offset);
 - Use LE vs BE to match protocol specs.
 - For unusual sizes (3-byte ints) use `readUIntLE(offset, 3)`.
 
-#### 6. Slicing vs Copying
+#### 6. Slicing vs Copying  ---- IMP
 - `slice` returns new Buffer referencing same memory; changing slice mutates origin.
 - Use `Buffer.from(buf)` or `buf.copy` for independent copy.
 ```js
@@ -634,14 +634,14 @@ const view = original.slice(0, 2);
 view[0] = 0x78;   // modifies original[0]
 ```
 
-#### 7. Buffer.concat
+#### 7. Buffer.concat  ---- IMP
 ```js
 Buffer.concat([buf1, buf2, buf3], totalLength);
 ```
 - `totalLength` optional but avoids extra pass.
 - Internal copies, so heavy use may be costly; prefer streaming writes.
 
-#### 8. ArrayBuffer & TypedArray
+#### 8. ArrayBuffer & TypedArray  ---- IMP
 ```js
 const ab = new ArrayBuffer(16);
 const uint8 = new Uint8Array(ab);
@@ -652,7 +652,7 @@ view.setInt32(0, 123456, false);         // BE
 - Buffer inherits from Uint8Array; `Buffer.from(ab)` uses same memory.
 - `SharedArrayBuffer` + Atomics allow thread-safe shared memory.
 
-#### 9. Signed vs Unsigned
+#### 9. Signed vs Unsigned  ---- IMP
 - Signed ints use two’s complement: MSB = sign bit.
 - Example: `0xFF` read as `UInt8` = 255, `Int8` = -1.
 - Choose `writeInt*` vs `writeUInt*` to match data semantics.
@@ -666,7 +666,7 @@ randomFillSync(arr);                         // typed array
 ```
 - Browser equivalent: `crypto.getRandomValues`.
 
-#### 11. Reading / Writing Multi-byte Records
+#### 11. Reading / Writing Multi-byte Records  ---- IMP
 Example binary header:
 ```
 Offset  Size  Type     Meaning
@@ -694,20 +694,20 @@ header.writeUInt8(flags, 6);
 - UDP: `socket.send(buffer, offset, length, port, host)`.
 - HTTP request/response bodies stream as Buffers by default.
 
-#### 14. Buffer vs Stream vs String
+#### 14. Buffer vs Stream vs String  ---- IMP
 |                | Buffer                    | Stream                               | String                              |
 |----------------|---------------------------|--------------------------------------|-------------------------------------|
 | Size           | Finite chunk in memory    | Potentially unbounded                | Finite (UTF-16 internally)          |
 | Encoding       | Raw bytes                 | Raw bytes or object mode             | UTF-16 sequences                    |
 | Use Case       | Binary protocols, crypto  | Large file transfer, network piping  | Text processing                     |
 
-#### 15. `alloc` vs `allocUnsafe`
+#### 15. `alloc` vs `allocUnsafe`  ---- IMP
 - `alloc` calls `calloc`/memset → zeroed memory.
 - `allocUnsafe` just reserves pointer; may contain previous data (security risk).
 - Use `allocUnsafe` for hot paths where you immediately overwrite.
 - `allocUnsafeSlow` bypasses pooling (useful for long-lived large Buffer to avoid slab retention).
 
-#### 16. Buffer Pool Internals
+#### 16. Buffer Pool Internals  ---- IMP
 ```
 if (size <= poolSize >> 1) {
   if (pool offset + size > poolSize) refill slab
@@ -725,7 +725,7 @@ if (size <= poolSize >> 1) {
 - For big data, prefer streaming pipelines with backpressure.
 - Benchmark: `node --trace_gc` to detect Buffer-induced GC pressure.
 
-#### 18. Buffer & TypedArray Interop Examples
+#### 18. Buffer & TypedArray Interop Examples  ---- IMP
 ```js
 const buf = Buffer.from([0,1,2,3]);
 const u16 = new Uint16Array(buf.buffer, buf.byteOffset, buf.length / 2);
@@ -733,7 +733,7 @@ console.log(u16);  // interprets pairs as 16-bit ints
 ```
 - To detach, copy via `Buffer.from(buf)` or `new Uint8Array(buf)`.
 
-#### 19. SharedArrayBuffer & Atomics (Node >=16)
+#### 19. SharedArrayBuffer & Atomics (Node >=16)  ---- IMP
 ```js
 const shared = new SharedArrayBuffer(4);
 const view = new Int32Array(shared);
@@ -753,7 +753,7 @@ decoder.decode(arr);
 ```
 - `Buffer.from(string, 'utf8')` equivalent but TextEncoder matches browser spec.
 
-#### 21. Buffer.transcode (Node)
+#### 21. Buffer.transcode (Node)  ---- IMP
 ```js
 const { transcode } = require('buffer');
 const source = Buffer.from('ê', 'latin1');
@@ -765,7 +765,7 @@ const target = transcode(source, 'latin1', 'utf8');
 - Browser: `crypto.getRandomValues(new Uint8Array(16))`.
 - Node: `crypto.randomFillSync(new Uint8Array(16))`.
 
-#### 23. Transfer ArrayBuffer to Disk
+#### 23. Transfer ArrayBuffer to Disk  ---- IMP
 ```js
 const { writeFile } = require('fs/promises');
 const ab = new Uint8Array([1,2,3]).buffer;
@@ -773,7 +773,7 @@ await writeFile('data.bin', new Uint8Array(ab));
 ```
 - Reverse: `const ab = (await readFile('data.bin')).buffer`.
 
-#### 24. Buffer Limitations & Pitfalls
+#### 24. Buffer Limitations & Pitfalls  ---- IMP
 - Max size ~1GB (depends on architecture). Attempting bigger throws `ERR_OUT_OF_RANGE`.
 - Memory leak risk: storing Buffers in long-lived caches without eviction.
 - `buf.toString()` defaults to utf8; binary data may corrupt when coerced to string.
@@ -801,13 +801,13 @@ function encodeTLV(type, valueBuf) {
 }
 ```
 
-#### 27. Streams + Buffers
+#### 27. Streams + Buffers  ---- IMP
 - `Readable` emits Buffer chunks (unless `setEncoding` called).
 - `Writable` accepts Buffers or strings; returns `false` when highWaterMark reached.
 - `pipeline` handles cleanup when errors occur.
 - Combine buffering + streaming: accumulate small packets until full message.
 
-#### 28. Backpressure & Buffering Strategy
+#### 28. Backpressure & Buffering Strategy  ---- IMP
 ```
 Producer (fast) → Writable (buffer) → Consumer (slow)
 ```
@@ -822,7 +822,7 @@ Producer (fast) → Writable (buffer) → Consumer (slow)
 - WebSockets & HTTP/2 frame encoding.
 - Interfacing with native addons (N-API) requiring raw memory.
 
-#### 30. Example: Sending File via TCP in Chunks
+#### 30. Example: Sending File via TCP in Chunks  ---- IMP
 ```js
 const fs = require('fs');
 const net = require('net');
@@ -845,7 +845,7 @@ const buf = mmap.openSync('file.bin', 'r+');
 ```
 - Acts like Buffer but reading/writing hits file on disk via OS page cache.
 
-#### 32. Buffer Serializer Utilities
+#### 32. Buffer Serializer Utilities  ---- IMP
 - Implement `pack`/`unpack` similar to Python `struct`.
 ```js
 function writeUInt24BE(buf, value, offset=0) {
@@ -856,16 +856,16 @@ function writeUInt24BE(buf, value, offset=0) {
 ```
 - Use for exotic integer sizes (24-bit length fields, etc.).
 
-#### 33. Buffer.from JSON
+#### 33. Buffer.from JSON  ---- IMP
 - `Buffer.from(JSON.stringify(obj))` stores UTF-8 JSON.
 - `buf.toString()` parse back via `JSON.parse`.
 - For binary JSON (BSON, CBOR) need dedicated libs.
 
-#### 34. Buffer & WASM
+#### 34. Buffer & WASM  ---- IMP
 - WASM memory exposes `ArrayBuffer`; use `Buffer.from(wasmMemory.buffer)` to inspect/manipulate memory from Node.
 - Keep in mind: Buffer view invalidated if WASM memory grows.
 
-#### 35. Buffer Reuse Pattern
+#### 35. Buffer Reuse Pattern  ---- IMP
 ```js
 const buf = Buffer.allocUnsafe(64 * 1024);
 let bytesRead;
@@ -884,11 +884,11 @@ buf.fill(0); // before GC
 - `crypto.scrypt`/`crypto.pbkdf2` operate on Buffers—avoid converting to strings (no base64) for secret data.
 - Validate incoming Buffer size to prevent DoS (huge payloads).
 
-#### 37. Buffer Limits & Flags
+#### 37. Buffer Limits & Flags  ---- IMP
 - CLI options: `--max-old-space-size`, `--max-semi-space-size`.
 - `Buffer.kMaxLength` indicates maximum length; `Buffer.constants.MAX_LENGTH`.
 
-#### 38. Interop with Streams (object mode)
+#### 38. Interop with Streams (object mode)  ---- IMP
 - For textual data, set encoding to automatically convert to strings; otherwise Buffer remains default.
 ```js
 readable.setEncoding('utf8'); // 'data' events become strings
@@ -900,7 +900,7 @@ readable.setEncoding('utf8'); // 'data' events become strings
 - `binary-parser` to declaratively describe binary formats.
 - `bitwise` libs for bit-level operations.
 
-#### 40. Visualization of Buffer Flow Through Stack
+#### 40. Visualization of Buffer Flow Through Stack  ---- IMP
 ```
 [Source] -> Buffer -> Stream pipeline -> Transform (gzip) -> Buffer -> Destination
 ```
@@ -910,14 +910,14 @@ readable.setEncoding('utf8'); // 'data' events become strings
 
 event driven architecture and eventemooters-> async IO in node js, CPU operations vs I?O operations, event driven Arch?, custom eventemmiters?
 
-### Event-Driven Architecture & Event Emitters (Deep Dive)
+### Event-Driven Architecture & Event Emitters (Deep Dive)  ---- IMP
 
-#### 1. Why Event-Driven?
+#### 1. Why Event-Driven?  ---- IMP
 - Traditional request/response with blocking threads wastes resources during I/O waits.
 - Event-driven loops keep single thread busy by registering callbacks that fire when events occur.
 - Enables high concurrency with minimal threads, perfect for I/O-heavy Node apps.
 
-#### 2. Event Loop Anatomy
+#### 2. Event Loop Anatomy  ---- IMP
 ```
 ┌───────────────┐
 │ timers        │  setTimeout / setInterval
@@ -935,7 +935,7 @@ event driven architecture and eventemooters-> async IO in node js, CPU operation
 Microtasks (process.nextTick, Promises) run between phases → highest priority.
 ```
 
-#### 3. Async I/O Flow vs CPU Flow
+#### 3. Async I/O Flow vs CPU Flow  ---- IMP
 ```
 Async I/O:
  JS thread → fs.readFile → libuv thread pool → OS I/O → completion queue → callback executed → loop free meanwhile
@@ -945,7 +945,7 @@ CPU-bound:
 ```
 - Mitigation: offload CPU tasks to worker threads or child processes.
 
-#### 4. EventEmitter API
+#### 4. EventEmitter API  ---- IMP
 ```js
 const { EventEmitter } = require('events');
 class Bus extends EventEmitter {}
@@ -968,7 +968,7 @@ bus.emit('data', { id: 1 });
 bus.on('error', (err) => console.error('Handled', err));
 ```
 
-#### 6. Custom Event Emitters
+#### 6. Custom Event Emitters  ---- IMP
 ```js
 class OrderService extends EventEmitter {
   place(order) {
@@ -990,7 +990,7 @@ bus.on('job', async (job) => {
 });
 ```
 
-#### 8. Event-Driven Architecture Flow
+#### 8. Event-Driven Architecture Flow  ---- IMP
 ```
 HTTP Request → Controller → Emit Domain Event
       │
@@ -1002,14 +1002,14 @@ HTTP Request → Controller → Emit Domain Event
 - Loose coupling: new subscribers can be added without modifying publishers.
 - Cross-process: propagate events via Redis pub/sub, RabbitMQ, Kafka.
 
-#### 9. Event Loop Diagnostics
+#### 9. Event Loop Diagnostics  ---- IMP
 - `process.nextTick` vs `setImmediate`:
   - `process.nextTick`: microtask, executes before I/O; overuse can starve loop.
   - `setImmediate`: runs in check phase (after poll).
 - `perf_hooks.monitorEventLoopDelay()` to measure lag.
 - `async_hooks` for tracing async resources.
 
-#### 10. CPU vs I/O Benchmarks
+#### 10. CPU vs I/O Benchmarks  ---- IMP
 ```js
 // CPU bound
 function fib(n) { return n <= 1 ? n : fib(n-1) + fib(n-2); }
@@ -1037,7 +1037,7 @@ class EventBus {
 ```
 - Lightweight alternative when EventEmitter features not needed.
 
-#### 12. Event Loop & Microtasks Sequence Example
+#### 12. Event Loop & Microtasks Sequence Example  ---- IMP
 ```js
 console.log('start');
 setTimeout(() => console.log('timeout'), 0);
@@ -1048,7 +1048,7 @@ console.log('end');
 // Order: start, end, nextTick, promise, timeout/immediate (order of last two can vary)
 ```
 
-#### 13. Combining Events with Promises
+#### 13. Combining Events with Promises  ---- IMP
 ```js
 const { once } = require('events');
 const [message] = await once(bus, 'message');
@@ -1071,7 +1071,7 @@ bus.on('data', (payload) => {
 - UI (Electron): main <-> renderer communication via events.
 - Cron/task scheduler: emit `task:run` when timer fires.
 
-#### 16. Event Loop Blocking Detection
+#### 16. Event Loop Blocking Detection  ---- IMP
 ```js
 const start = Date.now();
 setInterval(() => {
@@ -1262,14 +1262,14 @@ path.write_text(data.replace(old, new, 1))
 
 streams in node js -> types of streams, readble, diff states of readable streams,  writable, backpressure , internal buffer of writable, closing writable, states in wriytbel stream, piping streams, piping using piplines, duplex, transfomr, passthrough, data streams,, piping and redirection of dtaa streams, opening files in diff REPL_MODE_SLOPPY, writing to file with file descriptor, handling files using promises, how browsers use strams -> streams in js
 
-### Streams in Node.js (Ultra Detailed)
+### Streams in Node.js (Ultra Detailed)  ---- IMP
 
-#### 1. Why Streams?
+#### 1. Why Streams?  ---- IMP
 - Process terabytes of data incrementally; avoid loading everything into memory.
 - Lower latency and memory footprint; perfect for piping compression/encryption/parsing stages.
 - Built on EventEmitter; integrates with Buffer + automatic backpressure.
 
-#### 2. Stream Types
+#### 2. Stream Types  ---- IMP
 | Type | Direction | Examples |
 |------|-----------|----------|
 | Readable | source | `fs.createReadStream`, `process.stdin`, HTTP request body |
@@ -1279,7 +1279,7 @@ streams in node js -> types of streams, readble, diff states of readable streams
 | PassThrough | identity | logging/metrics tap |
 | Object Mode | JS objects | `objectMode: true` streams |
 
-#### 3. Readable Stream States
+#### 3. Readable Stream States  ---- IMP
 Paused ↔ Flowing  
 - Paused (default): pull data manually via `stream.read()` or `readable` event.  
 - Flowing: `data` events fire automatically (`.on('data')`, `.pipe()`, `.resume()`).  
@@ -1304,7 +1304,7 @@ class Counter extends Readable {
 }
 ```
 
-#### 5. Writable Internals & Backpressure
+#### 5. Writable Internals & Backpressure  ---- IMP
 - `highWaterMark` defines buffer size (defaults 16 KB binary / 16 objects).
 - `write(chunk)` returns `false` when buffer full → pause producer until `drain`.
 - `end(chunk?)` flushes remaining data and emits `finish`.
@@ -1314,7 +1314,7 @@ if (!writable.write(chunk)) readable.pause();
 writable.once('drain', () => readable.resume());
 ```
 
-#### 6. `pipe()` vs `pipeline()`
+#### 6. `pipe()` vs `pipeline()`  ---- IMP
 ```js
 fs.createReadStream('input')
   .pipe(zlib.createGzip())
@@ -1351,22 +1351,22 @@ for await (const chunk of fs.createReadStream('log.txt', { encoding: 'utf8' })) 
 }
 ```
 
-#### 10. File Descriptors & Promises
+#### 10. File Descriptors & Promises  ---- IMP
 `fs.promises.open` + `read` lets you manage offsets manually when parsing binary protocols; remember to close the descriptor (use `try/finally`).
 
-#### 11. Browser ↔ Node Streams
+#### 11. Browser ↔ Node Streams  ---- IMP
 - Node 18+: `Readable.fromWeb` / `Writable.toWeb` adapt Fetch streams.
 - Browser streams expose `ReadableStreamDefaultReader.read()` + `desiredSize` for backpressure.
 
-#### 12. Error & Close Lifecycle
+#### 12. Error & Close Lifecycle  ---- IMP
 - Always attach `error` listener; missing handler crashes process.
 - `stream.finished(stream, cb)` (or promise) notifies when stream completes or fails.
 - `push(null)` marks EOF for custom readables; `destroy(err)` aborts; `close` indicates resource freed.
 
-#### 13. Object Mode & Throttling
+#### 13. Object Mode & Throttling  ---- IMP
 Streams can operate on JS objects (`objectMode: true`). Implement token-bucket throttling inside a Transform to limit throughput.
 
-#### 14. Practical Pipelines
+#### 14. Practical Pipelines  ---- IMP
 - File upload: `req.pipe(fs.createWriteStream(dest))`.
 - HTTP proxy: `req.pipe(proxyReq); proxyRes.pipe(res);`.
 - CSV→NDJSON: `fs.createReadStream().pipe(csv()).pipe(transform).pipe(writeStream)`.
@@ -1388,7 +1388,7 @@ fundamentals of computer networking -> doesNotMatch, DNS hijacking, DNS working,
 - Goal: move bits reliably between endpoints (clients, servers, services).
 - Understand layers, addressing, security, and tooling to troubleshoot issues quickly.
 
-#### 2. OSI vs TCP/IP
+#### 2. OSI vs TCP/IP  ---- IMP
 ```
 OSI (conceptual)            TCP/IP (practical)
 7 Application ┐            ┌─ Application (HTTP, DNS, SSH)
@@ -1412,7 +1412,7 @@ OSI (conceptual)            TCP/IP (practical)
 - Default gateway route directs traffic outside local subnet.
 - CIDR: summarize networks, e.g., `/16` = 65,536 addresses.
 
-#### 5. DNS (Domain Name System)
+#### 5. DNS (Domain Name System)  ---- IMP
 ```
 Client → Recursive Resolver → Root → TLD (.com) → Authoritative → IP
                 │  (cache?)                 │                │
@@ -1423,7 +1423,7 @@ Client → Recursive Resolver → Root → TLD (.com) → Authoritative → IP
 - TTL controls caching duration.
 - DNS hijacking: attacker manipulates resolver results. Mitigation: DNSSEC, DoH/DoT, trusted resolvers.
 
-#### 6. DNS Hijacking Scenario
+#### 6. DNS Hijacking Scenario  ---- IMP
 - **Router hijack**: malicious firmware redirects DNS queries to attacker’s resolver.
 - **Cache poisoning**: forged responses populate resolver cache with bogus IP.
 - Preventive steps: DNSSEC (signed records), TLS connections verifying hostnames, monitoring for unusual DNS responses.
@@ -1445,7 +1445,7 @@ B   C                     C-D
 - Strategies: default deny vs default allow, inbound vs outbound rules, logging for audits.
 - Example rule: `ALLOW tcp/443 from 0.0.0.0/0`, `DENY tcp/22 from public`.
 
-#### 9. TCP vs UDP
+#### 9. TCP vs UDP  ---- IMP
 | Feature | TCP | UDP |
 |---------|-----|-----|
 | Reliability | Guaranteed, ordered, retransmissions | Best-effort, may drop/duplicate |
@@ -1453,7 +1453,7 @@ B   C                     C-D
 | Overhead | Higher (handshake, ACKs) | Lower |
 | Flow control | Built-in (window size) | None |
 
-#### 10. TCP Handshake & Flow
+#### 10. TCP Handshake & Flow  ---- IMP
 ```
 Client: SYN ---->
 Server:      <---- SYN-ACK
@@ -1509,7 +1509,7 @@ Local terminal
 ```
 - Use `tmux` or `screen` for persistent sessions.
 
-#### 16. EC2 Hosting Flow (Web App + DB)
+#### 16. EC2 Hosting Flow (Web App + DB)  ---- IMP
 ```
 User → Route53 DNS → CloudFront (optional) → ALB (load balancer)
                                    │
@@ -1523,7 +1523,7 @@ User → Route53 DNS → CloudFront (optional) → ALB (load balancer)
 - IAM roles: grant instances AWS API permissions securely.
 - VPC design: public subnets (LB/bastion), private subnets (app/db), NAT gateway for outbound updates.
 
-#### 17. Deploying App on EC2 (Checklist)
+#### 17. Deploying App on EC2 (Checklist)  ---- IMP
 1. Launch instance (choose AMI, instance type, key pair).
 2. Assign security group (allow SSH from trusted IP, HTTP/HTTPS).
 3. Install runtime (Node.js, Docker, etc.).
@@ -1531,7 +1531,7 @@ User → Route53 DNS → CloudFront (optional) → ALB (load balancer)
 5. Attach Elastic IP (static) if needed.
 6. Set up monitoring (CloudWatch metrics/logs).
 
-#### 18. DNS + SSL for EC2
+#### 18. DNS + SSL for EC2  ---- IMP
 - Use Route53 `A`/`AAAA` record pointing to load balancer or CloudFront.
 - SSL: AWS Certificate Manager (ACM) for load balancer/CloudFront; or use Let’s Encrypt on instances.
 - Ensure health checks on load balancer for auto failover.
@@ -1551,7 +1551,7 @@ User → Route53 DNS → CloudFront (optional) → ALB (load balancer)
 #### 20. Transfer via ScriptProcessorNode?
 - Historically, `ScriptProcessorNode` (Web Audio API) captured audio buffers to send via WebSocket/WebRTC. Modern approach: `AudioWorklet` + `MediaRecorder` to stream audio/video to server (binary over fetch/WebSocket) while respecting network limits.
 
-#### 21. DNS & Caching Flowchart
+#### 21. DNS & Caching Flowchart  ---- IMP
 ```
 Browser cache → OS cache → Router cache → ISP recursive resolver
       │ (hit?)  │ (hit?)  │ (hit?)  │
@@ -1607,7 +1607,7 @@ ssh user@server 'sudo systemctl restart app'
 - **Latency spikes**: inspect traceroute, consider CDN, check server load.
 - **SSH timeout**: verify port 22 reachable, security group permits IP, bastion alive.
 
-#### 30. Diagram: SSH + S3 Upload via EC2
+#### 30. Diagram: SSH + S3 Upload via EC2  ---- IMP
 ```
 Dev Laptop
    │ SSH
@@ -1620,7 +1620,7 @@ Dev Laptop
  CloudWatch monitors metrics/logs
 ```
 
-#### 31. DNS Workflow for Deployment
+#### 31. DNS Workflow for Deployment  ---- IMP
 1. Acquire domain (Route53/registrar).
 2. Set NS records to hosted zone.
 3. Add `A`/`AAAA` pointing to ALB or CloudFront.
@@ -1633,7 +1633,7 @@ Dev Laptop
 - Use `AllowUsers` or `AllowGroups`.
 - Install `fail2ban` or use AWS SSM Session Manager (no direct SSH).
 
-#### 33. Secure EC2 Networking
+#### 33. Secure EC2 Networking  ---- IMP
 - VPC with public + private subnets, NAT for outbound traffic.
 - Security groups enforce least privilege (ALB→App, App→DB).
 - NACLs for stateless filtering.
@@ -1660,9 +1660,9 @@ Learning path: OSI/TCP-IP basics → DNS/IP/subnets → routing/firewalls → SS
 
 networking with core node js modules -> creating UDP , networking capabilities of node js, socket, transfer file using UDP, create TCP server using node js, handle multiple TCP clients, transfer files with TCP, Understanding HHTP Headers, contolling data speeds, uploading files, creating hhtp server using http modules, http request metods, creating hhtp client, creating web server, 
 
-### Networking with Core Node.js Modules
+### Networking with Core Node.js Modules  ---- IMP
 
-#### 1. Core Modules Snapshot
+#### 1. Core Modules Snapshot  ---- IMP
 | Module | Protocol | Use Case |
 |--------|----------|----------|
 | `net`  | TCP      | Low-level sockets, proxies, custom protocols |
@@ -1691,7 +1691,7 @@ Receiver stores packet by SEQ → requests RESEND for gaps
 When all SEQs received → concatenate buffers → save file
 ```
 
-#### 4. TCP Servers with `net`
+#### 4. TCP Servers with `net`  ---- IMP
 ```js
 const net = require('net');
 const server = net.createServer((socket) => {
@@ -1704,7 +1704,7 @@ server.listen(4000);
 ```
 - Socket is duplex stream; broadcast to all clients by iterating a `Set` of sockets.
 
-#### 5. Handling Multiple TCP Clients
+#### 5. Handling Multiple TCP Clients  ---- IMP
 ```js
 const clients = new Set();
 server.on('connection', (socket) => {
@@ -1719,7 +1719,7 @@ server.on('connection', (socket) => {
 ```
 - Prevent abuse: set `server.maxConnections`, drop idle sockets with `socket.setTimeout()`.
 
-#### 6. TCP File Transfer
+#### 6. TCP File Transfer  ---- IMP
 ```js
 // Sender
 fs.createReadStream('file.bin').pipe(socket);
@@ -1728,7 +1728,7 @@ socket.pipe(fs.createWriteStream('copy.bin'));
 ```
 - For resumable transfers send JSON metadata first (size, filename) and track bytes received.
 
-#### 7. HTTP Servers
+#### 7. HTTP Servers  ---- IMP
 ```js
 const http = require('http');
 const server = http.createServer(async (req, res) => {
@@ -1740,12 +1740,12 @@ server.listen(8080);
 ```
 - `req` is readable stream (`data`/`end` or `for await`); `res` is writable (set headers via `setHeader`, `writeHead`).
 
-#### 8. HTTP Headers & Methods
+#### 8. HTTP Headers & Methods  ---- IMP
 - Methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, `HEAD`.
 - Headers: `Content-Type`, `Content-Length`, `Authorization`, `Cookie`, `Accept-Encoding`, `Cache-Control`.
 - Manage security headers (`Strict-Transport-Security`, `Content-Security-Policy`); inspect `req.headers` object for incoming data.
 
-#### 9. HTTP Client Basics
+#### 9. HTTP Client Basics  ---- IMP
 ```js
 const options = {
   hostname: 'api.example.com',
@@ -1767,7 +1767,7 @@ req.end();
 - Upload throttling: pause `req` when `req.bytesRead` exceeds threshold, resume after timeout.
 - Download throttling: `readStream.pipe(new Throttle(64 * 1024)).pipe(res);`.
 
-#### 11. Uploading Files (Server Side)
+#### 11. Uploading Files (Server Side)  ---- IMP
 ```js
 const Busboy = require('busboy');
 const server = http.createServer((req, res) => {
@@ -1781,7 +1781,7 @@ const server = http.createServer((req, res) => {
 });
 ```
 
-#### 12. HTTP/2 & TLS
+#### 12. HTTP/2 & TLS  ---- IMP
 - `http2.createSecureServer({ key, cert })` exposes multiplexed `stream` objects (great for gRPC).
 - `tls.createServer({ key, cert })` wraps raw sockets for custom secure protocols.
 
@@ -1908,7 +1908,7 @@ const server = http.createServer((req, res) => {
 server.listen(3000);
 ```
 
-### Uploading Files via HTTP
+### Uploading Files via HTTP  ---- IMP
 
 ```javascript
 const http = require('http');
@@ -1981,7 +1981,7 @@ function uploadFile(filepath) {
 uploadFile('./document.pdf');
 ```
 
-### Creating HTTP Server with http Module
+### Creating HTTP Server with http Module  ---- IMP
 
 ```javascript
 const http = require('http');
@@ -2028,7 +2028,7 @@ server.listen(3000, () => {
 });
 ```
 
-### HTTP Request Methods
+### HTTP Request Methods  ---- IMP
 
 ```
 GET     - Retrieve resource (idempotent, cacheable)
@@ -2093,7 +2093,7 @@ const server = http.createServer((req, res) => {
 });
 ```
 
-### Creating HTTP Client
+### Creating HTTP Client  ---- IMP
 
 ```javascript
 const http = require('http');
@@ -2584,7 +2584,7 @@ app.use((err, req, res, next) => {
 app.listen(3000);
 ```
 
-### CORS (Cross-Origin Resource Sharing)
+### CORS (Cross-Origin Resource Sharing)  ---- IMP
 
 ```javascript
 const express = require('express');
@@ -2775,7 +2775,7 @@ app.use('/api/users', usersRouter);
 app.listen(3000);
 ```
 
-### router.param() Middleware
+### router.param() Middleware  ---- IMP
 
 ```javascript
 const express = require('express');
@@ -2813,7 +2813,7 @@ router.delete('/users/:userId', (req, res) => {
 module.exports = router;
 ```
 
-### HTTP Redirection
+### HTTP Redirection  ---- IMP
 
 ```javascript
 const express = require('express');
@@ -2908,9 +2908,9 @@ app.listen(3000);
 
 ---
 
-## 12. Authentication & Authorization
+## 12. Authentication & Authorization  ---- IMP
 
-### Authentication vs Authorization
+### Authentication vs Authorization  ---- IMP
 
 **Authentication**: Verifying who you are (identity)
 **Authorization**: Verifying what you can do (permissions)
@@ -3072,7 +3072,7 @@ const isValidSync = bcrypt.compareSync('password', hashSync);
 - Adaptive (can increase cost over time)
 - Built-in salt management
 
-### Cookies
+### Cookies  ---- IMP
 
 ```javascript
 const express = require('express');
@@ -3118,7 +3118,7 @@ path: '/'                      // Cookie path
 app.listen(3000);
 ```
 
-### Signed Cookies
+### Signed Cookies  ---- IMP
 
 ```javascript
 const express = require('express');
@@ -3164,7 +3164,7 @@ Server verifies HMAC before trusting cookie
 If tampered → HMAC doesn't match → Reject
 ```
 
-### JSON Web Tokens (JWT)
+### JSON Web Tokens (JWT)  ---- IMP
 
 ```bash
 npm install jsonwebtoken
@@ -3232,7 +3232,7 @@ secret
 )
 ```
 
-### JWT Authentication in Express
+### JWT Authentication in Express  ---- IMP
 
 ```javascript
 const express = require('express');
@@ -3327,7 +3327,7 @@ res.json({ user: req.user });
 app.listen(3000);
 ```
 
-### Stateful vs Stateless Servers
+### Stateful vs Stateless Servers  ---- IMP
 
 **Stateful Server:**
 ```
@@ -3497,7 +3497,7 @@ res.json({ message: 'Logged out from all devices' });
 app.listen(3000);
 ```
 
-### Google OAuth 2.0
+### Google OAuth 2.0  ---- IMP
 
 ```bash
 npm install passport passport-google-oauth20 express-session
@@ -3849,9 +3849,9 @@ This comprehensive guide covers all fundamental concepts of Node.js backend deve
 
 ---
 
-## 1. Node.js Client-Server Architecture
+## 1. Node.js Client-Server Architecture  ---- IMP
 
-### What is Client-Server Architecture?
+### What is Client-Server Architecture?  ---- IMP
 
 **Client-Server Architecture** is a distributed computing model where:
 - **Client**: Requests services/resources (e.g., web browser, mobile app)
@@ -3892,7 +3892,7 @@ server.listen(3000, () => {
 
 ## 2. CLI Basics & Terminal Commands
 
-### CLI vs GUI
+### CLI vs GUI  ---- IMP
 
 **CLI (Command Line Interface)**:
 - Text-based interface
@@ -4062,7 +4062,7 @@ source ~/.bashrc
 
 ## 3. Operating System Fundamentals
 
-### CPU Architecture
+### CPU Architecture  ---- IMP
 
 ```
 ┌─────────────────────────────────────┐
@@ -4112,7 +4112,7 @@ source ~/.bashrc
 - System calls
 - File systems
 
-### Process vs Thread
+### Process vs Thread  ---- IMP
 
 ```
 ┌─────────────────────────────────────────┐
@@ -4143,7 +4143,7 @@ source ~/.bashrc
 - Faster context switching
 - Lower resource overhead
 
-### Concurrency vs Parallelism
+### Concurrency vs Parallelism  ---- IMP
 
 **Concurrency**: Multiple tasks making progress (appears simultaneous)
 ```
@@ -4161,7 +4161,7 @@ Core 2: [Task B─────────────────────�
         (True simultaneous execution)
 ```
 
-### Worker Threads in Node.js
+### Worker Threads in Node.js  ---- IMP
 
 Node.js is **single-threaded** by default, but can use **Worker Threads** for CPU-intensive tasks.
 
@@ -4295,7 +4295,7 @@ chmod +x script.js
 ./script.js  # Can now run directly
 ```
 
-### Process Object in Node.js
+### Process Object in Node.js  ---- IMP
 
 ```javascript
 // Process information
@@ -4362,7 +4362,7 @@ process.on('SIGTERM', () => {
 
 ## 4. Node.js Fundamentals
 
-### Module Systems
+### Module Systems  ---- IMP
 
 #### CommonJS (CJS)
 
@@ -4415,7 +4415,7 @@ Node.js wraps every module in a function:
 });
 ```
 
-#### ES6 Modules (ESM)
+#### ES6 Modules (ESM)  ---- IMP
 
 Modern JavaScript module system:
 
@@ -4452,7 +4452,7 @@ console.log(__filename);
 console.log(__dirname);
 ```
 
-### CommonJS vs ES6 Modules
+### CommonJS vs ES6 Modules  ---- IMP
 
 | Feature | CommonJS | ES6 Modules |
 |---------|----------|-------------|
@@ -4464,7 +4464,7 @@ console.log(__dirname);
 | Top-level await | ❌ No | ✅ Yes |
 | Tree-shaking | ❌ No | ✅ Yes |
 
-### Built-in Modules in Node.js
+### Built-in Modules in Node.js  ---- IMP
 
 ```javascript
 // View all built-in modules
@@ -4493,7 +4493,7 @@ const timers = require('timers');   // Timers
 const zlib = require('zlib');       // Compression
 ```
 
-### NPM (Node Package Manager)
+### NPM (Node Package Manager)  ---- IMP
 
 ```bash
 # Initialize project
@@ -4523,7 +4523,7 @@ npm start
 npm test
 ```
 
-### package.json
+### package.json  ---- IMP
 
 ```json
 {
@@ -4566,7 +4566,7 @@ npm test
 *        →  Any version
 ```
 
-### Publishing to NPM
+### Publishing to NPM  ---- IMP
 
 ```bash
 # 1. Create account
@@ -4575,7 +4575,7 @@ npm adduser
 # 2. Login
 npm login
 
-# 3. Prepare package.json
+# 3. Prepare package.json  ---- IMP
 {
   "name": "my-unique-package-name",
   "version": "1.0.0",
@@ -4617,7 +4617,7 @@ chmod +x script.js
 ./script.js  # Run without 'node' command
 ```
 
-### Library vs CLI Packages
+### Library vs CLI Packages  ---- IMP
 
 **Library Package:**
 ```javascript
@@ -4654,19 +4654,19 @@ console.log('CLI tool running!');
 // Usage: mycli
 ```
 
-### Local vs Global Packages
+### Local vs Global Packages  ---- IMP
 
 **Local** (project-specific):
 ```bash
 npm install express
-# Installs to: ./node_modules/express
+# Installs to: ./node_modules/express  ---- IMP
 # Used in project code
 ```
 
 **Global** (system-wide):
 ```bash
 npm install -g typescript
-# Installs to: /usr/local/lib/node_modules/typescript
+# Installs to: /usr/local/lib/node_modules/typescript  ---- IMP
 # Available as command-line tool
 ```
 
@@ -4733,7 +4733,7 @@ let hex = 'ff';
 console.log(parseInt(hex, 16));   // 255
 ```
 
-### Character Sets vs Character Encodings
+### Character Sets vs Character Encodings  ---- IMP
 
 **Character Set**: Collection of characters (e.g., alphabet, numbers, symbols)
 
@@ -4909,9 +4909,9 @@ EBCDIC 'A' = 193 (0xC1)
 
 ---
 
-## 6. Buffers in Node.js
+## 6. Buffers in Node.js  ---- IMP
 
-### What are Buffers?
+### What are Buffers?  ---- IMP
 
 Buffers are **fixed-size chunks of memory** allocated outside the V8 heap for handling binary data.
 
@@ -4927,9 +4927,9 @@ Buffers are **fixed-size chunks of memory** allocated outside the V8 heap for ha
 └─────────────────────────────────────┘
 ```
 
-### Creating Buffers
+### Creating Buffers  ---- IMP
 
-#### Buffer.alloc() vs Buffer.allocUnsafe()
+#### Buffer.alloc() vs Buffer.allocUnsafe()  ---- IMP
 
 ```javascript
 // Buffer.alloc() - Safe, initialized with zeros
@@ -4952,7 +4952,7 @@ const buf5 = Buffer.from(buf3);  // Copy buffer
 - `Buffer.allocUnsafe()`: When performance is critical and you'll immediately fill it
 - `Buffer.from()`: When converting from strings, arrays, or copying buffers
 
-### Buffer Pool
+### Buffer Pool  ---- IMP
 
 Node.js uses a buffer pool to optimize small buffer allocations:
 
@@ -4976,7 +4976,7 @@ Buffer Pool (8KB):
 └─────────────────────────────────────┘
 ```
 
-### Buffer Methods and Properties
+### Buffer Methods and Properties  ---- IMP
 
 ```javascript
 const buf = Buffer.from('Hello World');
@@ -5031,7 +5031,7 @@ console.log(buf.includes('World'));  // true
 console.log(buf.indexOf('World'));  // 6
 ```
 
-### ArrayBuffers and TypedArrays
+### ArrayBuffers and TypedArrays  ---- IMP
 
 **ArrayBuffer**: Fixed-length raw binary data buffer (generic)
 
@@ -5070,7 +5070,7 @@ BigInt64Array      // 64-bit signed BigInt
 BigUint64Array     // 64-bit unsigned BigInt
 ```
 
-### Signed vs Unsigned Integers
+### Signed vs Unsigned Integers  ---- IMP
 
 **Signed**: Can represent negative numbers (uses MSB for sign)
 ```
@@ -5100,7 +5100,7 @@ unsigned[0] = -50;  // Wraps around
 console.log(unsigned[0]);  // 206 (256 - 50)
 ```
 
-### Reading and Writing ArrayBuffers
+### Reading and Writing ArrayBuffers  ---- IMP
 
 ```javascript
 const buffer = new ArrayBuffer(8);
@@ -5144,7 +5144,7 @@ buf.writeFloatBE(3.14, 0);   // 4 bytes
 buf.writeDoubleBE(3.14, 0);  // 8 bytes
 ```
 
-### Transferring ArrayBuffer Data
+### Transferring ArrayBuffer Data  ---- IMP
 
 #### To Disk (File)
 
@@ -5211,7 +5211,7 @@ https.get('https://example.com/data.bin', (res) => {
 });
 ```
 
-### Buffer to/from ArrayBuffer Conversion
+### Buffer to/from ArrayBuffer Conversion  ---- IMP
 
 ```javascript
 // Buffer to ArrayBuffer
@@ -5233,7 +5233,7 @@ const sharedBuf = Buffer.from(
 );
 ```
 
-### Use Cases for Buffers
+### Use Cases for Buffers  ---- IMP
 
 1. **File I/O**: Reading/writing binary files
 2. **Network I/O**: TCP/UDP socket data
@@ -5243,7 +5243,7 @@ const sharedBuf = Buffer.from(
 6. **Data Compression**: gzip, deflate
 7. **Streaming**: Audio/video data
 
-### Limitations of Buffers
+### Limitations of Buffers  ---- IMP
 
 1. **Fixed Size**: Cannot be resized after creation
 2. **Memory Limit**: Maximum size depends on system (usually ~2GB)
@@ -5269,7 +5269,7 @@ readStream.on('data', (chunk) => {
 
 ---
 
-## 7. Event-Driven Architecture
+## 7. Event-Driven Architecture  ---- IMP
 
 ### Asynchronous I/O in Node.js
 
@@ -5299,7 +5299,7 @@ Node.js is built on **non-blocking, event-driven I/O**.
 └────────────────────────────────────────┘
 ```
 
-### CPU Operations vs I/O Operations
+### CPU Operations vs I/O Operations  ---- IMP
 
 **CPU Operations** (Synchronous, blocking):
 ```javascript
@@ -5329,7 +5329,7 @@ http.get('http://api.example.com', (res) => {
 console.log('This runs immediately');
 ```
 
-### Event Loop
+### Event Loop  ---- IMP
 
 The Event Loop is the core of Node.js's asynchronous architecture.
 
@@ -5382,7 +5382,7 @@ console.log('6: End');
 // 3: setImmediate
 ```
 
-### Custom EventEmitters
+### Custom EventEmitters  ---- IMP
 
 EventEmitter is the foundation of event-driven programming in Node.js.
 
@@ -5432,7 +5432,7 @@ console.log(emitter.listenerCount('event'));
 console.log(emitter.listeners('event'));
 ```
 
-### Practical EventEmitter Example
+### Practical EventEmitter Example  ---- IMP
 
 ```javascript
 const EventEmitter = require('events');
@@ -5484,7 +5484,7 @@ watcher.watch();
 setTimeout(() => watcher.stop(), 60000);
 ```
 
-### Event-Driven Architecture Pattern
+### Event-Driven Architecture Pattern  ---- IMP
 
 ```
 ┌─────────────────────────────────────────┐
@@ -5567,9 +5567,9 @@ orderSystem.placeOrder({
 
 ---
 
-## 8. Streams in Node.js
+## 8. Streams in Node.js  ---- IMP
 
-### What are Streams?
+### What are Streams?  ---- IMP
 
 Streams are **collections of data that might not be available all at once**. They allow processing data piece by piece without loading everything into memory.
 
@@ -5588,7 +5588,7 @@ Streams (Chunk by chunk):
 └──────────────────────────────────┘
 ```
 
-### Types of Streams
+### Types of Streams  ---- IMP
 
 1. **Readable**: Source of data (read from)
 2. **Writable**: Destination for data (write to)
@@ -5603,7 +5603,7 @@ Readable  ────────────> Writable
          (Duplex)
 ```
 
-### Readable Streams
+### Readable Streams  ---- IMP
 
 ```javascript
 const fs = require('fs');
@@ -5648,7 +5648,7 @@ readStream.on('readable', () => {
 });
 ```
 
-### States of Readable Streams
+### States of Readable Streams  ---- IMP
 
 **1. Flowing Mode**: Data flows automatically
 ```javascript
@@ -5686,7 +5686,7 @@ stream.on('readable', () => {});
 └─────────────┘
 ```
 
-### Writable Streams
+### Writable Streams  ---- IMP
 
 ```javascript
 const fs = require('fs');
@@ -5767,7 +5767,7 @@ readable.on('end', () => {
 });
 ```
 
-### Internal Buffer of Writable Stream
+### Internal Buffer of Writable Stream  ---- IMP
 
 ```
 ┌──────────────────────────────────────┐
@@ -5806,7 +5806,7 @@ for (let i = 0; i < 100; i++) {
 }
 ```
 
-### Closing Writable Streams
+### Closing Writable Streams  ---- IMP
 
 ```javascript
 const writable = fs.createWriteStream('file.txt');
@@ -5823,7 +5823,7 @@ writable.destroy();  // Abrupt termination
 writable.destroy(new Error('Something went wrong'));
 ```
 
-### States of Writable Stream
+### States of Writable Stream  ---- IMP
 
 ```
 ┌────────────┐
@@ -5849,7 +5849,7 @@ writable.destroy(new Error('Something went wrong'));
 └────────────┘
 ```
 
-### Piping Streams
+### Piping Streams  ---- IMP
 
 **pipe()** connects readable stream to writable stream, handling backpressure automatically.
 
@@ -5876,7 +5876,7 @@ readable
   .on('error', (err) => console.error('Write error:', err));
 ```
 
-### Pipeline (Better than pipe)
+### Pipeline (Better than pipe)  ---- IMP
 
 **pipeline()** properly handles errors and cleanup:
 
@@ -5913,7 +5913,7 @@ async function compressFile() {
 compressFile().catch(console.error);
 ```
 
-### Duplex Streams
+### Duplex Streams  ---- IMP
 
 Duplex streams are both readable and writable (independent).
 
@@ -5944,7 +5944,7 @@ duplex.end();
 duplex.pipe(process.stdout);
 ```
 
-### Transform Streams
+### Transform Streams  ---- IMP
 
 Transform streams modify data as it passes through.
 
@@ -5964,7 +5964,7 @@ process.stdin
   .pipe(process.stdout);
 ```
 
-### PassThrough Streams
+### PassThrough Streams  ---- IMP
 
 PassThrough streams are Transform streams that simply pass data along (useful for debugging).
 
@@ -6006,7 +6006,7 @@ async function copyUsingFD(src, dest) {
 copyUsingFD('input.txt', 'output.txt');
 ```
 
-### Streams in the Browser (Fetch + ReadableStream)
+### Streams in the Browser (Fetch + ReadableStream)  ---- IMP
 
 ```javascript
 async function streamFetch(url) {
@@ -6048,7 +6048,7 @@ streamFetch('/large-file.txt');
 └───────────────┘
 ```
 
-### TCP/IP Model (Practical Stack)
+### TCP/IP Model (Practical Stack)  ---- IMP
 
 ```
 ┌─────────────────────┐
@@ -6062,7 +6062,7 @@ streamFetch('/large-file.txt');
 └─────────────────────┘
 ```
 
-### DNS Workflow
+### DNS Workflow  ---- IMP
 
 ```
 Client → Local Resolver → Root Server → TLD (.com) → Authoritative Server
@@ -6124,7 +6124,7 @@ ssh -J user@bastion user@internal
 # Or use ProxyCommand in ~/.ssh/config
 ```
 
-### EC2 Hosting Flow (Web App + DB)
+### EC2 Hosting Flow (Web App + DB)  ---- IMP
 
 ```
 User → Route53 DNS → CloudFront/CDN → ALB → EC2 App → RDS (DB)
@@ -6134,7 +6134,7 @@ User → Route53 DNS → CloudFront/CDN → ALB → EC2 App → RDS (DB)
 
 ---
 
-## 10. Networking with Core Node.js Modules
+## 10. Networking with Core Node.js Modules  ---- IMP
 
 ### UDP (dgram)
 
@@ -6155,7 +6155,7 @@ client.send('Hello UDP', 41234, 'localhost', () => {
 });
 ```
 
-### TCP (net)
+### TCP (net)  ---- IMP
 
 ```javascript
 const net = require('net');
@@ -6171,7 +6171,7 @@ const tcpServer = net.createServer((socket) => {
 tcpServer.listen(3001, () => console.log('TCP server on 3001'));
 ```
 
-### Handling Multiple TCP Clients
+### Handling Multiple TCP Clients  ---- IMP
 
 ```javascript
 const clients = new Set();
@@ -6182,7 +6182,7 @@ tcpServer.on('connection', (socket) => {
 });
 ```
 
-### File Transfer (TCP)
+### File Transfer (TCP)  ---- IMP
 
 ```javascript
 // Sender
@@ -6193,7 +6193,7 @@ const writeStream = fs.createWriteStream('copy.mp4');
 socket.pipe(writeStream);
 ```
 
-### HTTP Headers & Rate Control
+### HTTP Headers & Rate Control  ---- IMP
 
 ```javascript
 const http = require('http');
@@ -6223,7 +6223,7 @@ class SlowStream extends Readable {
 }
 ```
 
-### HTTP Client (core)
+### HTTP Client (core)  ---- IMP
 
 ```javascript
 const https = require('https');
@@ -6298,7 +6298,7 @@ app.get('/projects/:projectId/versions/:versionId', (req, res) => {
 });
 ```
 
-### CORS & Preflight
+### CORS & Preflight  ---- IMP
 
 ```javascript
 const cors = require('cors');
@@ -6331,7 +6331,7 @@ app.get('/download/:filename', (req, res) => {
 4. Stateless, cache-friendly
 5. Hypermedia links optional (HATEOAS)
 
-### Cookies & Sessions
+### Cookies & Sessions  ---- IMP
 
 ```javascript
 const cookieParser = require('cookie-parser');
@@ -6365,7 +6365,7 @@ router.get('/users/:userId', (req, res) => {
 });
 ```
 
-### HTTP Redirection
+### HTTP Redirection  ---- IMP
 
 ```javascript
 app.get('/old-route', (req, res) => {
@@ -6375,7 +6375,7 @@ app.get('/old-route', (req, res) => {
 
 ---
 
-## 12. Authentication & Authorization
+## 12. Authentication & Authorization  ---- IMP
 
 ### Hashing & Bcrypt
 
@@ -6396,7 +6396,7 @@ Password -> +Salt -> Hash (store)
 Login password -> +same salt -> Hash -> compare
 ```
 
-### Signing Cookies
+### Signing Cookies  ---- IMP
 
 ```javascript
 res.cookie('session', 'value', {
@@ -6406,7 +6406,7 @@ res.cookie('session', 'value', {
 });
 ```
 
-### JSON Web Tokens (JWT)
+### JSON Web Tokens (JWT)  ---- IMP
 
 ```javascript
 const jwt = require('jsonwebtoken');
@@ -6426,7 +6426,7 @@ Structure:
 Header.Payload.Signature
 ```
 
-### Stateful vs Stateless
+### Stateful vs Stateless  ---- IMP
 
 | Aspect | Stateful Session | Stateless JWT |
 |--------|------------------|---------------|
@@ -6443,7 +6443,7 @@ user_sessions table:
 
 Check active sessions count before issuing new ones.
 
-### Auto Deleting Documents (TTL in MongoDB)
+### Auto Deleting Documents (TTL in MongoDB)  ---- IMP
 
 ```javascript
 db.collection('tokens').createIndex(
@@ -6452,7 +6452,7 @@ db.collection('tokens').createIndex(
 );
 ```
 
-### Google OAuth Flow (High-level)
+### Google OAuth Flow (High-level)  ---- IMP
 
 ```
 Client → Google Auth URL → Consent Screen → Redirect URI (backend) → Exchange code for tokens → Fetch profile → Issue session/JWT
@@ -6465,7 +6465,7 @@ GET https://accounts.google.com/o/oauth2/v2/auth?client_id=...
 POST https://oauth2.googleapis.com/token
 ```
 
-### Token Expiry & Refresh
+### Token Expiry & Refresh  ---- IMP
 
 ```
 Access Token (short lived)
@@ -6532,7 +6532,7 @@ socket.on('data', (data) => {
 });
 ```
 
-### Transform Streams
+### Transform Streams  ---- IMP
 
 Transform streams modify data as it passes through.
 
@@ -6603,7 +6603,7 @@ fs.createReadStream('data.csv')
   .pipe(fs.createWriteStream('data.json'));
 ```
 
-### PassThrough Streams
+### PassThrough Streams  ---- IMP
 
 PassThrough streams pass data through unchanged (useful for monitoring/logging).
 
@@ -6631,7 +6631,7 @@ readable.pipe(writable1);
 readable.pipe(writable2);
 ```
 
-### Data Streams (stdin, stdout, stderr)
+### Data Streams (stdin, stdout, stderr)  ---- IMP
 
 ```javascript
 // stdin - Standard Input (Readable)
@@ -6656,7 +6656,7 @@ process.stdin.pipe(process.stdout);
 ### Piping and Redirection in Shell
 
 ```bash
-# Pipe stdout of cmd1 to stdin of cmd2
+# Pipe stdout of cmd1 to stdin of cmd2  ---- IMP
 ls -l | grep ".txt"
 
 # Redirect stdout to file
@@ -6671,7 +6671,7 @@ command 2> error.log
 # Redirect both stdout and stderr
 command > output.log 2>&1
 
-# Pipe to multiple commands
+# Pipe to multiple commands  ---- IMP
 cat file.txt | grep "pattern" | sort | uniq
 
 # Use tee to split output
@@ -6719,7 +6719,7 @@ fs.open('output.txt', 'w', (err, fd) => {
 });
 ```
 
-### Handling Files with Promises
+### Handling Files with Promises  ---- IMP
 
 ```javascript
 const fs = require('fs').promises;
@@ -6771,7 +6771,7 @@ async function compressFile() {
 }
 ```
 
-### Streams in Browsers (Web Streams API)
+### Streams in Browsers (Web Streams API)  ---- IMP
 
 ```javascript
 // Fetch API uses streams
@@ -6884,7 +6884,7 @@ Binary: 11000000.10101000.00000001.00000001
 172.16-31.x.x  → Private network (Class B)
 ```
 
-### Domain Name System (DNS)
+### Domain Name System (DNS)  ---- IMP
 
 DNS translates domain names to IP addresses.
 
@@ -6958,7 +6958,7 @@ async function resolveDomain() {
 }
 ```
 
-### DNS Hijacking
+### DNS Hijacking  ---- IMP
 
 **DNS Hijacking**: Redirecting DNS queries to malicious servers.
 
@@ -7066,7 +7066,7 @@ A firewall controls incoming/outgoing network traffic based on security rules.
 └─────────────────────────────────────┘
 ```
 
-### TCP/IP Model (4 Layers)
+### TCP/IP Model (4 Layers)  ---- IMP
 
 Simplified, practical model used on the Internet:
 
@@ -7135,7 +7135,7 @@ Simplified, practical model used on the Internet:
 └───┘    └───┘
 ```
 
-### TCP vs UDP
+### TCP vs UDP  ---- IMP
 
 **TCP (Transmission Control Protocol)**:
 - Connection-oriented
@@ -7216,7 +7216,7 @@ ssh user@hostname
 # With specific port
 ssh -p 2222 user@hostname
 
-# With key authentication
+# With key authentication  ---- IMP
 ssh -i ~/.ssh/id_rsa user@hostname
 
 # Execute command remotely
@@ -7281,7 +7281,7 @@ ssh -J gateway user@internal-server
 ssh -J gateway1,gateway2 user@final-server
 ```
 
-### EC2 Instance Flow
+### EC2 Instance Flow  ---- IMP
 
 ```
 ┌────────────────────────────────────┐
@@ -7333,7 +7333,7 @@ ssh -J gateway1,gateway2 user@final-server
 
 ---
 
-## 10. HTTP & Web Servers
+## 10. HTTP & Web Servers  ---- IMP
 
 ### Socket
 
@@ -7446,7 +7446,7 @@ client.on('message', (msg) => {
 client.send('file.txt', 41234, 'localhost');
 ```
 
-### Creating TCP Server
+### Creating TCP Server  ---- IMP
 
 ```javascript
 const net = require('net');
@@ -7481,7 +7481,7 @@ server.listen(8080, () => {
 });
 ```
 
-### Handling Multiple TCP Clients
+### Handling Multiple TCP Clients  ---- IMP
 
 ```javascript
 const net = require('net');
@@ -7525,7 +7525,7 @@ const server = net.createServer((socket) => {
 server.listen(8080);
 ```
 
-### Transferring Files with TCP
+### Transferring Files with TCP  ---- IMP
 
 ```javascript
 const net = require('net');
@@ -7579,7 +7579,7 @@ client.on('end', () => {
 });
 ```
 
-### HTTP Headers
+### HTTP Headers  ---- IMP
 
 HTTP headers provide metadata about requests and responses.
 

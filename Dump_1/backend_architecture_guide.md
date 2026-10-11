@@ -1,4 +1,4 @@
-# Backend Architecture & System Design
+# Backend Architecture & System Design  ---- IMP
 
 A comprehensive guide covering Microservices, Caching, Event-Driven Architecture, and other backend essentials for interviews and production systems.
 
@@ -12,13 +12,13 @@ A comprehensive guide covering Microservices, Caching, Event-Driven Architecture
 
 ---
 
-## Microservices Architecture
+## Microservices Architecture  ---- IMP
 
-### **What is it?**
+### **What is it?**  ---- IMP
 
 > **Definition:** Architectural style decomposing applications into small, independently deployable services, each owning a bounded context (single business capability) and its data.
 
-### **Why Microservices?**
+### **Why Microservices?**  ---- IMP
 
 | Monolith Problem | Microservices Solution |
 |-----------------|----------------------|
@@ -35,7 +35,7 @@ A comprehensive guide covering Microservices, Caching, Event-Driven Architecture
 4. **Independent Deployment** - Deploy without redeploying entire system
 5. **Automation & Observability** - CI/CD, logs, metrics, tracing
 
-### **Architecture Diagram**
+### **Architecture Diagram**  ---- IMP
 
 ```
                    ┌────────────────┐
@@ -76,7 +76,7 @@ Client → API Gateway → User Service → DB
 const user = await axios.get('http://user-service:4001/users/123');
 ```
 
-#### **2. Asynchronous (Event-Driven)**
+#### **2. Asynchronous (Event-Driven)**  ---- IMP
 
 ```
 Order Service publishes "order_created"
@@ -102,21 +102,21 @@ for await (const m of sub) {
 
 ### **Key Patterns**
 
-#### **1. API Gateway**
+#### **1. API Gateway**  ---- IMP
 - Single entry point for clients
 - Handles: routing, auth, rate limiting, aggregation
 - Tools: Kong, NGINX, AWS API Gateway
 
-#### **2. Service Discovery**
+#### **2. Service Discovery**  ---- IMP
 - Services register their location (IP/port)
 - Tools: Consul, Eureka, Kubernetes DNS
 
-#### **3. Circuit Breaker**
+#### **3. Circuit Breaker**  ---- IMP
 - Prevents cascading failures
 - If service fails repeatedly → open circuit (stop calls)
 - Libraries: resilience4j, Hystrix
 
-#### **4. Saga Pattern (Distributed Transactions)**
+#### **4. Saga Pattern (Distributed Transactions)**  ---- IMP
 
 ```
 Order Service → "Order Created"
@@ -146,9 +146,9 @@ If payment fails:
 
 ---
 
-## Caching Strategies
+## Caching Strategies  ---- IMP
 
-### **Why Caching?**
+### **Why Caching?**  ---- IMP
 
 > **Goal:** Reduce latency and database load by storing frequently-accessed data closer to the consumer
 
@@ -166,9 +166,9 @@ Distributed cache (Redis, Memcached)
 Database
 ```
 
-### **Caching Patterns**
+### **Caching Patterns**  ---- IMP
 
-#### **1. Cache-Aside (Lazy Loading)**
+#### **1. Cache-Aside (Lazy Loading)**  ---- IMP
 
 > **Most common pattern for read-heavy workloads**
 
@@ -223,11 +223,11 @@ async function updateUser(userId, data) {
 **Pros:** Faster writes
 **Cons:** Risk of data loss if cache fails
 
-### **Invalidation Strategies**
+### **Invalidation Strategies**  ---- IMP
 
 > **"There are only two hard things in Computer Science: cache invalidation and naming things."**
 
-#### **1. Explicit Invalidation**
+#### **1. Explicit Invalidation**  ---- IMP
 
 ```javascript
 async function updateUser(userId, data) {
@@ -238,13 +238,13 @@ async function updateUser(userId, data) {
 }
 ```
 
-#### **2. TTL (Time-To-Live)**
+#### **2. TTL (Time-To-Live)**  ---- IMP
 
 ```javascript
 await redis.set(key, value, 'EX', 300); // Expires in 5 minutes
 ```
 
-#### **3. Event-Driven Invalidation**
+#### **3. Event-Driven Invalidation**  ---- IMP
 
 ```javascript
 // On user update, publish event
@@ -277,9 +277,9 @@ pubsub.subscribe('user.updated', async (msg) => {
 
 ---
 
-## Event-Driven Systems
+## Event-Driven Systems  ---- IMP
 
-### **Why Event-Driven?**
+### **Why Event-Driven?**  ---- IMP
 
 > **Goal:** Decouple producers and consumers, enabling asynchronous processing, better resiliency, and scalability
 
@@ -296,7 +296,7 @@ Producer → Message Broker → Consumer(s)
 - Google Pub/Sub
 - NATS
 
-### **Topic vs Queue**
+### **Topic vs Queue**  ---- IMP
 
 | Type | Description | Use Case |
 |------|------------|----------|
@@ -379,7 +379,7 @@ function getOrderState(orderId) {
 }
 ```
 
-#### **2. CQRS (Command Query Responsibility Segregation)**
+#### **2. CQRS (Command Query Responsibility Segregation)**  ---- IMP
 
 ```
 Write Model (Commands) → Event Store
@@ -455,9 +455,9 @@ kafka.subscribe('payment.completed', async (msg) => {
 
 > **"Design for the queries you'll run"**
 
-### **Indexing**
+### **Indexing**  ---- IMP
 
-#### **When to Use Indexes**
+#### **When to Use Indexes**  ---- IMP
 
 ```sql
 -- ✅ Good - Index on frequently queried column
@@ -502,7 +502,7 @@ SELECT id, name, email FROM users WHERE email = 'john@example.com';
 EXPLAIN ANALYZE SELECT id, name FROM users WHERE email = 'john@example.com';
 ```
 
-### **Partitioning**
+### **Partitioning**  ---- IMP
 
 ```sql
 -- Range partitioning by date
@@ -517,7 +517,7 @@ CREATE TABLE orders_2024_01 PARTITION OF orders
     FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
 ```
 
-### **Sharding**
+### **Sharding**  ---- IMP
 
 > **Horizontal partitioning across multiple databases**
 
@@ -543,9 +543,9 @@ User ID 2001-3000 → Shard 3
 
 ---
 
-## Authentication & Authorization
+## Authentication & Authorization  ---- IMP
 
-### **JWT (JSON Web Tokens)**
+### **JWT (JSON Web Tokens)**  ---- IMP
 
 #### **Structure**
 
@@ -593,23 +593,23 @@ function authMiddleware(req, res, next) {
 ✅ Use RS256 for public/private key signing
 ✅ Rotate keys periodically
 
-### **OAuth2 Flows**
+### **OAuth2 Flows**  ---- IMP
 
 - **Authorization Code:** Server-side apps
 - **PKCE:** Mobile/SPA apps
 - **Client Credentials:** Machine-to-machine
 - **Implicit:** Deprecated (security issues)
 
-### **RBAC vs ABAC**
+### **RBAC vs ABAC**  ---- IMP
 
 - **RBAC (Role-Based):** User → Role → Permissions
 - **ABAC (Attribute-Based):** Policy evaluates attributes (user, resource, environment)
 
 ---
 
-## API Gateway & Rate Limiting
+## API Gateway & Rate Limiting  ---- IMP
 
-### **API Gateway Responsibilities**
+### **API Gateway Responsibilities**  ---- IMP
 
 ✅ Authentication & Authorization
 ✅ Routing (path-based, host-based)
@@ -618,7 +618,7 @@ function authMiddleware(req, res, next) {
 ✅ Aggregation (fan-out and combine)
 ✅ Telemetry & logging
 
-### **Rate Limiting Algorithms**
+### **Rate Limiting Algorithms**  ---- IMP
 
 #### **1. Token Bucket**
 
@@ -675,17 +675,17 @@ async function rateLimit(userId) {
 
 ## Interview Questions
 
-### Q1: When would you use microservices vs monolith?
+### Q1: When would you use microservices vs monolith?  ---- IMP
 
 **Answer:**
 - **Monolith:** Small teams, simple domain, rapid prototyping
 - **Microservices:** Large teams, complex domain, need independent scaling/deployment, polyglot requirements
 
-### Q2: How do you handle distributed transactions in microservices?
+### Q2: How do you handle distributed transactions in microservices?  ---- IMP
 
 **Answer:** Use **Saga pattern** with compensating transactions. Avoid 2PC (two-phase commit). Design for eventual consistency with event-driven choreography or orchestration.
 
-### Q3: Explain cache invalidation strategies
+### Q3: Explain cache invalidation strategies  ---- IMP
 
 **Answer:**
 1. **Explicit invalidation:** Delete cache on write
@@ -693,7 +693,7 @@ async function rateLimit(userId) {
 3. **Event-driven:** Publish invalidation events
 4. **Write-through:** Update cache and DB together
 
-### Q4: What is idempotency and why is it important?
+### Q4: What is idempotency and why is it important?  ---- IMP
 
 **Answer:** An operation is idempotent if calling it multiple times has the same effect as calling it once. Critical for event-driven systems with at-least-once delivery to prevent duplicate side effects.
 

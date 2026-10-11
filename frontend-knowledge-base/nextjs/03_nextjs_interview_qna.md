@@ -2,7 +2,7 @@
 
 Comprehensive interview questions and answers covering Next.js fundamentals, SSR, data fetching, routing, optimization, and real-world scenarios.
 
-## Fundamentals
+## Fundamentals ⭐ IMP
 
 ### Q1: What is Next.js and why use it over Create React App?
 
@@ -269,7 +269,7 @@ return {
 
 ---
 
-## Server and Client Components (App Router)
+## Server and Client Components (App Router) ⭐ IMP
 
 ### Q5: What are Server Components and Client Components? When to use each?
 
@@ -580,7 +580,7 @@ router.push({
 
 ---
 
-## Data Fetching and Caching
+## Data Fetching and Caching ⭐ IMP
 
 ### Q9: How does caching work in Next.js App Router?
 
@@ -881,7 +881,7 @@ const myFont = localFont({
 
 ---
 
-## Real-World Scenarios
+## Real-World Scenarios ⭐ IMP
 
 ### Q13: How would you implement authentication in Next.js?
 

@@ -1,6 +1,6 @@
 Nice — I’ll take you deep on each of these topics, one-by-one. I’ll explain what it is, why it matters, core concepts & patterns, practical best practices, common pitfalls, and short examples or commands where helpful. I won’t hold back on the details, but I’ll keep each section focused so you can easily copy to a text file. Ready? Here we go.
 
-# Microservices Architecture
+# Microservices Architecture  ---- IMP
 
 What it is
 
@@ -107,7 +107,7 @@ Example: Postgres index
 
 * If query often: `SELECT * FROM users WHERE email = ?`, add unique index on email. Use `EXPLAIN ANALYZE` to confirm index use.
 
-# Caching Strategies
+# Caching Strategies  ---- IMP
 
 Why caching
 
@@ -139,7 +139,7 @@ Common pitfalls
 * Cache stampede: many clients rebuild cache simultaneously when TTL expires. Use locks, request coalescing, or randomized TTLs.
 * Memory leaks in in-process caches — use size limits and eviction policies (LRU).
 
-# Authentication & Authorization (JWT, OAuth2)
+# Authentication & Authorization (JWT, OAuth2)  ---- IMP
 
 Definitions
 
@@ -179,7 +179,7 @@ Practical implementation notes
 * Use HTTPS and secure cookie flags if storing tokens in cookies.
 * Use libraries rather than custom crypto.
 
-# API Gateway & Rate Limiting
+# API Gateway & Rate Limiting  ---- IMP
 
 API Gateway
 
@@ -209,7 +209,7 @@ Implementation tips
 * Provide graceful responses (HTTP 429) with Retry-After header.
 * Combine with quotas and usage tiers for monetization.
 
-# Event-Driven Systems (Queues, Pub/Sub)
+# Event-Driven Systems (Queues, Pub/Sub)  ---- IMP
 
 Why event-driven
 
@@ -578,11 +578,11 @@ Then we’ll move to **Caching** → **Event-driven** next.
 
 ---
 
-# 🧩 MICROservices ARCHITECTURE — Full Deep Tutorial
+# 🧩 MICROservices ARCHITECTURE — Full Deep Tutorial  ---- IMP
 
 ---
 
-## 🧠 What Is It?
+## 🧠 What Is It?  ---- IMP
 
 Microservices architecture breaks a big application (monolith) into **independent, loosely coupled services**, each focusing on a **specific business capability** (auth, user, payments, notifications, etc.).
 
@@ -595,7 +595,7 @@ Each service:
 
 ---
 
-## 🧱 WHY MICROSERVICES?
+## 🧱 WHY MICROSERVICES?  ---- IMP
 
 | Problem with Monolith                                | Solution with Microservices            |
 | ---------------------------------------------------- | -------------------------------------- |
@@ -616,7 +616,7 @@ Each service:
 
 ---
 
-## 🧭 Typical Architecture (ASCII Diagram)
+## 🧭 Typical Architecture (ASCII Diagram)  ---- IMP
 
 ```
                    ┌────────────────┐
@@ -659,7 +659,7 @@ Pros:
   Cons:
 * Tight coupling, chain failures possible.
 
-### 2️⃣ Asynchronous (Event-driven)
+### 2️⃣ Asynchronous (Event-driven)  ---- IMP
 
 * Services publish & subscribe to **events** using a message broker (Kafka, RabbitMQ, NATS).
 
@@ -692,7 +692,7 @@ Example:
 
 ## 🧮 PATTERNS
 
-### 1️⃣ API Gateway Pattern
+### 1️⃣ API Gateway Pattern  ---- IMP
 
 Acts as single entry point for all clients.
 Handles:
@@ -704,18 +704,18 @@ Handles:
 
 Example tools: **Kong**, **NGINX**, **Express Gateway**, **AWS API Gateway**
 
-### 2️⃣ Service Discovery
+### 2️⃣ Service Discovery  ---- IMP
 
 Each service registers its location (IP/port) so others can find it.
 Tools: **Consul**, **Eureka**, **Kubernetes DNS**
 
-### 3️⃣ Circuit Breaker
+### 3️⃣ Circuit Breaker  ---- IMP
 
 Avoid cascading failures.
 If a downstream service keeps failing → open circuit (stop calls temporarily).
 Libraries: **resilience4j**, **Hystrix**.
 
-### 4️⃣ Saga Pattern (for distributed transactions)
+### 4️⃣ Saga Pattern (for distributed transactions)  ---- IMP
 
 Breaks one big transaction into smaller local ones coordinated via events.
 
@@ -731,7 +731,7 @@ If payment fails, emit "Payment Failed" and rollback.
 
 ---
 
-## 🧰 CODE LAB — Mini Microservices System
+## 🧰 CODE LAB — Mini Microservices System  ---- IMP
 
 Let’s simulate a simple setup with **Node.js + Express + Redis (for caching)** and **NATS (for async)**
 
@@ -831,7 +831,7 @@ You can visualize end-to-end latency and bottlenecks.
 Each service runs in a **Docker container**:
 
 ```dockerfile
-# Dockerfile
+# Dockerfile  ---- IMP
 FROM node:18
 WORKDIR /app
 COPY package*.json ./
@@ -902,11 +902,11 @@ Let’s now go **deeper into part 1 (Microservices Architecture)** — full **tu
 
 ---
 
-# 🧩 MICROservices ARCHITECTURE — Deep Tutorial for Backend Developers
+# 🧩 MICROservices ARCHITECTURE — Deep Tutorial for Backend Developers  ---- IMP
 
 ---
 
-## 💡 1. What Are Microservices?
+## 💡 1. What Are Microservices?  ---- IMP
 
 A **microservice** is a small, independent process that performs a single business capability.
 All services communicate via APIs (HTTP/gRPC/Event Bus), and together they form the full system.
@@ -919,7 +919,7 @@ Each service:
 
 ---
 
-## 🧱 2. How It Differs from Monoliths
+## 🧱 2. How It Differs from Monoliths  ---- IMP
 
 In a **monolith**, all modules are tightly coupled:
 
@@ -957,7 +957,7 @@ In **microservices**, each runs separately:
 
 ---
 
-## 🧭 4. Typical Architecture Diagram (text representation)
+## 🧭 4. Typical Architecture Diagram (text representation)  ---- IMP
 
 ```
              ┌─────────────────────────┐
@@ -994,9 +994,9 @@ In **microservices**, each runs separately:
 
 ---
 
-## 🧩 6. Common Microservice Patterns
+## 🧩 6. Common Microservice Patterns  ---- IMP
 
-### 🌀 API Gateway Pattern
+### 🌀 API Gateway Pattern  ---- IMP
 
 Handles:
 
@@ -1020,7 +1020,7 @@ app.listen(5000, () => console.log("Gateway on 5000"));
 
 ---
 
-### 🧾 Saga Pattern (Distributed Transactions)
+### 🧾 Saga Pattern (Distributed Transactions)  ---- IMP
 
 Used for multi-service consistency:
 Example: Place order → reserve stock → charge card
@@ -1036,7 +1036,7 @@ Order Svc → Orchestrator → Inventory → Payment
 
 ---
 
-### 🧩 CQRS Pattern (Command Query Responsibility Segregation)
+### 🧩 CQRS Pattern (Command Query Responsibility Segregation)  ---- IMP
 
 Separate **read** and **write** data models.
 
@@ -1055,7 +1055,7 @@ Separate **read** and **write** data models.
 
 ---
 
-## 🧰 8. Code Lab — Simple Node.js Microservices Setup
+## 🧰 8. Code Lab — Simple Node.js Microservices Setup  ---- IMP
 
 ### Folder Structure:
 
@@ -1176,7 +1176,7 @@ Then deploy via DO Kubernetes dashboard or CLI.
 
 ---
 
-## 🧾 12. Interview Checklist — Microservices
+## 🧾 12. Interview Checklist — Microservices  ---- IMP
 
 ✅ Difference between Monolith vs Microservice
 ✅ Communication types (Sync/Async)
@@ -1211,11 +1211,11 @@ This section will be a **complete tutorial**:
 
 ---
 
-# ⚡ CACHING STRATEGIES — Deep Backend Tutorial
+# ⚡ CACHING STRATEGIES — Deep Backend Tutorial  ---- IMP
 
 ---
 
-## 💡 1. What is Caching?
+## 💡 1. What is Caching?  ---- IMP
 
 **Caching** = storing **frequently accessed data** in a **fast storage layer** (RAM-based)
 → to avoid repetitive, expensive database or API calls.
@@ -1232,7 +1232,7 @@ With cache:     Request → Cache (hit) → instant response
 
 ---
 
-## 🚀 2. Why Use Cache?
+## 🚀 2. Why Use Cache?  ---- IMP
 
 * Reduce **latency**
 * Reduce **database load**
@@ -1241,7 +1241,7 @@ With cache:     Request → Cache (hit) → instant response
 
 ---
 
-## 🧭 3. Typical Caching Architecture
+## 🧭 3. Typical Caching Architecture  ---- IMP
 
 ```
             ┌────────────┐
@@ -1276,9 +1276,9 @@ Cache MISS → fetch from DB → update Redis
 
 ---
 
-## 🧩 5. Key Caching Strategies
+## 🧩 5. Key Caching Strategies  ---- IMP
 
-### 🥇 1. **Cache-aside (Lazy Loading)**
+### 🥇 1. **Cache-aside (Lazy Loading)**  ---- IMP
 
 Most commonly used strategy.
 
@@ -1367,13 +1367,13 @@ Usually implemented by caching libraries, not manual.
 
 ---
 
-## 🧮 6. Cache Invalidation (The Hardest Problem)
+## 🧮 6. Cache Invalidation (The Hardest Problem)  ---- IMP
 
 When the underlying data changes, **cache must be updated or deleted**.
 
 Common patterns:
 
-### 🔁 a. Time-based expiration
+### 🔁 a. Time-based expiration  ---- IMP
 
 Set TTL (time-to-live)
 
@@ -1381,7 +1381,7 @@ Set TTL (time-to-live)
 redis.set("user:1", JSON.stringify(user), "EX", 60);
 ```
 
-### 🧹 b. Manual Invalidation
+### 🧹 b. Manual Invalidation  ---- IMP
 
 When DB updates:
 
@@ -1389,7 +1389,7 @@ When DB updates:
 await redis.del("user:1");
 ```
 
-### 🔄 c. Event-driven Invalidation
+### 🔄 c. Event-driven Invalidation  ---- IMP
 
 Whenever DB change event occurs → publish to Redis → subscribers clear cache.
 
@@ -1401,7 +1401,7 @@ Order Updated → Event emitted → Other services clear related cache
 
 ---
 
-## 🧱 7. Advanced Caching Patterns
+## 🧱 7. Advanced Caching Patterns  ---- IMP
 
 ### 🔂 1. Cache Stampede Prevention
 
@@ -1434,7 +1434,7 @@ If a single key is accessed too often (like trending products):
 
 ---
 
-## ⚙️ 8. Redis Commands You Must Know
+## ⚙️ 8. Redis Commands You Must Know  ---- IMP
 
 | Purpose         | Command                   |
 | --------------- | ------------------------- |
@@ -1449,7 +1449,7 @@ If a single key is accessed too often (like trending products):
 
 ---
 
-## 🧰 9. Redis Cluster & Scaling
+## 🧰 9. Redis Cluster & Scaling  ---- IMP
 
 When your cache grows huge:
 
@@ -1490,14 +1490,14 @@ Evictions controlled < 10%
 
 ---
 
-## ☁️ 11. Deploy Redis on DigitalOcean
+## ☁️ 11. Deploy Redis on DigitalOcean  ---- IMP
 
 ```bash
 # 1. Create droplet
 sudo apt update
 sudo apt install redis-server -y
 
-# 2. Enable Redis to listen to all IPs
+# 2. Enable Redis to listen to all IPs  ---- IMP
 sudo nano /etc/redis/redis.conf
 bind 0.0.0.0
 protected-mode no
@@ -1514,7 +1514,7 @@ const redis = new Redis("redis://<YOUR_DO_IP>:6379");
 
 ---
 
-## 🧾 12. Interview Checklist — Caching Strategies
+## 🧾 12. Interview Checklist — Caching Strategies  ---- IMP
 
 ✅ Cache hit vs miss
 ✅ Cache-aside vs write-through vs write-back
@@ -1543,11 +1543,11 @@ We’ll cover everything from architecture → message brokers → event pattern
 
 ---
 
-# ⚙️ EVENT-DRIVEN SYSTEMS (Queues, Pub/Sub) — Deep Backend Tutorial
+# ⚙️ EVENT-DRIVEN SYSTEMS (Queues, Pub/Sub) — Deep Backend Tutorial  ---- IMP
 
 ---
 
-## 💡 1. What Is an Event-Driven System?
+## 💡 1. What Is an Event-Driven System?  ---- IMP
 
 An **event-driven architecture (EDA)** is a system design where components communicate **asynchronously by emitting and reacting to events**, instead of calling each other directly (like REST APIs).
 
@@ -1567,7 +1567,7 @@ Each service **acts independently**, responding only when events occur.
 
 ---
 
-## ⚙️ 2. Why Event-Driven?
+## ⚙️ 2. Why Event-Driven?  ---- IMP
 
 * **Loose coupling** → services don’t depend on each other
 * **Scalability** → handle high volume asynchronously
@@ -1576,7 +1576,7 @@ Each service **acts independently**, responding only when events occur.
 
 ---
 
-## 🧭 3. Architecture Overview (Text Diagram)
+## 🧭 3. Architecture Overview (Text Diagram)  ---- IMP
 
 ```
           ┌──────────────────────────┐
@@ -1643,7 +1643,7 @@ Producer → Topic → SubscriberA, SubscriberB
 
 ---
 
-## 🧪 7. CODE LAB — Event-Driven Microservices Using Redis Streams (Node.js)
+## 🧪 7. CODE LAB — Event-Driven Microservices Using Redis Streams (Node.js)  ---- IMP
 
 We’ll simulate:
 
@@ -1652,7 +1652,7 @@ We’ll simulate:
 
 ---
 
-### 🔹 Step 1. Setup Redis
+### 🔹 Step 1. Setup Redis  ---- IMP
 
 ```bash
 docker run -p 6379:6379 redis
@@ -1789,7 +1789,7 @@ You must track:
 ## ☁️ 13. Deploy on DigitalOcean
 
 ```bash
-# 1. Create Redis droplet or use DO Redis Managed DB
+# 1. Create Redis droplet or use DO Redis Managed DB  ---- IMP
 # 2. Expose port 6379
 # 3. Update Node.js connection
 const redis = new Redis("redis://<YOUR_DO_IP>:6379");
@@ -1821,7 +1821,7 @@ Consumers: 3
 
 ---
 
-## 🧱 15. Event Patterns in Microservices
+## 🧱 15. Event Patterns in Microservices  ---- IMP
 
 | Pattern            | Purpose                                                         |
 | ------------------ | --------------------------------------------------------------- |
@@ -1832,7 +1832,7 @@ Consumers: 3
 
 ---
 
-## 🧾 16. Interview Checklist — Event-Driven Systems
+## 🧾 16. Interview Checklist — Event-Driven Systems  ---- IMP
 
 ✅ Event-driven architecture vs REST
 ✅ Queue vs Topic
@@ -1878,7 +1878,7 @@ Would you like me to continue next with **“Cloud Deployment & Monitoring”** 
 
 ---
 
-## 🧩 Part 4: Communication in Microservices
+## 🧩 Part 4: Communication in Microservices  ---- IMP
 
 When you break a monolith into microservices, **how they talk to each other** becomes the most critical part.
 
@@ -1964,7 +1964,7 @@ natsClient.subscribe("order.created", (message) => {
 
 ---
 
-## ⚙️ Part 5: Transaction Management (The Saga Pattern)
+## ⚙️ Part 5: Transaction Management (The Saga Pattern)  ---- IMP
 
 In a monolithic app, a single transaction might touch multiple tables — easy with SQL transactions.
 
@@ -1976,7 +1976,7 @@ A **Saga** is a sequence of local transactions. Each service performs its part a
 
 If something fails, **compensating actions** undo the previous steps.
 
-### 🌀 **Example: E-Commerce Order Saga**
+### 🌀 **Example: E-Commerce Order Saga**  ---- IMP
 
 | Step | Service   | Action        | Compensation |
 | ---- | --------- | ------------- | ------------ |
@@ -2022,7 +2022,7 @@ natsClient.subscribe("payment.success", async (order) => {
 
 Each microservice runs independently, often in containers.
 
-### 1️⃣ **Containerization**
+### 1️⃣ **Containerization**  ---- IMP
 
 Use **Docker** for each service.
 
@@ -2049,7 +2049,7 @@ CMD ["npm", "start"]
 
 ---
 
-### 2️⃣ **Service Discovery**
+### 2️⃣ **Service Discovery**  ---- IMP
 
 When you have many microservices, how do they find each other?
 
@@ -2058,7 +2058,7 @@ When you have many microservices, how do they find each other?
 
 ---
 
-### 3️⃣ **Load Balancing**
+### 3️⃣ **Load Balancing**  ---- IMP
 
 Use **Nginx**, **Kubernetes Service**, or **API Gateway** to distribute traffic.
 
@@ -2097,7 +2097,7 @@ Diagram:
 
 ---
 
-## ✅ Microservices Interview Checklist
+## ✅ Microservices Interview Checklist  ---- IMP
 
 ✅ Explain **monolith → microservice** transition.
 ✅ Know **sync vs async** communication and when to use each.
@@ -2124,13 +2124,13 @@ You’re about to get a **complete, deep-dive tutorial** on:
 
 ---
 
-# ⚙️ Part 3 — Event-Driven Systems & Communication Deep Dive
+# ⚙️ Part 3 — Event-Driven Systems & Communication Deep Dive  ---- IMP
 
 *(RabbitMQ • Kafka • NATS • gRPC)*
 
 ---
 
-## 🧠 Why Event-Driven?
+## 🧠 Why Event-Driven?  ---- IMP
 
 In monoliths, function calls are direct and synchronous.
 In microservices, that’s dangerous — a slow or failed service can break the chain.
@@ -2139,7 +2139,7 @@ In microservices, that’s dangerous — a slow or failed service can break the 
 
 ---
 
-## 🔸 1. Event-Driven Architecture Basics
+## 🔸 1. Event-Driven Architecture Basics  ---- IMP
 
 Each message flow has three parts:
 
@@ -2173,9 +2173,9 @@ Benefits:
 
 ---
 
-## 🐇 RabbitMQ (AMQP)
+## 🐇 RabbitMQ (AMQP)  ---- IMP
 
-### 🧩 Architecture
+### 🧩 Architecture  ---- IMP
 
 ```
 [Producer] → [Exchange] → [Queue] → [Consumer]
@@ -2240,7 +2240,7 @@ channel.consume(queue, (msg) => {
 
 ---
 
-### 🧠 RabbitMQ Key Concepts
+### 🧠 RabbitMQ Key Concepts  ---- IMP
 
 * **Ack/Nack:** confirm or reject message.
 * **Durable Queue:** persists after restart.
@@ -2255,14 +2255,14 @@ channel.consume(queue, (msg) => {
 
 ---
 
-## ⚡ Kafka — Distributed Event Log
+## ⚡ Kafka — Distributed Event Log  ---- IMP
 
 Kafka is not just a queue — it’s a **distributed, partitioned commit log**.
 It’s built for **scalability, high throughput, and replay.**
 
 ---
 
-### 🧩 Architecture
+### 🧩 Architecture  ---- IMP
 
 ```
 [Producer] → [Topic] → [Partition(s)] → [Consumer Group(s)]
@@ -2274,7 +2274,7 @@ It’s built for **scalability, high throughput, and replay.**
 
 ---
 
-### 🧪 Lab: Kafka in Node.js
+### 🧪 Lab: Kafka in Node.js  ---- IMP
 
 Install:
 
@@ -2320,7 +2320,7 @@ await consumer.run({
 
 ---
 
-### 🧠 Kafka Key Concepts
+### 🧠 Kafka Key Concepts  ---- IMP
 
 * **Offset:** position of message in partition.
 * **Retention:** how long messages stay (time-based or size-based).
@@ -2336,13 +2336,13 @@ await consumer.run({
 
 ---
 
-## 🚀 NATS — Lightweight Pub/Sub
+## 🚀 NATS — Lightweight Pub/Sub  ---- IMP
 
 Designed for **speed and simplicity**, often used in **real-time systems** or IoT.
 
 ---
 
-### 🧩 Architecture
+### 🧩 Architecture  ---- IMP
 
 ```
 [Publisher] → [NATS Server] → [Subscribers]
@@ -2405,7 +2405,7 @@ It uses **Protocol Buffers (protobuf)** instead of JSON → faster, smaller.
 
 ---
 
-### 🧩 Architecture
+### 🧩 Architecture  ---- IMP
 
 ```
 [Client] ↔ [gRPC Server]
@@ -2523,7 +2523,7 @@ or
 
 ---
 
-# ⚡ Part 4 — **Caching Strategies Deep Dive**
+# ⚡ Part 4 — **Caching Strategies Deep Dive**  ---- IMP
 
 Caching is one of the **most powerful performance optimization tools** in system design.
 Used properly → insane speed gains.
@@ -2531,14 +2531,14 @@ Used wrongly → stale data, consistency bugs.
 
 ---
 
-## 🧩 What is Caching?
+## 🧩 What is Caching?  ---- IMP
 
 Caching means **storing data temporarily** in fast-access memory (like Redis or RAM),
 so you don’t have to recompute or fetch it again from a slow source (like a database or API).
 
 ---
 
-## ⚙️ Why Caching?
+## ⚙️ Why Caching?  ---- IMP
 
 Without cache:
 
@@ -2571,7 +2571,7 @@ User → API → Cache → Database (only if needed)
 
 ---
 
-## 🧩 How Caching Works (Simple Flow)
+## 🧩 How Caching Works (Simple Flow)  ---- IMP
 
 ```
 1️⃣ Request comes → check cache  
@@ -2601,7 +2601,7 @@ return data;
 
 ---
 
-## 🧱 Redis Basics (In-Memory Cache)
+## 🧱 Redis Basics (In-Memory Cache)  ---- IMP
 
 Redis = Remote Dictionary Server.
 It’s a **key-value store** supporting:
@@ -2611,7 +2611,7 @@ It’s a **key-value store** supporting:
 
 ---
 
-### 🧪 Redis Setup (Node.js Lab)
+### 🧪 Redis Setup (Node.js Lab)  ---- IMP
 
 Install:
 
@@ -2636,7 +2636,7 @@ console.log("From cache:", JSON.parse(data));
 
 ---
 
-## 🧠 Cache Invalidation (The Hardest Problem)
+## 🧠 Cache Invalidation (The Hardest Problem)  ---- IMP
 
 Caching is easy.
 **Invalidation** (when to refresh or remove stale data) is the hard part.
@@ -2648,7 +2648,7 @@ Caching is easy.
 
 ---
 
-## 🧩 Cache Expiration Policies
+## 🧩 Cache Expiration Policies  ---- IMP
 
 | Policy                          | Description                  | Example               |
 | ------------------------------- | ---------------------------- | --------------------- |
@@ -2661,7 +2661,7 @@ Caching is easy.
 
 ## ⚡ Cache Patterns (System Design Level)
 
-### 1️⃣ **Cache-aside (Lazy Loading)**
+### 1️⃣ **Cache-aside (Lazy Loading)**  ---- IMP
 
 App checks cache first → if miss, fetch from DB → update cache.
 
@@ -2761,7 +2761,7 @@ if (lock) {
 
 ---
 
-## 🧩 Layered Caching Architecture
+## 🧩 Layered Caching Architecture  ---- IMP
 
 ```
 Client (Browser)
@@ -2781,7 +2781,7 @@ Each layer speeds up specific type of data (static, API, computed, query-level).
 
 ---
 
-## 📊 Redis vs Memcached vs In-App Cache
+## 📊 Redis vs Memcached vs In-App Cache  ---- IMP
 
 | Feature         | Redis                         | Memcached      | In-App (e.g., LRU Cache) |
 | --------------- | ----------------------------- | -------------- | ------------------------ |
@@ -2793,7 +2793,7 @@ Each layer speeds up specific type of data (static, API, computed, query-level).
 
 ---
 
-## 🧠 Advanced Redis Features
+## 🧠 Advanced Redis Features  ---- IMP
 
 ✅ **Redis Streams:** message queue alternative.
 ✅ **Redis Pub/Sub:** event notifications.
@@ -2831,7 +2831,7 @@ app.listen(3000);
 
 ---
 
-## 🧠 Interview Checklist — Caching
+## 🧠 Interview Checklist — Caching  ---- IMP
 
 ✅ Explain **Cache Hit / Miss / Eviction** clearly.
 ✅ Know **Cache-Aside, Write-Through, Write-Behind** patterns.
@@ -2845,7 +2845,7 @@ app.listen(3000);
 
 ---
 
-## 🎯 Real-world Caching Example (Instagram-like Feed)
+## 🎯 Real-world Caching Example (Instagram-like Feed)  ---- IMP
 
 ```
 User opens app →
@@ -2866,7 +2866,7 @@ Excellent choice. Let’s build a **hands-on mini project** that demonstrates **
 
 ---
 
-# 🚀 Project: “Order Processing Microservice System”
+# 🚀 Project: “Order Processing Microservice System”  ---- IMP
 
 We’ll simulate a small e-commerce flow using **three microservices** and three different message brokers for different stages of communication.
 
@@ -2874,7 +2874,7 @@ We’ll simulate a small e-commerce flow using **three microservices** and three
 
 ## ⚙️ Overview
 
-### 🧩 Architecture Diagram
+### 🧩 Architecture Diagram  ---- IMP
 
 ```
       ┌────────────┐
@@ -2964,7 +2964,7 @@ docker compose up
 
 ---
 
-## 1️⃣ Order Service (RabbitMQ Publisher)
+## 1️⃣ Order Service (RabbitMQ Publisher)  ---- IMP
 
 ```js
 // order-service.js
@@ -2997,7 +2997,7 @@ app.listen(3001, () => console.log("Order Service running on 3001"));
 
 ---
 
-## 2️⃣ Payment Service (RabbitMQ Consumer → Kafka Producer)
+## 2️⃣ Payment Service (RabbitMQ Consumer → Kafka Producer)  ---- IMP
 
 ```js
 // payment-service.js
@@ -3033,7 +3033,7 @@ start();
 
 ---
 
-## 3️⃣ Inventory Service (Kafka Consumer → NATS Publisher)
+## 3️⃣ Inventory Service (Kafka Consumer → NATS Publisher)  ---- IMP
 
 ```js
 // inventory-service.js

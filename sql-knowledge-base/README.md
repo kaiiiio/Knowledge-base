@@ -111,6 +111,9 @@ A comprehensive guide to SQL for backend developers, covering everything from fu
 - [Stored Procedures (Reusable Database Logic)](15_db_infrastructure/stored_procedures.md)
 - [Triggers (Automated Actions)](15_db_infrastructure/triggers.md)
 
+### 16. Interview Questions
+- [DBMS Fundamentals — Interview Q&A](16_interview_questions/dbms_fundamentals_qna.md) — DBMS types, ACID, SQL vs NoSQL, schema/keys, normalization vs denormalization, DROP/DELETE/TRUNCATE, joins, N+1 problem, prepared statements, indexes. Fast-recall summary layer with cross-links into the deep-dive files above.
+
 ## Learning Path
 
 ### Beginner Path

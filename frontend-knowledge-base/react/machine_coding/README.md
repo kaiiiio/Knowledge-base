@@ -16,6 +16,11 @@ Complete solutions for React machine coding interview questions from [GreatFront
 8. **[Premium Components](./28_premium_components.md)** - Flight Booker, Generate Table, Temperature Converter, Tweet Component, Grid Lights, Analog Clock, Connect Four, Pixel Art, Whack-A-Mole, Users Database
 9. **[More Premium Components](./29_more_premium_components.md)** - Birth Year Histogram, Selectable Cells, Tic-tac-toe NxN, Progress Bars Concurrent, Data Table Advanced, Image Carousel Minimal DOM
 10. **[Accessibility Components](./30_accessibility_components.md)** - Accessible Accordion, Accessible Tabs, Accessible Modal, Accessible File Explorer, ARIA best practices
+11. **[More Machine Coding Questions](./34_more_machine_coding_questions.md)** - Command Palette (Cmd+K), Rich Text Editor, Kanban Board, Date Picker, Toast System, Multi-Step Form Wizard, Resizable Split Pane, OTP Input, Pagination
+
+### React 19 & Latest Updates
+
+11. **[React 19 Latest Features](./33_react19_latest_features.md)** - useActionState, useFormStatus, useOptimistic, Form Actions, the `use()` API, ref as a prop, document metadata, React Compiler, React 18 vs 19 cheat-sheet
 
 ### React Fundamentals
 
@@ -53,6 +58,15 @@ Complete solutions for React machine coding interview questions from [GreatFront
 21. **[String Utilities](./16_string_utilities.md)** - Reverse, Palindrome, Anagram, Longest Substring, Compression, Valid Parentheses, String to Integer, Longest Common Prefix, KMP, Word Break
 22. **[Object Utilities](./20_object_utilities.md)** - Deep Clone, Merge, Pick, Omit, Get/Set Nested, Flatten/Unflatten, Keys by Value, Comparison
 
+### Senior / FDE Interview Prep
+
+22. **[Siemens Senior Frontend Interview Prep](./31_siemens_senior_frontend.md)** - JS engine internals, polyfills, RBAC HOC, senior architecture questions (24 LPA level)
+23. **[Senior FDE Interview Prep](./35_senior_fde_interview_prep.md)** - Event loop tracing, WeakMap/WeakRef, Proxy/Reflect reactivity, Compound Components, Render Props vs Hooks, Error Boundaries + Suspense, Micro-frontends, Design System APIs, resilient polling/backoff, offline-first sync, custom EventEmitter, Token Bucket rate limiter, deep equality with circular refs
+
+### System Design
+
+24. **[System Design Solutions](./system_design_solutions/)** - 17 solutions: Twitter, Aarogya Setu, Load Balancer, URL Shortener, Logging System, Google Play Store, Zoomcar, E-commerce, Recommendation System, Order Management, Waste Management, Library Management, Warehouse Management, Parking Lot, Inventory Tracking, Rating System, **[News Feed System](./system_design_solutions/17_news_feed_system.md)** (new - fan-out strategies, ranking, virtualized infinite scroll, real-time updates)
+
 ### Algorithms & Data Structures
 
 16. **[Complex Components & Utilities](./05_complex_components_and_utilities.md)** - Tic-Tac-Toe, Stopwatch, Debounce, Throttle, Deep Clone, Memoize, Promise.all
@@ -63,10 +77,11 @@ Complete solutions for React machine coding interview questions from [GreatFront
 
 ## 📊 Coverage Summary
 
-- **Total Files**: 30 comprehensive solution files
-- **Total Questions**: 250+ questions covered
-- **Categories**: Components, Hooks, React Fundamentals, CSS, DOM Events, Scroll/Animations, Utilities, Algorithms, Data Structures, Accessibility
+- **Total Files**: 35 comprehensive solution files + 17 system design solutions
+- **Total Questions**: 270+ questions covered
+- **Categories**: Components, Hooks, React Fundamentals, React 19, CSS, DOM Events, Scroll/Animations, Utilities, Algorithms, Data Structures, Accessibility, Senior/FDE Prep, System Design
 - **Theory Files**: 5 React fundamentals theory files
+- **Latest Update (2026)**: Added React 19 features, 9 new machine coding questions, a News Feed system design, and 14 senior FDE-level interview questions
 
 ## 🎯 Question Categories
 

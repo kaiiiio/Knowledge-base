@@ -17,7 +17,7 @@ Auth architecture, security, rate limiting, observability, testing, and scaling 
 ---
 
 <a name="auth"></a>
-## 1. Authentication Architecture
+## 1. Authentication Architecture ⭐ IMP
 
 ### The two session strategies
 
@@ -100,7 +100,7 @@ Password hashing: bcrypt (cost ≥ 12) or argon2id. Hashing is CPU-bound — Nod
 ---
 
 <a name="security"></a>
-## 3. Security Checklist
+## 3. Security Checklist ⭐ IMP
 
 - **Injection**: ORM/parameterized queries; `$queryRaw` with tagged templates only. Validate all input with Zod at every boundary.
 - **XSS**: React escapes by default; danger zones are `dangerouslySetInnerHTML` (sanitize with DOMPurify/sanitize-html server-side), `href={userInput}` (`javascript:` URLs), and injecting user content into `<Script>`.
@@ -115,7 +115,7 @@ Password hashing: bcrypt (cost ≥ 12) or argon2id. Hashing is CPU-bound — Nod
 ---
 
 <a name="rate-limiting"></a>
-## 4. Rate Limiting
+## 4. Rate Limiting ⭐ IMP
 
 In-memory counters don't work on serverless (each instance has its own memory). Use a shared store:
 
@@ -206,7 +206,7 @@ Small uploads through a route handler are fine: `const file = (await req.formDat
 ---
 
 <a name="deployment"></a>
-## 8. Deployment & Scaling
+## 8. Deployment & Scaling ⭐ IMP
 
 ### Output targets
 
@@ -239,7 +239,7 @@ Small uploads through a route handler are fine: `const file = (await req.formDat
 ---
 
 <a name="scenarios"></a>
-## 10. System-Design Interview Scenarios
+## 10. System-Design Interview Scenarios ⭐ IMP
 
 **"Design a blog platform with Next.js"** — Posts: SSG + ISR (`revalidate` or tag-based on publish via `revalidateTag('posts')` from the CMS webhook route handler). Comments: dynamic island under Suspense or client-fetched. Admin: dynamic routes behind middleware + DAL auth. Images: next/image + remote storage.
 

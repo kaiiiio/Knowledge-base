@@ -1,0 +1,125 @@
+WHATSAPP / CHAT APP SYSTEM DESIGN - Notes (from L30_Whatsapp.pdf, TechByAni HLD-Notes)
+
+Functional requirements: user registration, authentication, profile management. Optional user profile picture management. One-on-one chats and group chats up to 100 members. Messages should deliver in real time if the receiver is online. Messages should be stored and delivered later if the receiver is offline. Support media in messages. Optional online/last seen status. Optional multi-device support.
+
+Non-functional requirements: handle 100M DAU, few billion users, so high throughput. Messages should reach the receiver in near real time, under 500ms. Availability matters more than consistency. Fault tolerance, resilient. Messages should not be stored unnecessarily.
+
+Core entities: User, Chat, Message.
+
+APIs. POST /api/v1/users with username, email etc. GET /api/v1/users/{user_id}. WebSocket endpoint: /api/v1/chat/ws.
+
+Create Chat command over WebSocket. Client to server: command CREATE_CHAT, payload has members array and name. Server to client: returns chatId, e.g. "chat_123".
+
+Send Message command. Client to server: command SEND_MESSAGE, payload has chatId, text, attachmentIds. Server to client: status SUCCESS, messageId returned, e.g. "msg_456".
+
+Add/Remove chat members: command UPDATE_CHAT_MEMBERS, payload has chatId, memberId, operation (ADD or REMOVE).
+
+New Message Event, pushed server to client: event NEW_MESSAGE, eventId, payload with chatId, senderId, text, attachmentIds. Client acks back to server: command ACK, eventId.
+
+HIGH LEVEL DESIGN.
+Client authenticates through an API Gateway which talks to Auth. User Service backed by Postgres stores Users (id, name, userName, email, ...). Chat Service backed by DynamoDB stores Chats (chatId, name...), ChatMembers (memberId as sort key, chatId as partition key), Messages (msgId, contents, senderId, createdTime, chatId).
+
+Connection model: client opens a WebSocket connection to the Chat Service. This connection is maintained for chat creation, messaging, and membership updates.
+
+Chat creation flow: client sends a createChat command over WebSocket. Chat Service receives the request. Chat Service performs the following atomically: creates a new Chat record, creates a ChatMember entry for each user. Chat Service returns the generated chatId to the client.
+
+Why this must be atomic: a chat without members is useless, members without a chat is invalid, both must succeed or both must fail.
+
+To get all members of a chat, query by chatId (the partition key) - this is fast because DynamoDB physically groups items by partition key, so all rows with the same chatId live together on disk.
+
+To get all chats for a user, you need a GSI (Global Secondary Index). The GSI reorganizes the same data with a new key layout: GSI partition key = memberId, GSI sort key = chatId.
+
+SEND MESSAGE FLOW. There's an in-memory map maintained by the Chat Service: userId to WS_CONN (e.g. userA -> ws_conn_A, userB -> ws_conn_B).
+Steps: client sends message over an existing WebSocket connection with chatId. Chat Service queries the ChatMembers table using chatId (partition key) to get the list of all members in the chat. Chat Service maintains an in-memory map of userId to WebSocket connection. For each member: look up their active WebSocket connection, send the message if the user is online, clients send an ACK to confirm delivery.
+
+OFFLINE MESSAGE DELIVERY (when a user is currently offline). Introduce a table called PendingDeliveries: one entry per (recipient, message) pair, acts as a temporary holding area until delivery is confirmed.
+Flow: sender sends a sendMessage command to the Chat Server. Chat Server fetches all members of the chat. In one DynamoDB transaction: write to Messages, write to PendingDeliveries for all recipients (so that up to 100 records, the group member limit, is easily supported by DynamoDB in a single transaction). Chat Server responds to sender with success/failure and message ID. Chat Server attempts real-time delivery over WebSockets.
+If a recipient is online: message is pushed immediately, client sends an ACK, the corresponding PendingDeliveries entry is deleted.
+If a recipient is offline: message remains in PendingDeliveries, no delivery attempt is required right now.
+
+Reconnect flow (offline users): when a user comes back online, Chat Server queries PendingDeliveries for that user, retrieves all pending message IDs, fetches full message content from Messages, sends messages to the client, client ACKs each message, Chat Server deletes delivered entries from PendingDeliveries. You can also delete undelivered messages after 30 or 60 days if the recipient never comes online.
+
+SUPPORT MEDIA IN MESSAGES. User Service now also stores profilePicLinkToS3 for each user; profile pics are stored in S3.
+Why media is not stored in the DB: media files are large and unstructured, databases are optimized for small structured records, storing blobs increases cost and slows queries - the DB is used only for metadata, not media.
+Why media should not pass through the Chat Server: handling uploads/downloads becomes a bottleneck, consumes bandwidth/memory/CPU, slows down real-time messaging - the Chat Server should stay lightweight.
+Why S3 + pre-signed URLs works.
+Sender flow: sender requests an upload target from Chat Server, Chat Server returns a pre-signed S3 upload URL, sender uploads media directly to S3, sender sends a normal chat message containing chatId and a media reference.
+Server flow: Chat Server stores the message (text plus media reference), Chat Server creates pending delivery records, Chat Server attempts real-time delivery to online users.
+Receiver flow: receiver gets the message over WebSocket, message contains the media reference, receiver uses a pre-signed download URL to fetch media directly from S3, receiver ACKs message delivery.
+
+HANDLING LARGE SCALE (billions of users). You can add more chat servers, but then: how does one server know which server the recipient is connected to?
+
+Solution 1: use Kafka, topic per user. Marked "not wrong, but bad." Kafka topics are heavy, metadata overhead per topic is large, billions of users means a huge topic count and Kafka is not good for this. Kafka is great for streams, logs, analytics. Kafka is not for fine-grained fan-out per user. Interview takeaway: "Using Kafka topics per user is an anti-pattern."
+
+Solution 2: consistent hashing of chat servers with ZooKeeper or Etcd. Marked "improved solution."
+Phase 0, system bootstrapping: chat servers (S1, S2, S3) start, each generates its hash tokens (virtual nodes), registers itself in ZooKeeper. ZooKeeper now knows which chat servers exist, which hash positions they own, which servers are alive (ephemeral nodes). Chat Registry starts: watches /chat-servers/* in ZooKeeper, reads all servers and tokens, builds a consistent hash ring locally in memory. Chat servers also build the same hash ring: each chat server watches ZooKeeper, reads the same server/token data, builds the same hash ring locally. At this point, Chat Registry and all Chat Servers have identical hash rings.
+Phase 1, User A opens the app: User A has no server yet, User A asks Chat Registry over HTTPS "I am user A, which server should I connect to?" Chat Registry decides using the hash ring: computes hash(userId_A), looks up the hash ring, finds the owner server (say S2). User A connects to S2 over WebSocket/TCP, authentication happens, persistent connection established. User A is now online on S2.
+Phase 2, User B opens the app: same flow, hash(userId_B) maps to S3. Now: User A is on S2, User B is on S3.
+Phase 3, User A sends a message to User B: message arrives at S2 from User A with payload {from: A, to: B, content: "Hi!"}.
+Phase 4, S2 finds where User B lives: S2 computes owner of B - S2 already has the hash ring locally, hash(userId_B) falls in S3's range, so owner(B) = S3.
+Phase 5, server-to-server delivery: S2 to S3 over internal RPC/TCP, S3 already has an open connection to User B.
+Phase 6, message delivered to User B over WebSocket.
+Phase 7, failure handling: if S3 crashes, its ZooKeeper session for /chat-servers/S3 expires, watchers fire on Chat Registry and Chat Servers, hash ring is rebuilt, User B reconnects, a new owner server is assigned.
+Summary box: ZooKeeper is the shared source of truth about servers. Chat Registry does initial placement. Chat Servers use hashing and routing. Hash Ring = deterministic ownership math. Chat servers register their hash positions in ZooKeeper. Both chat registry and chat servers within ZooKeeper build identical consistent hash rings locally. When a client connects, the registry hashes the userId and returns the correct owner server. When a message is sent, the sender's server hashes the recipient's userId to find the owner server and forwards the message directly.
+
+Major problems with this ZooKeeper/consistent-hashing solution:
+Problem 1, server-to-server connection explosion: each Chat Server will need to maintain connections with every other Chat Server.
+Problem 2, scaling requires careful orchestration: increasing the number of Chat Servers requires careful orchestration. Why: adding/removing servers changes the hash ring, user ownership changes, users must move to new servers. This causes reconnect storms and load spikes.
+Problem 3, message loss risk during migration: during scaling we need to ensure that events are sent to both servers.
+Problem 4: hot users and uneven load.
+
+Solution 3 (Best): use Redis PUB/SUB - note "topics are very lightweight here."
+Flow: User A sends message to Chat Server. Chat Server writes message to DB and creates a PendingDeliveries entry. Chat Server sends ACK to User A. Chat Server publishes message to Redis Pub/Sub (receiver's channel -> userId topic). Redis delivers message to the subscribed Chat Server. Chat Server forwards message to User B via WebSocket. If User B is offline, message stays in DB and is delivered on reconnect.
+Benefits box: no complex ownership/rehashing logic, scaling Chat Servers is much easier. With Pub/Sub: a new Chat Server starts, subscribes to user topics, starts receiving messages immediately. No user migration logic, no special handling.
+
+LOAD BALANCER CHOICE. We place the Chat Service behind an L4 load balancer. Why L4 and not L7? WebSocket is a long-lived TCP connection. We don't need path-based routing, header-based routing, or HTTP-level inspection - all chat traffic goes to the same service. L4 is simpler, faster, lower latency. Perfect for persistent connections.
+
+LAST SEEN / ONLINE STATUS. New table LastSeen: userId, timeStamp.
+Core principles: ONLINE is never stored as a persisted state. Only timestamps are stored. Presence is calculated on request. DB is the fallback truth. Chat Server (in-memory) is the real-time truth.
+
+Step 0, connection + heartbeat lifecycle.
+When user connects: WebSocket connection established, Chat Server marks user as online in memory, writes to LastSeen table as a safety net: LastSeen[userId] = now, only if now is greater than the existing value.
+Why connect-write: the previous server may have crashed, a disconnect event may be missing, this self-heals stale timestamps.
+Heartbeat flow: client sends a heartbeat every N seconds (e.g. 20s). Chat Server tracks the last heartbeat timestamp in memory. No DB write on every heartbeat. Purpose of heartbeat: detect silent disconnects, handle app kill or network loss, decide when to close the connection.
+When heartbeats stop: if no heartbeat for 2x the interval (e.g. 40-60s), then the server assumes the user is disconnected, closes the WebSocket, and writes LastSeen[userId] = now as a conditional update. This is the main and most common disconnect path.
+Explicit disconnect: app closed or socket closed, same handling as heartbeat timeout, writes LastSeen timestamp.
+
+Getting last seen of another user - full 8 step protocol:
+Step 1: User A asks for last seen of User B. Client sends getLastSeen { targetUserId: B, requestingUserId: A }. Triggered when opening chat or viewing profile.
+Step 2: Chat Server receives request. Chat Server does NOT wait to know if B is online. It does two things in parallel.
+Step 3: DB lookup (fallback path). Reads LastSeen[B]. Immediately sends to User A: updateLastSeen { reporter: DATABASE, lastSeen: <timestamp> }. Why send immediately: DB is guaranteed, Pub/Sub may not respond, client should never block.
+Step 4: live online check via Redis. In parallel, server publishes getLastSeen -> channel:user:B. Meaning: "If B is online, reply."
+Step 5: if User B is online. B's Chat Server is subscribed to channel:user:B, receives getLastSeen, confirms user is still connected, publishes updateLastSeen { reporter: SERVER, lastSeen: ONLINE } to channel:user:A.
+Step 6: client merges responses. Client logic: if reporter says ONLINE, UI shows "Online". If only timestamp is received, UI shows "Last seen at X". ONLINE always overrides the DB response. Client may wait roughly 200ms before rendering, or update UI smoothly.
+Step 7: if User B is offline, only the DB response exists, client shows "Last seen at <timestamp>".
+Step 8: crash scenarios (why heartbeats and connect-write matter). If the server crashes: heartbeat stops, client reconnects, new server writes connect timestamp, data self-heals. Exact offline time lost? Yes, sometimes - accepted by design. We store "last time we are sure the user was active", not "exact second user went offline".
+
+What if a WebSocket "looks" connected but actually isn't? Mobile networks are unreliable. A WebSocket can be open even though the phone has lost signal, switched networks, or gone into sleep mode. The server won't immediately know. TCP may take minutes to realize the connection is dead - far too slow for chat. So we can't rely on TCP alone to find out when the connection breaks.
+Solution: heartbeats. How it works: server sends a small ping every 10-20 seconds, client must reply with pong, if no pong arrives within a short timeout then the server closes the connection, client reconnects, missed messages are synced from PendingDeliveries.
+Why this is ideal: detects dead connections even during idle periods, failure is caught in seconds not minutes, makes presence and delivery reliable.
+
+HANDLING MULTIPLE DEVICES PER USER. A user can be logged in from multiple devices (phone, laptop, tablet). We must deliver messages to each device independently.
+Changes needed: add a Devices table. Change PendingDeliveries from per-user to per-device. When sending a message: find all users in the chat, for each user find all their devices, deliver message to all devices.
+What does NOT change: Redis Pub/Sub remains per-user, chat servers still subscribe using userId, no change in Pub/Sub design.
+Cleanup and limits: remove devices when they log out, expire inactive devices, limit number of devices per user (e.g. 3 to 5).
+
+HOW MESSAGE ORDERING IS HANDLED. All chat servers keep their system time in sync with a trusted time source, so they all agree on what time it is, within a small error margin. When a message reaches a chat server, the server records the current timestamp. This timestamp becomes the message's display time. Clients sort messages based on this server-assigned time. As a result: all devices show messages in the same order, ordering is consistent even if delivery paths differ.
+What users experience: a message may appear slightly above or below where it was expected. This happens rarely and is generally acceptable since messages arrive quickly and conversation flow still feels natural.
+
+USER-BASED vs CHAT-BASED PUB/SUB CHANNELS. You can design Redis Pub/Sub channels in two ways: one channel per user, or one channel per chat (group). Which one is better depends on how people chat.
+Case 1, mostly 1-to-1 chats (WhatsApp-like): each user talks to 200 people, all chats are private (2 people). User-based channels: 1 user maps to 1 channel, server subscribes to 1 channel, message publish = 1 publish. Chat-based channels: 200 chats maps to 200 channels, server must subscribe to 200 channels, lots of unused/duplicate channels. Conclusion: user-based is clearly better.
+Case 2, very large group chat: one group with 900 users, everyone is chatting there. User-based channels: one message maps to 900 publishes - expensive and noisy. Chat-based channels: one group maps to 1 channel, one publish reaches all subscribers. Conclusion: chat-based is clearly better here.
+So we used user-based for our WhatsApp design (mostly 1-to-1 chats dominate). Handling rare large groups (advanced idea) - smart hybrid approach: small chats use user channels, large chats use chat channels. On connect: subscribe to your user channel, also subscribe to any large group channels (you can set some limit to call something "large"). On send: if group is large, publish once to the group channel; else publish to user channels. Why this works: cheap for normal chats, efficient for big groups, no unnecessary Redis load.
+Bottom line rule: user channels are best for private chats, chat channels are best for large groups - real systems combine both.
+
+WHAT IF REAL-TIME DELIVERY VIA REDIS MISSES A MESSAGE? Redis Pub/Sub has at-most-once message delivery semantics. This means a message is delivered once if at all, and there are no retries or guarantees of delivery. Well, we are saving messages to DB, so they will be delivered some time later, but if we want to deliver messages to clients faster, we need some solution.
+
+Solution 1, periodic catch-up checks: every connected client occasionally asks "Did I miss anything?" The server checks PendingDeliveries and any undelivered messages are sent immediately. Trade-off: simple and reliable, but creates steady background traffic - at very large scale, frequent polling increases server load, reducing polling frequency lowers load but increases delay. This method works, but needs improvement.
+
+Solution 2, detect gaps using message counters: each chat assigns messages increasing numbers (1, 2, 3...). Clients remember the last number they received. If they suddenly see message no.8 after no.6, they know no.7 was missed and request a sync. Benefits: no constant polling, sync only happens when something is missing. Limitation: if there is no new message after the missed message, the missed message is never noticed.
+
+Solution 3 (Preferred): heartbeats plus sequence tracking. Idea: instead of tracking counters per chat, track them per user. Maintain a single increasing counter for each user. Every message delivered to that user increments the counter. Heartbeat messages from the server include the current counter value. Client compares it with what it has locally. If behind, immediately requests a sync.
+Why this works well: heartbeats already exist so there's no extra traffic, missing messages are detected quickly, covers missed messages from any chat, not just one.
+Cost and complexity: requires an atomic counter per user, usually implemented with Redis INCR, adds a small coordination dependency. But in return: detection is fast, load stays low, polling becomes rare, not constant.
+
+Cross-reference: see ../../04-System-Design-HLD/04_design_whatsapp_chat.md for the deeper technical treatment (WebSocket connection gateways and connection registry, group fan-out, per-conversation ordering, sent/delivered/read receipts, offline sync, presence, Signal-protocol E2E encryption overview).

@@ -158,7 +158,7 @@ const InfiniteScroll = () => {
 
 ---
 
-## 2. Debounced Search Input
+## 2. Debounced Search Input  ---- IMP
 
 **Implementation:**
 
@@ -303,7 +303,7 @@ import { FixedSizeList as List } from 'react-window';
 
 ---
 
-## 4. Custom Data Fetch Hook with Caching
+## 4. Custom Data Fetch Hook with Caching  ---- IMP
 
 **Features:**
 
@@ -402,7 +402,7 @@ const Modal = ({ open, onClose, children }) => {
 
 ---
 
-## 6. Global State Management (Context + useReducer)
+## 6. Global State Management (Context + useReducer)  ---- IMP
 
 **How it works:**
 * useReducer manages complex state logic with actions (like Redux pattern)
@@ -537,7 +537,7 @@ const ThemeToggle = () => {
 
 ---
 
-## 7. Form Validation System
+## 7. Form Validation System  ---- IMP
 
 **How it works:**
 * Define validation rules as an object where each key is a field name
@@ -1450,7 +1450,7 @@ const items = Array.from({ length: 10000 }, (_, i) => ({
 
 ---
 
-## 12. Image Lazy Loading with Placeholder
+## 12. Image Lazy Loading with Placeholder  ---- IMP
 
 **How it works:**
 * Detect viewport via `IntersectionObserver` - check if image is visible
@@ -2005,7 +2005,7 @@ const OTPInput = ({ length = 6, onComplete }) => {
 
 ---
 
-## **4. `useThrottle` and `useDebounce` Hooks**
+## **4. `useThrottle` and `useDebounce` Hooks**  ---- IMP
 
 **Debounce:** Delay execution until after inactivity (wait for user to stop typing)
 **Throttle:** Limit execution frequency (execute at most once per time period)
@@ -2072,7 +2072,7 @@ export const useThrottle = (value, limit) => {
 
 ---
 
-## **5. Context API**
+## **5. Context API**  ---- IMP
 
 **Goal:** Global state management without external libraries (built-in React).
 
@@ -2135,7 +2135,7 @@ const UserProfile = () => {
 
 ---
 
-## **6. Password Generator**
+## **6. Password Generator**  ---- IMP
 
 **Goal:** Secure, customizable passwords.
 
@@ -2253,7 +2253,7 @@ Absolutely! Since you're looking for **tougher React.js low-level design (LLD) q
 
 ---
 
-## **1. Server-Side Rendered Infinite Scroll with Caching**
+## **1. Server-Side Rendered Infinite Scroll with Caching**  ---- IMP
 
 **Problem:** Implement infinite scroll with SSR and cache to prevent repeated API calls.
 
@@ -2429,7 +2429,7 @@ const VirtualTable = ({ data }) => {
 
 ---
 
-## **5. Form Wizard with Conditional Fields and Async Validation**
+## **5. Form Wizard with Conditional Fields and Async Validation**  ---- IMP
 
 **Problem:** Multi-step form where some fields are conditional and require async API validation.
 
@@ -2462,7 +2462,7 @@ const useFormWizard = (steps) => {
 
 ---
 
-## **6. Custom Hooks for API Request Deduplication**
+## **6. Custom Hooks for API Request Deduplication**  ---- IMP
 
 **Problem:** Avoid firing multiple requests for the same URL concurrently.
 
@@ -2496,7 +2496,7 @@ const useFetchOnce = (url) => {
 
 ---
 
-## **7. Real-Time Collaboration Cursor**
+## **7. Real-Time Collaboration Cursor**  ---- IMP
 
 **Problem:** Show multiple user cursors in a shared text editor.
 
@@ -2593,7 +2593,7 @@ Absolutely! Let's go **deep into the latest React hooks**, covering **core hooks
 
 ---
 
-# **1. useState**
+# **1. useState**  ---- IMP
 
 **Purpose:** Store and update local state in functional components.
 
@@ -2624,7 +2624,7 @@ const Counter = () => {
 
 ---
 
-# **2. useEffect**
+# **2. useEffect**  ---- IMP
 
 **Purpose:** Side effects (data fetching, subscriptions, timers).
 
@@ -2659,7 +2659,7 @@ const Timer = () => {
 
 ---
 
-# **3. useRef**
+# **3. useRef**  ---- IMP
 
 **Purpose:** Persist values across renders **without triggering re-renders**. Also used to access DOM nodes.
 
@@ -2698,7 +2698,7 @@ useEffect(() => { previousValue.current = value; }, [value]);
 
 ---
 
-# **4. useMemo**
+# **4. useMemo**  ---- IMP
 
 **Purpose:** Memoize expensive computations to **avoid unnecessary recalculations**.
 
@@ -2726,7 +2726,7 @@ const Expensive = ({ num }) => {
 
 ---
 
-# **5. useCallback**
+# **5. useCallback**  ---- IMP
 
 **Purpose:** Memoize functions to prevent re-creation on every render. Useful for props passed to child components.
 
@@ -2970,7 +2970,7 @@ const Input = () => {
 
 ---
 
-# **14. Custom Hooks Example**
+# **14. Custom Hooks Example**  ---- IMP
 
 **Debounce Hook:**
 
@@ -3058,7 +3058,7 @@ Absolutely! Let's do a **deep-dive explanation of all modern and commonly used R
 
 ---
 
-# **1. useState**
+# **1. useState**  ---- IMP
 
 **Purpose:**
 `useState` is used to declare **state variables in functional components**. Before hooks, only class components could have state. It allows functional components to hold and update values over time.
@@ -3102,7 +3102,7 @@ export default Counter;
 
 ---
 
-# **2. useEffect**
+# **2. useEffect**  ---- IMP
 
 **Purpose:**
 `useEffect` manages **side effects** like data fetching, subscriptions, timers, DOM mutations, or logging. Think of it as combining `componentDidMount`, `componentDidUpdate`, and `componentWillUnmount` in functional components.
@@ -3145,7 +3145,7 @@ const Timer = () => {
 
 ---
 
-# **3. useRef**
+# **3. useRef**  ---- IMP
 
 **Purpose:**
 `useRef` is a **mutable container** that persists across renders. Can store:
@@ -3196,7 +3196,7 @@ const PreviousValue = ({ value }) => {
 
 ---
 
-# **4. useMemo**
+# **4. useMemo**  ---- IMP
 
 **Purpose:**
 `useMemo` memoizes a **computed value** to avoid expensive recalculations on every render.
@@ -3230,7 +3230,7 @@ const Factorial = ({ number }) => {
 
 ---
 
-# **5. useCallback**
+# **5. useCallback**  ---- IMP
 
 **Purpose:**
 `useCallback` memoizes a **function reference**. Useful to prevent unnecessary re-renders of children when function props are passed.
@@ -3492,7 +3492,7 @@ const Input = () => {
 
 ---
 
-# **15. Custom Hooks**
+# **15. Custom Hooks**  ---- IMP
 
 **Example 1: useDebounce**
 
@@ -3639,7 +3639,7 @@ myPromiseAll([p1, p2, p3]).then(console.log); // [1,2,3]
 
 ---
 
-## **2. Debounce Function**
+## **2. Debounce Function**  ---- IMP
 
 **Goal:** Call a function **after delay**, reset timer if called again. Handles `this` context and optional leading/trailing calls.
 
@@ -3678,7 +3678,7 @@ log("Hello"); // logs after 500ms
 
 ---
 
-## **3. Throttle Function**
+## **3. Throttle Function**  ---- IMP
 
 **Goal:** Limit function execution to **once per interval**.
 
@@ -3749,7 +3749,7 @@ console.log(cloned);
 
 ---
 
-## **5. EventEmitter Class**
+## **5. EventEmitter Class**  ---- IMP
 
 ```javascript
 // **How it works:**
@@ -3887,7 +3887,7 @@ Let's dive in.
 
 ---
 
-## **I. Asynchronous & Promise-Based (1–10)**
+## **I. Asynchronous & Promise-Based (1–10)**  ---- IMP
 
 ---
 
@@ -4161,7 +4161,7 @@ async function fetchWithTimeout(url, options, timeout = 3000) {
 
 ---
 
-## 9. In-memory key-value cache with TTL
+## 9. In-memory key-value cache with TTL  ---- IMP
 
 ```javascript
 // **How it works:**
@@ -4245,7 +4245,7 @@ Perfect! Let's continue with the **next 10 Pure JavaScript Machine Coding proble
 
 ---
 
-# **II. Utility Functions & Closures (11–20)**
+# **II. Utility Functions & Closures (11–20)**  ---- IMP
 
 ---
 
@@ -4927,7 +4927,7 @@ console.log(lru.get("b")); // -1
 
 ---
 
-## 29. Generator for N-ary Tree Pre-order Traversal
+## 29. Generator for N-ary Tree Pre-order Traversal  ---- IMP
 
 ```javascript
 function* preOrder(node) {
@@ -4950,7 +4950,7 @@ for (let val of preOrder(tree)) console.log(val); // 1 2 3
 
 ---
 
-## 30. Simple Validation Engine
+## 30. Simple Validation Engine  ---- IMP
 
 ```javascript
 function validate(schema, obj) {
@@ -5261,7 +5261,7 @@ export default function Tooltip({ content, children }) {
 
 ---
 
-## 37. Dynamic Form Generator
+## 37. Dynamic Form Generator  ---- IMP
 
 ```jsx
 export default function DynamicForm({ schema, onSubmit }) {
@@ -5417,11 +5417,11 @@ Perfect! Let's continue with **Section II: Hooks, State & Performance (41–50)*
 
 ---
 
-# **II. Hooks, State & Performance (41–50)**
+# **II. Hooks, State & Performance (41–50)**  ---- IMP
 
 ---
 
-## 41. Custom `useFetch` Hook
+## 41. Custom `useFetch` Hook  ---- IMP
 
 ```jsx
 import { useState, useEffect } from "react";
@@ -5460,7 +5460,7 @@ const { data, loading, error } = useFetch("https://jsonplaceholder.typicode.com/
 
 ---
 
-## 42. `useLocalStorage` Hook
+## 42. `useLocalStorage` Hook  ---- IMP
 
 ```jsx
 import { useState, useEffect } from "react";
@@ -5496,7 +5496,7 @@ const [name, setName] = useLocalStorage("name", "");
 
 ---
 
-## 43. `useWhyDidYouUpdate` Hook
+## 43. `useWhyDidYouUpdate` Hook  ---- IMP
 
 ```jsx
 import { useEffect, useRef } from "react";
@@ -5527,7 +5527,7 @@ export function useWhyDidYouUpdate(name, props) {
 
 ---
 
-## 44. `useInterval` Hook
+## 44. `useInterval` Hook  ---- IMP
 
 ```jsx
 import { useRef, useEffect } from "react";
@@ -5559,7 +5559,7 @@ useInterval(() => console.log("tick"), 1000);
 
 ---
 
-## 45. Debounced Input with `useDebounce` Hook
+## 45. Debounced Input with `useDebounce` Hook  ---- IMP
 
 ```jsx
 import { useState, useEffect } from "react";
@@ -5633,7 +5633,7 @@ export default function VirtualizedList({ items, itemHeight = 30, height = 300 }
 
 ---
 
-## 47. `memo` + `useCallback` Example
+## 47. `memo` + `useCallback` Example  ---- IMP
 
 ```jsx
 import { useState, memo, useCallback } from "react";
@@ -5658,7 +5658,7 @@ export default function Parent() {
 
 ---
 
-## 48. `useUndoRedo` Hook
+## 48. `useUndoRedo` Hook  ---- IMP
 
 ```jsx
 import { useState } from "react";
@@ -5692,7 +5692,7 @@ const [val, setVal, {undo, redo}] = useUndoRedo(0);
 
 ---
 
-## 49. `useOnlineStatus` Hook
+## 49. `useOnlineStatus` Hook  ---- IMP
 
 ```jsx
 import { useState, useEffect } from "react";
@@ -6046,7 +6046,7 @@ export default function FileUpload() {
 
 ---
 
-## 58. Global State with Context API
+## 58. Global State with Context API  ---- IMP
 
 ```jsx
 import { createContext, useContext, useState } from "react";
@@ -6074,7 +6074,7 @@ const { theme, setTheme } = useTheme();
 
 ---
 
-## 59. Track Component Performance with Profiler Hook
+## 59. Track Component Performance with Profiler Hook  ---- IMP
 
 ```jsx
 import { Profiler } from "react";
@@ -7469,7 +7469,7 @@ Below, you'll get **properly structured solutions** — each with the **question
 
 ---
 
-## 🧠 1. Debounced Search / Autocomplete Component
+## 🧠 1. Debounced Search / Autocomplete Component  ---- IMP
 
 **Hooks:** `useState`, `useEffect`, `useRef` (inside custom `useDebounce` hook)
 
@@ -7549,7 +7549,7 @@ export default function DebouncedSearch() {
 
 ---
 
-## 🎨 2. Themed App / Global State Management
+## 🎨 2. Themed App / Global State Management  ---- IMP
 
 **Hooks:** `useContext`, `useReducer`
 
@@ -7773,7 +7773,7 @@ export default function ConcurrentSearch() {
 
 ---
 
-# 🧩 Summary of Hook Patterns
+# 🧩 Summary of Hook Patterns  ---- IMP
 
 | Question | Key Hooks                            | Focus Area               |
 | -------- | ------------------------------------ | ------------------------ |
@@ -8246,7 +8246,7 @@ function Pagination() {
 }
 ```
 
-### 17. Form Validation
+### 17. Form Validation  ---- IMP
 **Question:** Create a login form with email/password validation.
 
 **Solution:**
@@ -8587,7 +8587,7 @@ function InfiniteScroll() {
 }
 ```
 
-### 25. Debounced Search
+### 25. Debounced Search  ---- IMP
 **Question:** Create a search input with debouncing (waits 500ms after typing stops).
 
 **Solution:**
@@ -8859,7 +8859,7 @@ function SortableTable() {
 
 ## Advanced Level (31-50)
 
-### 31. Custom Hook - useDebounce
+### 31. Custom Hook - useDebounce  ---- IMP
 **Question:** Create a custom hook for debouncing values.
 
 **Solution:**
@@ -8953,7 +8953,7 @@ function VirtualScroll() {
 }
 ```
 
-### 33. Custom Hook - useLocalStorage
+### 33. Custom Hook - useLocalStorage  ---- IMP
 **Question:** Create a custom hook that syncs state with localStorage.
 
 **Solution:**
@@ -9069,7 +9069,7 @@ function Autocomplete() {
 }
 ```
 
-### 35. Context API - Theme Provider
+### 35. Context API - Theme Provider  ---- IMP
 **Question:** Create a theme provider using Context API.
 
 **Solution:**
@@ -9177,7 +9177,7 @@ function FileUpload() {
 }
 ```
 
-### 37. Memoization with useMemo
+### 37. Memoization with useMemo  ---- IMP
 **Question:** Create a component that demonstrates useMemo for expensive calculations.
 
 **Solution:**
@@ -9210,7 +9210,7 @@ function ExpensiveCalculation() {
 }
 ```
 
-### 38. useCallback Hook Example
+### 38. useCallback Hook Example  ---- IMP
 **Question:** Create a parent-child component demonstrating useCallback.
 
 **Solution:**
@@ -9245,7 +9245,7 @@ function ParentComponent() {
 }
 ```
 
-### 39. Lazy Loading with Suspense
+### 39. Lazy Loading with Suspense  ---- IMP
 **Question:** Implement code splitting and lazy loading.
 
 **Solution:**
@@ -9276,7 +9276,7 @@ export default function HeavyComponent() {
 }
 ```
 
-### 40. Custom Hook - useOnClickOutside
+### 40. Custom Hook - useOnClickOutside  ---- IMP
 **Question:** Create a hook that detects clicks outside an element.
 
 **Solution:**
@@ -9410,7 +9410,7 @@ function ShoppingCart() {
 }
 ```
 
-### 42. Custom Hook - useFetch
+### 42. Custom Hook - useFetch  ---- IMP
 **Question:** Create a reusable fetch hook with loading and error states.
 
 **Solution:**
@@ -9621,7 +9621,7 @@ function App() {
 }
 ```
 
-### 45. Custom Hook - useWindowSize
+### 45. Custom Hook - useWindowSize  ---- IMP
 **Question:** Create a hook that tracks window dimensions.
 
 **Solution:**
@@ -9716,7 +9716,7 @@ function TextEditorWithHistory() {
 }
 ```
 
-### 47. Portal for Modals
+### 47. Portal for Modals  ---- IMP
 **Question:** Use React Portal to render modal outside root DOM.
 
 **Solution:**
@@ -9773,7 +9773,7 @@ function App() {
 }
 ```
 
-### 48. Error Boundary
+### 48. Error Boundary  ---- IMP
 **Question:** Create an Error Boundary component to catch errors.
 
 **Solution:**
@@ -9834,7 +9834,7 @@ function App() {
 }
 ```
 
-### 49. Custom Hook - useAsync
+### 49. Custom Hook - useAsync  ---- IMP
 **Question:** Create a hook for handling async operations.
 
 **Solution:**
@@ -10041,7 +10041,7 @@ const original = {
 const cloned = deepClone(original);
 ```
 
-### Bonus 2: Debounce Function
+### Bonus 2: Debounce Function  ---- IMP
 **Question:** Implement a debounce function from scratch.
 
 **Solution:**
@@ -10069,7 +10069,7 @@ handleSearch('ab');
 handleSearch('abc'); // Only this executes after 500ms
 ```
 
-### Bonus 3: Throttle Function
+### Bonus 3: Throttle Function  ---- IMP
 **Question:** Implement a throttle function from scratch.
 
 **Solution:**
@@ -10166,7 +10166,7 @@ promiseAll([p1, p2, p3]).then(values => {
 });
 ```
 
-### Bonus 6: Currying Function
+### Bonus 6: Currying Function  ---- IMP
 **Question:** Implement a curry function that converts f(a, b, c) to f(a)(b)(c).
 
 **Solution:**
@@ -10194,7 +10194,7 @@ console.log(curriedAdd(1, 2)(3)); // 6
 console.log(curriedAdd(1)(2, 3)); // 6
 ```
 
-### Bonus 7: Event Emitter
+### Bonus 7: Event Emitter  ---- IMP
 **Question:** Create an Event Emitter class with on, off, and emit methods.
 
 **Solution:**
@@ -10251,7 +10251,7 @@ unsubscribe();
 emitter.emit('message', 'World!'); // Nothing happens
 ```
 
-### Bonus 8: Memoization Function
+### Bonus 8: Memoization Function  ---- IMP
 **Question:** Create a memoize function that caches function results.
 
 **Solution:**
@@ -10304,7 +10304,7 @@ const arr = [1, 2, 3, 4, 5, 6, 7, 8];
 console.log(chunk(arr, 3)); // [[1, 2, 3], [4, 5, 6], [7, 8]]
 ```
 
-### Bonus 10: Retry Promise
+### Bonus 10: Retry Promise  ---- IMP
 **Question:** Create a function that retries a promise a specified number of times.
 
 **Solution:**
@@ -10346,13 +10346,13 @@ retryPromise(unreliableFunction, 5, 1000)
 
 ## Summary by Concepts
 
-### State Management
+### State Management  ---- IMP
 - Questions: 1, 5, 11, 26, 41
 
 ### Event Handling
 - Questions: 2, 7, 10, 15, 23
 
-### Forms & Validation
+### Forms & Validation  ---- IMP
 - Questions: 3, 4, 17, 21, 29
 
 ### Lists & Filtering
@@ -10364,7 +10364,7 @@ retryPromise(unreliableFunction, 5, 1000)
 ### Performance Optimization
 - Questions: 32, 37, 38, 39
 
-### Custom Hooks
+### Custom Hooks  ---- IMP
 - Questions: 31, 33, 40, 42, 45, 49
 
 ### Advanced Patterns

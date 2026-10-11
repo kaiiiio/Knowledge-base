@@ -4042,7 +4042,7 @@ In this example, the`orbitalPeriod` function uses the `map` method to transform 
 #### **String Object Properties:**
 - **`.length`**: Returns the length of the string.
 
-#### **Properties of `String.prototype` (i.e., `__proto__`):**
+#### **Properties of `String.prototype` (i.e., `__proto__`):**  ---- IMP
 1. **`.constructor`**: Refers to the function that created the instance.
 2. **`.length`**: Returns the length of the string (number of characters).
 3. **`.anchor(name)`**: Creates an HTML anchor (` < a > `).
@@ -4423,11 +4423,11 @@ console.log(stringToObject("a.b.c", "Hello"));
 ////////////////////////////////////////////////
 To maintain different personas in a React.js application, you can structure your app to handle different user types (e.g., Admin, Guest, User) by controlling access and rendering different components based on user roles or personas. Here’s how you can manage it:
 
-### 1. **Context API / Global State Management (Redux)**:
+### 1. **Context API / Global State Management (Redux)**:  ---- IMP
    - Use the **Context API** or **Redux** to store the current user's role or persona (Admin, Guest, etc.).
    - Based on the role, render different components or views.
 
-### Example with Context API:
+### Example with Context API:  ---- IMP
 ```jsx
 Context.js
 import { createContext, useContext, useState } from 'react';

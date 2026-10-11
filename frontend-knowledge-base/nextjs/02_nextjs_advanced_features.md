@@ -2,7 +2,7 @@
 
 This guide covers advanced Next.js features including routing, layouts, API routes, middleware, optimization, caching, and deployment strategies.
 
-## File-System Based Routing
+## File-System Based Routing ⭐ IMP
 
 ### Pages Router (Legacy - Next.js 12 and below)
 
@@ -129,7 +129,7 @@ export default function DashboardLayout({ children, analytics, team }) {
 // app/@modal/(.)photos/[id]/page.js (Modal overlay)
 ```
 
-## Layouts and Templates
+## Layouts and Templates ⭐ IMP
 
 ### Layouts
 
@@ -178,7 +178,7 @@ export default function DashboardTemplate({ children }) {
 }
 ```
 
-## Server and Client Components
+## Server and Client Components ⭐ IMP
 
 ### Server Components (Default in App Router)
 
@@ -262,7 +262,7 @@ export default async function HomePage() {
 }
 ```
 
-## API Routes
+## API Routes ⭐ IMP
 
 ### Pages Router API Routes
 
@@ -390,7 +390,7 @@ export async function GET() {
 }
 ```
 
-## Middleware
+## Middleware ⭐ IMP
 
 **Definition**: Middleware runs before a request is completed, allowing you to modify the response.
 
@@ -478,7 +478,7 @@ export function middleware(request) {
 }
 ```
 
-## Image Optimization
+## Image Optimization ⭐ IMP
 
 **Definition**: Next.js Image component automatically optimizes images for performance.
 
@@ -725,7 +725,7 @@ export async function GET(request) {
 }
 ```
 
-## Caching and Revalidation
+## Caching and Revalidation ⭐ IMP
 
 ### Fetch Caching
 
@@ -771,7 +771,7 @@ export default async function Page() {
 }
 ```
 
-## Error Handling
+## Error Handling ⭐ IMP
 
 ```javascript
 // app/error.js (Error boundary)

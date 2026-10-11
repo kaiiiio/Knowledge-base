@@ -165,7 +165,7 @@ blockquote::after {
 }
 ```
 
-### Pseudo-class vs Pseudo-element:
+### Pseudo-class vs Pseudo-element:   -- IMP
 
 | Feature | Pseudo-class | Pseudo-element |
 |---------|--------------|----------------|

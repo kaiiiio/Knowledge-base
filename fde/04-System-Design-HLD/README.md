@@ -18,6 +18,7 @@ High-level design for senior/staff and Forward Deployed Engineer interviews. FDE
 | 08 | [08_design_google_drive.md](08_design_google_drive.md) | File sync: fixed vs content-defined chunking, cross-user dedup risks, metadata/blob split, cursor-based sync protocol, conflicted copies vs merging, chunk garbage collection. |
 | 09 | [09_design_payment_system.md](09_design_payment_system.md) | Payments: idempotency keys done right (the #1 topic), immutable double-entry ledger, saga vs 2PC, reconciliation as the safety net, webhooks in and out, PCI scope minimization via tokenization. |
 | 10 | [10_design_notification_platform_and_feed.md](10_design_notification_platform_and_feed.md) | Two designs: multi-channel notification platform (priority queues, per-user rate limits, provider failover) and news feed (push/pull/hybrid fan-out, the celebrity problem, ranking pipeline). |
+| 11 | [11_graphql_grpc_and_pagination.md](11_graphql_grpc_and_pagination.md) | REST vs GraphQL vs gRPC decision table, GraphQL N+1 and DataLoader batching, schema DoS traps (query depth/cost, persisted queries), cursor vs offset pagination (and why cursor pagination is a general pattern, not GraphQL-only), gRPC's four call types, deadline propagation. |
 
 ## Study order
 
@@ -33,3 +34,24 @@ High-level design for senior/staff and Forward Deployed Engineer interviews. FDE
 - For each design file: read Step 1 only, close the file, and run Steps 2–6 yourself on paper with a 45-minute timer. Then compare against the file — especially the **Deep dives** and **What gets you rejected** sections.
 - Every `**Interview trap:**` callout is a question an interviewer has actually used to separate mid-level from senior. Collect them into flashcards.
 - In FDE rounds, expect the interviewer to grab ONE deep-dive section and push past the file's content. The file gets you to the door; the mechanism-level understanding gets you through it.
+
+## Curated external resource: TechByAni HLD Notes
+
+[github.com/techbyaniofficial/HLD-Notes](https://github.com/techbyaniofficial/HLD-Notes) — Aniket Bhatnagar's ([@TechByAniOfficial](https://www.youtube.com/@TechByAniOfficial)) free slide-deck notes on backend engineering and system design. Good for a different-format second pass once a topic here feels shaky — slides force the same idea into fewer words, which is a useful test of whether you actually understand it or just recognize the prose. **Local offline copy of all 31 PDFs**: [../00-External-Resources/HLD-Notes-TechByAni/](../00-External-Resources/HLD-Notes-TechByAni/).
+
+Cross-reference (their PDF → the file here that covers it in more depth):
+
+| TechByAni PDF | Covered here |
+|---|---|
+| L24_CAP_Theorem, L21_Sharding, L22_Consistent_Hashing | [../05-Distributed-Systems/01_cap_consistency_models.md](../05-Distributed-Systems/01_cap_consistency_models.md), [02_replication_and_partitioning.md](../05-Distributed-Systems/02_replication_and_partitioning.md) |
+| L18_RabbitMQ, L19_Kafka, L15_message_queue, L17_EDA, L16_Webhooks | [../05-Distributed-Systems/05_messaging_kafka_rabbitmq_sqs.md](../05-Distributed-Systems/05_messaging_kafka_rabbitmq_sqs.md), [09_design_payment_system.md](09_design_payment_system.md) (webhooks in/out) |
+| L33_JWT, L31_Sessions_Auth, Oauth, PKCE, L7_Auth | [../07-Security/01_authentication_deep_dive.md](../07-Security/01_authentication_deep_dive.md), [02_oauth2_oidc.md](../07-Security/02_oauth2_oidc.md) |
+| L23_Redis, L4_Caching | [01_hld_building_blocks.md](01_hld_building_blocks.md) (caching patterns + stampede protection) |
+| L20_SQL_NOSQL | [../06-Databases-Deep-Dive/06_choosing_databases.md](../06-Databases-Deep-Dive/06_choosing_databases.md) |
+| L5_Monolithic_vs_Microservices, API_Gateway, L6_API, L9_HTTP, L11_REST_Paging, http_query | [01_hld_building_blocks.md](01_hld_building_blocks.md) |
+| L8_GraphQL, graphql_pagination, grpc_notes | not yet a dedicated file here — see [../../express-backend-knowledge-base/16_system_design_patterns/](../../express-backend-knowledge-base/16_system_design_patterns/) or treat this as a gap to fill |
+| WebSockets, L30_Whatsapp | [04_design_whatsapp_chat.md](04_design_whatsapp_chat.md) |
+| URL_Shortener_Design | [03_design_url_shortener.md](03_design_url_shortener.md) |
+| Object_Storage, L2_Client_Server, L14_Sync_Async | [01_hld_building_blocks.md](01_hld_building_blocks.md) |
+
+Net finding from the audit: this knowledge base already matches or exceeds every topic in that repo in depth (worked examples, TypeScript, HTTP-level flows vs. slide bullets) — the one real gap is a dedicated GraphQL/gRPC file, which is worth adding.

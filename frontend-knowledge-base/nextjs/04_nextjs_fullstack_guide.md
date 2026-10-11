@@ -941,7 +941,7 @@ export async function DELETE(request: NextRequest) {
 **File:** `app/api/products/route.ts`
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'; // IMP
 // compose - Combines multiple middleware functions
 // withAuth - Ensures user is authenticated before accessing the route
 // withRateLimit - Prevents abuse by limiting requests per time window
@@ -987,7 +987,7 @@ export const POST = compose(
 
 ---
 
-## Summary: Where Middleware Exists
+## Summary: Where Middleware Exists   - IMP
 
 | File Location | Scope | Use Case |
 |---------------|-------|----------|
@@ -1211,7 +1211,7 @@ npm install -D @types/bcryptjs
 
 ```typescript
 import { NextAuthOptions } from 'next-auth';
-// CredentialsProvider - Allows email/password authentication
+// CredentialsProvider - Allows email/password authentication   - IMP
 import CredentialsProvider from 'next-auth/providers/credentials';
 // GoogleProvider - Enables "Sign in with Google" OAuth authentication
 import GoogleProvider from 'next-auth/providers/google';

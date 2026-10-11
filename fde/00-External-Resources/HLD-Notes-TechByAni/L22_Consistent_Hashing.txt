@@ -1,0 +1,80 @@
+CONSISTENT HASHING - Notes (from L22_Consistent_Hashing.pdf, TechByAni HLD-Notes)
+
+EXAMPLE SETUP: ORDERS SYSTEM WITH GROWING TRAFFIC
+How do you decide which order goes to which server? You need routing logic - that's where hashing comes in.
+server_index = hash(order_id) % number_of_servers
+hash(101) = 287 -> 287 % 3 = 2 -> Server C (287/3 = 95 remainder 2)
+hash(205) = 193 -> 193 % 3 = 1 -> Server B (193/3 = 64 remainder 1)
+hash(309) = 300 -> 300 % 3 = 0 -> Server A (300/3 = 100 remainder 0)
+
+PROBLEM: REHASHING WHEN SERVERS CHANGE
+Traffic increases, you add a new server D. Number of servers changes 3 -> 4. Formula changes: server_index = hash(order_id) % 4.
+Before (3 servers): 5 % 3 = 2 -> Server C. After (4 servers): 5 % 4 = 1 -> Server B (moved!)
+Almost every order will move to a different server, causing: huge data migration, cache miss storm, downtime, network overload, operational headaches. Even removing one server breaks everything again. This is the fundamental problem of normal hashing.
+
+CONSISTENT HASHING
+Invented to solve this exact problem. Main idea: when servers are added or removed, only a very small portion of keys should move instead of remapping everything.
+Consistent hashing is a hashing strategy designed so minimum data moves when nodes/servers are added or removed. Classic hashing scatters keys evenly but reshuffles EVERYTHING when cluster size changes. Consistent hashing fixes that headache.
+
+Why we even need it: normal hashing (server = hash(key) % N) works fine until N changes. If you add a node -> almost all keys remap. If you remove a node -> almost all keys remap.
+Consistent hashing ensures only approximately (1/n) of the total keys move.
+
+CORE IDEA (the ring)
+Imagine: you hash keys, you hash servers, place both on a circular ring (0 to 2^32 - 1). Each key goes to the next server clockwise. If the hash goes beyond max, wrap to 0. So the ring solves mapping without depending on N.
+Example: hash(101) -> 12 -> walk clockwise to find next server node (e.g. lands on server B at position 25).
+
+WHAT HAPPENS WHEN NODES CHANGE?
+Add a node: only keys that would now map to this new node (i.e., keys between the previous server and the new node on the ring) move. Everyone else stays put.
+Remove a node: only keys assigned to that removed node move - they go to the next clockwise node. All other keys are unaffected.
+This is the entire point: adding/removing ONE node only disturbs the keys in its immediate ring neighborhood, not the whole cluster.
+
+THE PROBLEM: UNEVEN DISTRIBUTION
+Hashing nodes directly onto the ring can lead to imbalance - some servers end up with too many keys, others get too few (depends on where their hash happens to land on the ring).
+Solution: Virtual Nodes (VNodes).
+
+VIRTUAL NODES
+Instead of adding a server once on the ring, add it multiple times (at multiple points). Each server handles many small segments instead of one big chunk.
+Typical vnode count: 100-200 per server. Cloudflare uses 256 or 512. DynamoDB-style systems use thousands sometimes.
+Data movement math: without vnodes ~1/N of keys move on a change; with vnodes, even smoother/more even distribution.
+
+HOW ARE VIRTUAL NODE POSITIONS CHOSEN? (deterministic, not random)
+NOT random. If it were random, every machine would have inconsistent mappings -> disaster.
+Virtual Nodes are generated in a deterministic, repeatable way: server name + index -> hash. Example for server A: Hash("A#1"), Hash("A#2"), Hash("A#3")... Each hash produces a position on the ring.
+This ensures:
+- Deterministic: every client will place A's virtual nodes at the EXACT same points.
+- Good distribution: because each hash is different, the hash values spread across ring positions.
+
+WHY NOT RANDOM?
+If two API servers (or two microservices) both generate the ring, both must land on the same node placements. If they used random positions, rings would differ -> inconsistent mapping -> data loss. So virtual nodes must be deterministic.
+
+WHAT IF A SERVER IS MORE POWERFUL?
+Just give it more virtual nodes. Example: Server A (small machine) -> 100 vnodes, Server B (big machine) -> 300 vnodes. So Server B handles ~3x traffic. This is how Cassandra, DynamoDB, Redis Cluster scale heterogeneous hardware.
+
+CONSISTENT HASHING WITH REPLICATION (also called "consistent hashing with R replicas")
+Goal: if a server fails, data should not be lost. So each key is stored on the next R servers clockwise.
+Let R = 3 replicas. Replica 1 (primary): A. Replica 2: B. Replica 3: C.
+What happens if A fails? The next available replica is B -> B becomes primary automatically.
+
+REPLICATION WITH VIRTUAL NODES
+With virtual nodes + replication, failover does NOT follow the ring to the next vnode - it follows the REPLICA CHAIN. So if B and C are replicas and A fails, the key at position (whatever A owned) goes to the first vnode of B - not to C3 and not to D2 (i.e., not just "next node on the ring" blindly - it respects the pre-established replica assignment).
+
+POPULAR IMPLEMENTATIONS OF CONSISTENT HASHING
+Not limited to databases alone. Any system that needs to spread data or workload across multiple machines can benefit - whether the cluster consists of caches, message brokers, storage nodes, or application servers.
+- Apache Cassandra - distributes partitions across nodes using a hashing ring.
+- Amazon DynamoDB - relies on consistent hashing internally.
+- CDNs - use hashing to map users to edge servers.
+It's a foundational concept behind many large-scale production systems.
+
+WHEN SHOULD YOU MENTION CONSISTENT HASHING IN AN INTERVIEW?
+Honestly, not as often as people think. Most modern distributed systems already handle data distribution for you. If you're using tools like DynamoDB, Cassandra, Redis Cluster, or even sharded databases, you can simply mention that these systems rely on consistent hashing (or a variation of it) internally to manage scaling and sharding.
+
+Where it DOES matter: interviews that dive deep into system internals. If the interviewer asks you to build a distributed datastore, cache, or message queue FROM SCRATCH, that's when consistent hashing becomes essential. You'll want to walk through:
+- Why simple % N sharding breaks as servers change
+- How consistent hashing fixes this
+- How virtual nodes smooth traffic across the cluster
+- How to handle node additions/failures
+- How to deal with hot keys and rebalance gracefully
+
+Most system design rounds won't require all of this detail - but infrastructure interviews absolutely will.
+
+CROSS-REFERENCE: see ../../05-Distributed-Systems/02_replication_and_partitioning.md for the JavaScript implementation of consistent hashing with virtual nodes, and L21_Sharding_Notes.txt (this folder) for how consistent hashing fits into the broader sharding strategy decision.

@@ -219,10 +219,15 @@ Build a file explorer component to navigate files and directories in a tree-like
 import React, { useState } from 'react';
 
 function FileExplorer({ data }) {
+    // Set kyun, array kyun nahi? -> has/add/delete sab O(1) hain (array me includes/indexOf O(n) hota).
+    // Yahan expanded folder-paths ka collection hai jisme "kya ye path open hai?" bar-bar check hota hai — Set perfect.
     const [expandedNodes, setExpandedNodes] = useState(new Set());
 
     const toggleNode = (path) => {
         setExpandedNodes(prev => {
+            // new Set(prev) = COPY banayi. Direct prev.add() karte to reference same rehta
+            // aur React re-render hi nahi karta (state change detection Object.is se hota hai).
+            // Rule: state ko kabhi mutate nahi karte — naya object/Set/array banao.
             const newSet = new Set(prev);
             if (newSet.has(path)) {
                 newSet.delete(path);
@@ -415,6 +420,9 @@ function DataTable({ data, itemsPerPage = 10 }) {
     const sortedData = useMemo(() => {
         if (!sortConfig.key) return data;
 
+        // [...data] = spread se SHALLOW COPY. Zaroori kyunki .sort() array ko IN-PLACE mutate karta hai —
+        // bina copy ke hum props/state ko mutate kar dete (React me kabhi nahi karna).
+        // Interview line: "sort mutates, isliye pehle copy — spread ya .toSorted() (ES2023)."
         return [...data].sort((a, b) => {
             const aValue = a[sortConfig.key];
             const bValue = b[sortConfig.key];
@@ -430,6 +438,9 @@ function DataTable({ data, itemsPerPage = 10 }) {
     }, [data, sortConfig]);
 
     // Get paginated data
+    // .slice(start, end) = start se end-1 tak ka NAYA array (end exclusive), original untouched.
+    // slice vs splice yaad rakho: slice = non-mutating copy, splice = original ko kaat-ta hai (mutates).
+    // Page 2, pageSize 10 => slice(10, 20) => items 11-20.
     const paginatedData = sortedData.slice(startIndex, endIndex);
 
     const handleSort = (key) => {
@@ -452,6 +463,9 @@ function DataTable({ data, itemsPerPage = 10 }) {
         return <div className="empty-state">No data available</div>;
     }
 
+    // Object.keys(obj) = us object ki saari keys ka array.
+    // Pehli row se column names DERIVE kar rahe hain — table generic ban gaya, hardcoded columns nahi.
+    // {id:1, name:'A', age:25} => ['id','name','age']. (Family: Object.values => values, Object.entries => [key,value] pairs)
     const columns = Object.keys(data[0]);
 
     return (
@@ -466,6 +480,8 @@ function DataTable({ data, itemsPerPage = 10 }) {
                                     onClick={() => handleSort(column)}
                                     className="sortable"
                                 >
+                                    {/* Capitalize trick: pehla letter upper + baaki string jaisi hai.
+                                        'name' => 'N' + 'ame' => 'Name'. String.slice(1) = index 1 se end tak. */}
                                     {column.charAt(0).toUpperCase() + column.slice(1)}
                                     <span className="sort-icon">{getSortIcon(column)}</span>
                                 </th>
@@ -493,6 +509,10 @@ function DataTable({ data, itemsPerPage = 10 }) {
                 </button>
                 
                 <div className="page-numbers">
+                    {/* Array.from({length: N}, mapFn) = 1 se N tak numbers ka array banane ka standard trick.
+                        {length: 5} ek "array-like" object hai; dusra arg map function hai: (element, index) => value.
+                        Element undefined hota hai isliye `_` likha (convention: "not used"), i = 0,1,2,3,4 => i+1 = [1,2,3,4,5].
+                        Ye page-number buttons [1..totalPages] generate karta hai. Alternative: [...Array(N).keys()].map(i => i+1) */}
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                         <button
                             key={page}

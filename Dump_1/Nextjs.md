@@ -25,7 +25,7 @@
 
 ## 1. Introduction & Core Concepts { #introduction }
 
-### What is Next.js ?
+### What is Next.js ?  ---- IMP
   Next.js is a React framework that provides:
 - ** Server - Side Rendering(SSR) ** - Pages rendered on server
   - ** Static Site Generation(SSG) ** - Pre - built HTML at build time
@@ -34,7 +34,7 @@
         - ** Automatic Code Splitting ** - Only load what's needed
           - ** Image & Font Optimization ** - Built -in optimizations
 
-### App Router vs Pages Router
+### App Router vs Pages Router  ---- IMP
   - ** App Router ** (app directory) - New, recommended since Next.js 13 +
 - ** Pages Router ** (pages directory) - Legacy, still supported
 
@@ -401,7 +401,7 @@ export default function Nav() {
 }
 ```
 
-### useRouter Hook
+### useRouter Hook  ---- IMP
 Programmatic navigation:
 
 ```tsx
@@ -428,7 +428,7 @@ export default function LoginButton() {
 }
 ```
 
-### usePathname Hook
+### usePathname Hook  ---- IMP
 The `usePathname` hook is a Client Component hook that lets you read the current URL's **pathname**.
 
   ** Example: Highlighting Active Links **
@@ -486,7 +486,7 @@ export default function Navigation() {
 }
 ```
 
-### useSearchParams Hook
+### useSearchParams Hook  ---- IMP
 A Client Component hook that lets you read the current URL's **query parameters**. It returns a read-only version of the `URLSearchParams` interface.
 
   ** Example: Reading and Updating Search Params **
@@ -571,9 +571,9 @@ Next.js automatically prefetches visible links:
 
 ---
 
-## 5. Server vs Client Components { #components }
+## 5. Server vs Client Components { #components }  ---- IMP
 
-### Server Components(Default)
+### Server Components(Default)  ---- IMP
 All components in `app/` are Server Components by default:
 
 ```tsx
@@ -740,7 +740,7 @@ export default function Page() {
 
 ## 6. Data Fetching { #data - fetching }
 
-### Server Components(Recommended)
+### Server Components(Recommended)  ---- IMP
 Fetch data directly in Server Components:
 
 ```tsx
@@ -777,7 +777,7 @@ const res = await fetch('https://api.example.com/posts', {
 });
 ```
 
-#### 2. Dynamic Data(SSR)
+#### 2. Dynamic Data(SSR)  ---- IMP
   ```tsx
 // Fetched on every request
 const res = await fetch('https://api.example.com/posts', {
@@ -785,7 +785,7 @@ const res = await fetch('https://api.example.com/posts', {
 });
 ```
 
-#### 3. Revalidated Data(ISR)
+#### 3. Revalidated Data(ISR)  ---- IMP
   ```tsx
 // Cached, revalidated every 60 seconds
 const res = await fetch('https://api.example.com/posts', {
@@ -990,7 +990,7 @@ export default function Posts() {
 
 ## 7. Data Mutation & Actions { #data - mutation }
 
-### Server Actions
+### Server Actions  ---- IMP
 Server - side mutations without API routes:
 
 ```tsx
@@ -1028,7 +1028,7 @@ export default function CreatePostPage() {
 }
 ```
 
-### Server Actions with useFormState
+### Server Actions with useFormState  ---- IMP
 Handle form state:
 
 ```tsx
@@ -1095,7 +1095,7 @@ export async function createPost(prevState: any, formData: FormData) {
 }
 ```
 
-### Server Actions with useFormStatus
+### Server Actions with useFormStatus  ---- IMP
 Show pending state:
 
 ```tsx
@@ -1170,7 +1170,7 @@ export default function TodoList({ todos }) {
 }
 ```
 
-### Route Handlers(API Routes)
+### Route Handlers(API Routes)  ---- IMP
 Alternative to Server Actions:
 
 ```tsx
@@ -1195,11 +1195,11 @@ export async function POST(request: Request) {
 
 ---
 
-## 8. Caching & Revalidation { #caching }
+## 8. Caching & Revalidation { #caching }  ---- IMP
 
 Next.js has multiple caching layers:
 
-### 1. Request Memoization
+### 1. Request Memoization  ---- IMP
 Automatic deduplication of identical requests:
 
 ```tsx
@@ -1261,9 +1261,9 @@ Client - side cache of visited routes(30 seconds default ):
 <Link href="/about">About</Link>
 ```
 
-### Revalidation Strategies
+### Revalidation Strategies  ---- IMP
 
-#### 1. Time - based Revalidation
+#### 1. Time - based Revalidation  ---- IMP
   ```tsx
 // Revalidate every 60 seconds
 const res = await fetch('https://api.example.com/posts', {
@@ -1271,7 +1271,7 @@ const res = await fetch('https://api.example.com/posts', {
 });
 ```
 
-#### 2. On - Demand Revalidation
+#### 2. On - Demand Revalidation  ---- IMP
 On - demand revalidation basically means "bhai, jab data change ho, tabhi cache update karo." Instead of waiting for a timer(ISR), you manually tell Next.js to dump the old cache.
 
 - ** revalidatePath **: Yeh poore route ka cache clear kar deta hai.Agar tumne `/blog` pe kuch naya post dala, toh`revalidatePath('/blog')` karne se Next.js blog page ko piche(background) mein rebuild kar lega.
@@ -1295,7 +1295,7 @@ export async function createPost() {
 }
 ```
 
-#### 3. Tag - based Revalidation
+#### 3. Tag - based Revalidation  ---- IMP
   ```tsx
 // Fetch with tags
 const res = await fetch('https://api.example.com/posts', {
@@ -1409,7 +1409,7 @@ export default function Error({
       - Catches errors in Server Components, Client Components, and data fetching
         - `reset()` function re-renders the segment
 
-### Error Boundary Hierarchy
+### Error Boundary Hierarchy  ---- IMP
   ```
 app/
 ├── error.tsx              → Catches errors in root layout
@@ -1522,7 +1522,7 @@ app/
         └── page.tsx
 ```
 
-### Error Handling in Server Actions
+### Error Handling in Server Actions  ---- IMP
   ```tsx
 'use server';
 
@@ -1546,7 +1546,7 @@ export async function createPost(formData: FormData) {
 }
 ```
 
-### Error Handling in Route Handlers
+### Error Handling in Route Handlers  ---- IMP
   ```tsx
 // app/api/posts/route.ts
 import { NextResponse } from 'next/server';
@@ -1564,7 +1564,7 @@ export async function GET() {
 }
 ```
 
-### Loading States with Suspense
+### Loading States with Suspense  ---- IMP
   ```tsx
 // app/blog/page.tsx
 import { Suspense } from 'react';
@@ -1614,7 +1614,7 @@ export default function Loading() {
 </Suspense>
 ```
 
-### Streaming with Suspense
+### Streaming with Suspense  ---- IMP
 Stream different parts independently:
 
 ```tsx
@@ -1654,7 +1654,7 @@ export default function Dashboard() {
 
 ## 10. Styling(CSS) { #styling }
 
-### 1. CSS Modules
+### 1. CSS Modules  ---- IMP
 Scoped CSS files:
 
 ```tsx
@@ -1921,7 +1921,7 @@ export default function ProfilePage() {
 }
 ```
 
-### Image Props
+### Image Props  ---- IMP
 
   ```tsx
 <Image
@@ -1955,7 +1955,7 @@ export default function ProfilePage() {
 />
 ```
 
-### Fill Container Pattern
+### Fill Container Pattern  ---- IMP
   ```tsx
 <div style={{ position: 'relative', width: '100%', height: '400px' }}>
   <Image
@@ -2210,9 +2210,9 @@ export default function Article() {
 
 ---
 
-## 13. Route Handlers (API Routes) {#route-handlers}
+## 13. Route Handlers (API Routes) {#route-handlers}  ---- IMP
 
-### Basic Route Handler
+### Basic Route Handler  ---- IMP
 ```tsx
 // app/api/hello/route.ts
 import { NextResponse } from 'next/server';
@@ -2222,7 +2222,7 @@ export async function GET() {
 }
 ```
 
-### All HTTP Methods
+### All HTTP Methods  ---- IMP
 ```tsx
 // app/api/posts/route.ts
 import { NextResponse } from 'next/server';
@@ -2265,7 +2265,7 @@ export async function PATCH(request: Request) {
 }
 ```
 
-### Dynamic Route Handlers
+### Dynamic Route Handlers  ---- IMP
 ```tsx
 // app/api/posts/[id]/route.ts
 export async function GET(
@@ -2383,7 +2383,7 @@ return new Response(stream, {
 });
 ```
 
-### CORS
+### CORS  ---- IMP
 ```tsx
 export async function GET(request: Request) {
   const response = NextResponse.json({ data: 'value' });
@@ -2407,7 +2407,7 @@ export async function OPTIONS(request: Request) {
 }
 ```
 
-### Middleware in Route Handlers
+### Middleware in Route Handlers  ---- IMP
 ```tsx
 // lib/auth.ts
 export function withAuth(handler: Function) {
@@ -2566,7 +2566,7 @@ module.exports = {
 };
 ```
 
-### Middleware for Advanced Proxying
+### Middleware for Advanced Proxying  ---- IMP
 ```tsx
 // middleware.ts
 import { NextResponse } from 'next/server';
@@ -2623,9 +2623,9 @@ vercel--prod
 }
 ```
 
-### Docker
+### Docker  ---- IMP
 ```dockerfile
-# Dockerfile
+# Dockerfile  ---- IMP
 FROM node: 18 - alpine AS base
 
 # Dependencies
@@ -2769,10 +2769,10 @@ npm install next @14.0.0
 
 ### Codemods (Automated Migration)
 ```bash
-# Upgrade from Pages to App Router
+# Upgrade from Pages to App Router  ---- IMP
 npx @next/codemod@latest app-router-recipe
 
-# Upgrade from Pages Router API routes
+# Upgrade from Pages Router API routes  ---- IMP
 npx @next/codemod@latest app-dir-api-routes
 
 # New Link component
@@ -2789,14 +2789,14 @@ npx @next/codemod@latest next-image-to-legacy-image
 - `ImageResponse` moved from `next / server` to `next / og`
 - Turbopack improvements
 
-#### Next.js 12 → 13 (App Router)
+#### Next.js 12 → 13 (App Router)  ---- IMP
 - New `app / ` directory
 - Server Components by default
 - New routing system
 - `next / link` no longer needs ` < a > ` tag
 - `next / image` uses native lazy loading
 
-### Migration Example: Pages → App Router
+### Migration Example: Pages → App Router  ---- IMP
 
 **Before (Pages Router):**
 ```tsx
@@ -3131,7 +3131,7 @@ export default function ContactForm() {
 
 ## 18. Fast Refresh {#fast-refresh}
 
-### What is Fast Refresh?
+### What is Fast Refresh?  ---- IMP
 Fast Refresh preserves component state while editing:
 
 ```tsx
@@ -3239,7 +3239,7 @@ export default function Component() {
 
 ---
 
-## 19. Next.js vs React {#comparison}
+## 19. Next.js vs React {#comparison}  ---- IMP
 
 ### Next.js Advantages Over React
 
@@ -3270,7 +3270,7 @@ function App() {
   // app/blog/[slug]/page.tsx → /blog/:slug
   ```
 
-#### 2. **Server-Side Rendering (SSR)**
+#### 2. **Server-Side Rendering (SSR)**  ---- IMP
 **React:**
 ```tsx
 // Complex SSR setup with Express
@@ -3453,7 +3453,7 @@ npx create - react - app my - app
 # Then manually add:
 # - Routing(react - router - dom)
 # - API layer
-# - SSR setup
+# - SSR setup  ---- IMP
 # - Image optimization
 # - SEO tools
   ```
@@ -3532,7 +3532,7 @@ If you need **only** client-side rendering:
 
 ## 20. Additional Advanced Topics
 
-### Middleware
+### Middleware  ---- IMP
 ```tsx
 // middleware.ts
 import { NextResponse } from 'next/server';
@@ -3696,7 +3696,7 @@ app.prepare().then(() => {
 
 **Note:** Custom servers disable many Next.js optimizations. Use sparingly.
 
-## 10. SWR (Stale-While-Revalidate)
+## 10. SWR (Stale-While-Revalidate)  ---- IMP
 
 SWR is a React Hooks library for data fetching. The name "SWR" is derived from `stale -while-revalidate`, a HTTP cache invalidation strategy.
 

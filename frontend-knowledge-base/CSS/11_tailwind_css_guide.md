@@ -22,6 +22,22 @@
 
 Tailwind is a **utility-first CSS framework** that provides low-level utility classes to build custom designs without writing CSS.
 
+**What does "utility-first" mean?**
+
+A **utility class** is a tiny, single-purpose class that does **one job** — e.g. `p-4` sets padding, `text-center` centers text, `bg-blue-500` sets a background color. "Utility-**first**" means you build your UI by **composing many of these small classes directly in your HTML**, instead of first writing custom CSS rules with semantic names like `.button` or `.card`.
+
+- **Traditional (semantic) approach:** you invent a class name (`.button`), then go to a separate CSS file and write all the styling rules for it.
+- **Utility-first approach:** you skip the naming step and apply pre-made utilities right on the element (`class="bg-blue-500 text-white px-6 py-3 rounded-lg"`). Each class maps to one property.
+
+**Why it's called "first":** you *first* reach for existing utility classes to build almost everything; you only drop down to writing custom CSS in the rare cases utilities can't cover.
+
+**Benefits:**
+- No context-switching between HTML and CSS files, and no time wasted inventing class names.
+- No unused/dead CSS piling up — you only ever use classes that exist.
+- Consistent design because spacing, colors, and sizes come from a fixed scale (`p-1`, `p-2`, `p-4`...).
+
+**Trade-off:** the HTML can look "cluttered" with long class lists — which is why Tailwind is often paired with components (React/Vue) to reuse those class combinations.
+
 **CSS (Traditional):**
 ```css
 .button {
@@ -562,6 +578,18 @@ module.exports = {
 
 ### Skew
 
+**What is skew?**
+
+`skew` is a CSS transform that **tilts (slants) an element** by an angle, turning its rectangle into a parallelogram — like pushing the top and bottom (or left and right) sides in opposite directions. Nothing is added or removed; the element is just visually "leaned".
+
+- **`skewX(12deg)`** — slants along the **horizontal** axis. The top edge shifts right while the bottom shifts left, so vertical lines lean like *italic* text.
+- **`skewY(6deg)`** — slants along the **vertical** axis. The left edge shifts up/down relative to the right, tilting horizontal lines.
+- **`skew(12deg, 6deg)`** — shorthand applying **both X and Y** at once.
+- **Positive vs negative angle** — the sign controls the tilt **direction**. `skew-x-12` leans one way; `-skew-x-12` leans the opposite way.
+- Being a `transform`, it's **GPU-accelerated and doesn't affect layout** (surrounding elements don't move), making it cheap to animate — hence the common `hover:skew-*` effect.
+
+Typical uses: slanted section dividers/banners, angled buttons or badges, and italic-style decorative headings.
+
 **CSS:**
 ```css
 .element {
@@ -603,6 +631,20 @@ module.exports = {
 <div class="origin-top-left">transform-origin: top left</div>
 <div class="origin-bottom-right">transform-origin: bottom right</div>
 ```
+
+**What is `transform-origin`?**
+
+`transform-origin` sets the **pivot point** — the fixed anchor that a transform (rotate, scale, skew) happens **around**. Think of it as the pin you stick into the element; when you rotate or scale, everything moves *relative to that pin*.
+
+- **Default is `center`** (the middle of the element), so `rotate-45` spins an element around its center.
+- Change the origin and the **same transform looks completely different**:
+  - `origin-top-left` + `rotate-45` → the element swings around its **top-left corner** (like a hinged door), not its middle.
+  - `origin-bottom-right` + `scale-120` → the element **grows outward from its bottom-right corner** instead of expanding evenly in all directions.
+- **Only matters when a transform is applied** — on its own it does nothing visible; it just decides *where* the transform's pivot sits.
+
+**Tailwind origin classes:** `origin-center`, `origin-top`, `origin-top-right`, `origin-right`, `origin-bottom-right`, `origin-bottom`, `origin-bottom-left`, `origin-left`, `origin-top-left`.
+
+**Analogy:** rotating a photo pinned at its **center** vs pinned at a **corner** — same rotation angle, very different motion. `transform-origin` chooses where that pin goes.
 
 ---
 

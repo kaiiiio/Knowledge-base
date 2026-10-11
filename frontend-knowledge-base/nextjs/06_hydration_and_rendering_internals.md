@@ -15,7 +15,7 @@ What actually happens between "HTML arrives" and "page is interactive" — hydra
 ---
 
 <a name="pipeline"></a>
-## 1. The Full Rendering Pipeline
+## 1. The Full Rendering Pipeline ⭐ IMP
 
 For one document request to an App Router page:
 
@@ -47,7 +47,7 @@ On **client-side navigation** (`<Link>`): no HTML at all — the router fetches 
 ---
 
 <a name="what-is-hydration"></a>
-## 2. What Hydration Actually Is
+## 2. What Hydration Actually Is ⭐ IMP
 
 **Definition to give in an interview:** Hydration is the process where React, on the client, renders the component tree in memory and *attaches* to the server-rendered DOM instead of replacing it — wiring up event handlers, refs, and internal fiber state so the static HTML becomes an interactive React app.
 
@@ -63,7 +63,7 @@ Key mechanics:
 ---
 
 <a name="mismatches"></a>
-## 3. Hydration Mismatches — Causes & Fixes
+## 3. Hydration Mismatches — Causes & Fixes ⭐ IMP
 
 The error: *"Hydration failed because the server rendered HTML didn't match the client."* React 18+ **discards the server HTML for that subtree and re-renders it from scratch on the client** — you lose the SSR benefit and get a console error (and in concurrent features, worse behavior).
 
@@ -162,7 +162,7 @@ Practical consequence: wrapping heavy, below-the-fold client components in `<Sus
 ---
 
 <a name="rsc-vs-ssr"></a>
-## 5. RSC vs SSR — They Are Not the Same Thing
+## 5. RSC vs SSR — They Are Not the Same Thing ⭐ IMP
 
 The highest-signal distinction in modern Next.js interviews:
 
@@ -180,7 +180,7 @@ They compose: a page is RSC-rendered on the server; the client components *insid
 ---
 
 <a name="boundaries"></a>
-## 6. Server/Client Component Boundaries & Serialization
+## 6. Server/Client Component Boundaries & Serialization ⭐ IMP
 
 - `'use client'` marks a **module-graph boundary**, not a single component: everything that module imports becomes client code. You don't mark every client component — only entry points into client land.
 - **Props crossing the boundary must be RSC-serializable**: primitives, plain objects/arrays, Date, Map/Set, JSX (!), promises (unwrap with `use()`), server action references. **Not** functions (except actions), class instances, symbols.
@@ -222,6 +222,29 @@ Hydration cost ≈ amount of client-component JS × tree size. Levers:
 4. **Suspense boundaries** around heavy client islands → selective hydration prioritizes what the user touches.
 5. **Measure:** INP/TBT in Lighthouse; long tasks during load in the Performance panel are usually hydration; `@next/bundle-analyzer` for what's actually in the client bundle.
 6. **Third-party scripts** via `next/script` with `strategy="lazyOnload"`/`afterInteractive` so they don't compete with hydration.
+
+---
+
+## 7.5 Hydration vs Hot Reloading — Not the Same Thing ⭐ IMP
+
+A common confusion (and a quick interview filter): both feel like "the page updates itself," but they live in completely different worlds.
+
+| | **Hydration** | **Hot Reloading (Fast Refresh / HMR)** |
+|---|---|---|
+| What it is | React **adopting server-rendered HTML** in the browser — attaching handlers/state so static HTML becomes interactive | A **dev-server feature**: on file save, only the changed module is injected and that component re-renders — no full reload, state preserved |
+| When it runs | **Every first page load, for every real user, in production** | **Only during development** — the machinery doesn't exist in the production bundle |
+| Who does it | React runtime (`hydrateRoot`) | Build tooling (webpack/Turbopack HMR) + React Fast Refresh |
+| Triggered by | A document request finishing (HTML arrived, JS loaded) | You pressing Ctrl+S |
+| Failure mode | Hydration mismatch → subtree re-rendered on client, console error | Can't hot-swap (e.g., you edited module-level code / hooks changed) → falls back to a **full reload**, state lost |
+| Affects users? | Yes — it's part of Time-To-Interactive | Never — pure developer experience |
+
+**Similarities (the real ones):**
+- Both lean on **reconciliation** — "build the new tree, diff against what exists, touch the DOM minimally." Hydration diffs against *server HTML*; Fast Refresh diffs the *edited component* against its previous render.
+- Both try to **preserve state instead of starting over** — hydration keeps the server DOM, Fast Refresh keeps `useState` values across edits (that's why your form doesn't clear on save).
+
+**How they're *related* in practice (why people conflate them):** in `next dev`, every save re-runs SSR for the page and the browser re-hydrates — so a hydration mismatch bug often *surfaces* right after a hot reload. The hot reload didn't cause it; it just re-triggered the server render + hydrate cycle that exposed your non-deterministic render.
+
+**Spoken one-liner:** "Hydration is a production runtime step — React attaching to server HTML for real users. Hot reloading is dev tooling — swapping edited modules without a refresh. They only meet in the sense that both rely on React's reconciliation, and dev-mode saves re-trigger hydration, which is when mismatch bugs show up."
 
 ---
 

@@ -97,7 +97,7 @@ const closure = outer();
 closure();  // "I am outer" (still has access to outerVar)
 ```
 
-### Closure with Parameters
+### Closure with Parameters  -- IMP
 
 ```javascript
 function createCounter() {

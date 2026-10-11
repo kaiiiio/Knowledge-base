@@ -4,7 +4,7 @@ IMP
 
 Next.js is a React framework that enables server-side rendering (SSR), static site generation (SSG), and hybrid rendering strategies. This guide covers all data fetching methods and SSR concepts for interviews.
 
-## What is Next.js?
+## What is Next.js? ⭐ IMP
 
 **Next.js** is a production-ready React framework that provides:
 - **Server-Side Rendering (SSR)**: Render pages on the server
@@ -29,7 +29,7 @@ Next.js is a React framework that enables server-side rendering (SSR), static si
 // - JavaScript hydrates the page
 ```
 
-## Server-Side Rendering (SSR)
+## Server-Side Rendering (SSR) ⭐ IMP
 IMP
 ### getServerSideProps
 
@@ -121,7 +121,7 @@ export async function getServerSideProps(context) {
 }
 ```
 
-## Static Site Generation (SSG)
+## Static Site Generation (SSG) ⭐ IMP
 
 ### getStaticProps
 IMP
@@ -275,7 +275,7 @@ export default LegacyPage;
 - More complex error handling
 - Harder to debug
 
-## Incremental Static Regeneration (ISR)
+## Incremental Static Regeneration (ISR) ⭐ IMP
 IMP
 **Definition**: ISR allows you to update static pages **after build** without rebuilding the entire site.
 
@@ -332,7 +332,7 @@ export default async function handler(req, res) {
 }
 ```
 
-## Client-Side Data Fetching
+## Client-Side Data Fetching ⭐ IMP
 
 ### SWR (Stale-While-Revalidate)
 
@@ -393,7 +393,7 @@ function UserProfile({ userId }) {
 }
 ```
 
-## Rendering Strategies Comparison
+## Rendering Strategies Comparison ⭐ IMP
 IMP
 ```javascript
 // 1. SSR (Server-Side Rendering)

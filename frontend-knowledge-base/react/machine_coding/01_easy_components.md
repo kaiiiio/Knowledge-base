@@ -595,3 +595,45 @@ Task 3: 90% [██████████████████░░] 90%
 - ✅ Use semantic HTML elements
 - ✅ Handle edge cases and errors gracefully
 
+
+---
+
+## Special JSX Attributes Explained (aria-*, htmlFor, etc.)  ---- IMP
+
+Ye attributes machine-coding rounds me use hote hain aur interviewer aksar puchta hai "ye kyun likha?". Har ek ki 1-line speakable definition:
+
+### Used in this file
+
+| Attribute | What it does | Why we use it |
+|---|---|---|
+| `aria-expanded={openIndex === index}` | Screen reader ko batata hai ki ye button jis panel ko control karta hai wo **abhi open hai ya closed** (`true`/`false`) | Accordion/dropdown me blind user ko bina dekhe pata chalta hai section khula ya band. Interview line: *"State visually dikhta hai, but screen reader ko explicitly batana padta hai — aria-expanded exactly wahi karta hai."* |
+| `htmlFor="name"` | HTML ke `for` attribute ka JSX version — label ko us `id` wale input se **link** karta hai | (1) Label pe click → input focus hota hai; (2) screen reader input ka naam bol pata hai. JSX me `for` nahi likh sakte kyunki wo JS ka reserved keyword hai (`for` loop) — isliye `htmlFor`. Same reason: `class` → `className`. |
+
+### The full aria-* family (interviews me common)
+
+| Attribute | Meaning | Typical use |
+|---|---|---|
+| `aria-label="Close"` | Element ka **accessible naam** jab visible text nahi hai | Icon-only buttons (❌, 🔍) — warna screen reader bas "button" bolega |
+| `aria-labelledby="id"` | Naam kisi **dusre element ke text** se lo | Modal ka title heading modal ko label kare |
+| `aria-describedby="id"` | Extra **description** link karo | Input ke neeche error message / hint jodna |
+| `aria-hidden="true"` | Element ko screen reader se **chhupao** (visually dikhta rahega) | Decorative icons/emojis jo sirf sajawat hain |
+| `aria-controls="panel-id"` | Batata hai ye button **kis element ko control** karta hai | Accordion button → uska panel; tab → uska tabpanel |
+| `aria-live="polite"` | Is region me **content change hone pe screen reader announce kare** | Toast notifications, search results count, form errors |
+| `aria-current="page"` | List me se **ye wala abhi active** hai | Navbar ka current page link, pagination ka current number |
+| `aria-disabled="true"` | Screen reader ko disabled batao (par focusable rahta hai) | Jab `disabled` attribute se focus bhi hat jata hai aur tum tooltip dikhana chahte ho |
+| `aria-selected` / `aria-checked` | Tab/option **selected** hai / checkbox **checked** hai | Custom tabs, custom checkboxes (jo native input nahi hain) |
+| `role="dialog"` / `role="tablist"` etc. | Non-semantic element (div) ko **semantic meaning** do | Custom modal, tabs, menu — jab native element use nahi kiya |
+| `tabIndex={0}` / `tabIndex={-1}` | `0` = element **Tab key se focusable** banao; `-1` = programmatically focusable (Tab se nahi) | Custom clickable divs; modal open pe focus bhejne ke liye -1 |
+
+### The JSX-vs-HTML rename family
+
+| HTML | JSX | Kyun rename hua |
+|---|---|---|
+| `class` | `className` | `class` JS ka reserved keyword hai |
+| `for` | `htmlFor` | `for` JS ka loop keyword hai |
+| `onclick` | `onClick` | JSX camelCase events use karta hai (synthetic events) |
+| `style="color:red"` | `style={{ color: 'red' }}` | JSX me style ek **object** hai, string nahi |
+
+### 20-second oral answer (agar puchhe "accessibility kaise handle karte ho?")
+
+> "Semantic HTML pehle — button ke liye `<button>`, form me `<label htmlFor>`. Jahan custom widgets banane pade — accordion, tabs, modal — wahan ARIA se state aur relationships batata hoon: `aria-expanded` open/close state ke liye, `aria-controls` kis panel ko control karta hai, `aria-label` icon-only buttons ke liye, aur keyboard support (`tabIndex`, Enter/Space handlers). Rule of thumb: ARIA tab lagao jab native element kaafi na ho — first rule of ARIA is don't use ARIA."

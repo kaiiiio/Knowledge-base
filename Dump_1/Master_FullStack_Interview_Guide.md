@@ -18,7 +18,7 @@ This guide is designed for a **Step-by-Step** preparation flow. Instead of a 10,
 ## ⚡ PHASE 1: JS ENGINE & ASYNC MASTERY
 *Understand the foundation before building the structure.*
 
-### 🔹 Promises vs Async/Await
+### 🔹 Promises vs Async/Await  ---- IMP
 - **Concept**: Async/Await is just **Syntactic Sugar** over Promises.
 - **Microtask Queue**: Promises resolve in the Microtask queue (Higher priority than Macrotasks like `setTimeout`).
 - **Parallel Execution**: Use `Promise.all()` to prevent "Sequential Waterfalls" (Waterfall is when `await A()` stops `await B()`).
@@ -29,10 +29,10 @@ This guide is designed for a **Step-by-Step** preparation flow. Instead of a 10,
 ---
 
 <a id="phase2"></a>
-## 🦅 PHASE 2: NESTJS ARCHITECTURE (THE FRAMEWORK)
+## 🦅 PHASE 2: NESTJS ARCHITECTURE (THE FRAMEWORK)  ---- IMP
 *Moving from "Route Files" (Express) to "Modular Architecture".*
 
-### 🔹 Modules & Dependency Injection (DI)
+### 🔹 Modules & Dependency Injection (DI)  ---- IMP
 - **The "Why"**: In Express, you import files. In NestJS, you **Inject** classes. This makes code loosely coupled and testable.
 - **Inversion of Control (IoC)**: You don't create an instance of a service (`const s = new Service()`); NestJS creates it for you and provides it where needed.
 - **Singleton Pattern**: By default, NestJS providers are Singletons (created once per application).
@@ -42,7 +42,7 @@ This guide is designed for a **Step-by-Step** preparation flow. Instead of a 10,
 ---
 
 <a id="phase3"></a>
-## 🔄 PHASE 3: THE REQUEST LIFECYCLE (ADVANCED FLOW)
+## 🔄 PHASE 3: THE REQUEST LIFECYCLE (ADVANCED FLOW)  ---- IMP
 *This is the favorite interview topic. Know the exact order of execution.*
 
 1. **Middleware**: Global/Module level. Raw req/res access. Best for early logging.
@@ -60,7 +60,7 @@ This guide is designed for a **Step-by-Step** preparation flow. Instead of a 10,
 ---
 
 <a id="phase4"></a>
-## 🗄️ PHASE 4: DATA LAYER & PERSISTENCE PATTERNS
+## 🗄️ PHASE 4: DATA LAYER & PERSISTENCE PATTERNS  ---- IMP
 *Interacting with SQL (Postgres) and NoSQL (MongoDB).*
 
 ### 🔹 Repository Pattern
@@ -73,10 +73,10 @@ This guide is designed for a **Step-by-Step** preparation flow. Instead of a 10,
 ---
 
 <a id="phase5"></a>
-## 🌐 PHASE 5: NEXT.JS MODERN FRONTEND (APP ROUTER)
+## 🌐 PHASE 5: NEXT.JS MODERN FRONTEND (APP ROUTER)  ---- IMP
 *The boundary between Server and Client.*
 
-### 🔹 Server vs Client Components
+### 🔹 Server vs Client Components  ---- IMP
 - **Server Components (Default)**: Rendered on server. Fast. SEO friendly. Direct DB access.
 - **Client Components (`'use client'`)**: Interactive. Uses React Hooks (`useState`, `useEffect`).
 - **The Boundary**: "Pass Client Components as children to Server Components" to maximize speed.
@@ -86,10 +86,10 @@ This guide is designed for a **Step-by-Step** preparation flow. Instead of a 10,
 ---
 
 <a id="phase6"></a>
-## 🏆 PHASE 6: FULL-STACK LEAD & SAAS ARCHITECTURE
+## 🏆 PHASE 6: FULL-STACK LEAD & SAAS ARCHITECTURE  ---- IMP
 *Design systems that scale beyond a single API.*
 
-### 🔹 Microservices vs Monolith
+### 🔹 Microservices vs Monolith  ---- IMP
 - **Transporters**: TCP (Simple), RabbitMQ (Reliable/SaaS), gRPC (High Perf).
 - **BullMQ**: Solving the "Heavy Task" problem. Offload work (Emails, PDF generation) to a background queue.
 - **Multi-tenancy**: Designing for multiple clients (`tenant_id` strategy).

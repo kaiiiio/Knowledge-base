@@ -1,0 +1,167 @@
+RABBITMQ - Notes (from L18_RabbitMQ_Notes.pdf, TechByAni HLD-Notes)
+
+WHAT IS RABBITMQ
+RabbitMQ is an open-source message broker (aka message queue). It helps different parts of a system communicate asynchronously and decouple producers and consumers.
+Think of it as a post office: you (Producer) put a letter (Message) into the postbox (Queue); RabbitMQ (Post Office) ensures it's delivered; someone else (Consumer) picks it up when ready.
+Main job: receive messages, route them, store them temporarily, and deliver them to consumers reliably.
+Basic flow: Producer -> Exchange -> Queue -> Consumer.
+
+WHY DO WE NEED RABBITMQ
+Example: you place an order on Amazon. The app needs to: confirm order via email, update inventory, charge payment, notify delivery service. Doing all this synchronously (in one request) would be slow and error-prone.
+Instead, the Order Service publishes an event ("Order Placed") to RabbitMQ. Other services (Email, Inventory, Payment, Delivery) consume the message asynchronously. If any service is down, RabbitMQ keeps the message safe.
+
+BENEFITS
+Decoupling (services don't depend directly), Scalability (add more consumers easily), Reliability (messages persist even if services crash), Asynchronous processing, Load balancing, Retry and Dead-lettering support.
+
+CORE COMPONENTS
+
+1. PRODUCER
+Sends (publishes) messages to an Exchange. It never sends messages directly to a queue - instead always sends to an Exchange, because the exchange decides where the message should go.
+Technical behavior: opens a connection and a channel with RabbitMQ; publishes a message with: exchange name, routing key, message body (payload), properties (headers, persistence flag, priority, etc.)
+Example:
+channel.publish('orders_exchange', 'order.created', Buffer.from(JSON.stringify({ orderId: 101, user: 'Aniket' })), { persistent: true });
+Responsibilities: serialize data (e.g. JSON), define routing key, ensure persistence and delivery confirmations.
+Note: every message sent by a producer reaches the exchange in binary form. The client library transmits messages as binary (because AMQP is a binary protocol). But it's the developer's responsibility to serialize structured data into bytes before sending.
+
+2. EXCHANGE - the message router
+The Exchange is the brain of RabbitMQ's routing system. It decides how messages flow from producers to one or more queues. When a message arrives, the exchange looks at its type and bindings to decide which queues should receive the message.
+Responsibilities: receive messages from producers, match routing keys against bindings, route copies of messages into the correct queues.
+
+Main Exchange Types:
+Type      | Routing Logic                   | Use Case
+Direct    | Exact routing key match         | Logs, targeted routing
+Fanout    | Broadcasts to all queues bound   | Notifications, broadcasts
+Topic     | Pattern-based routing            | Multi-service routing (*.created, india.*)
+Headers   | Route based on headers           | Advanced filtering
+
+Direct Exchange: routes messages to queues whose binding key matches the routing key exactly. Example: message with key "error" -> goes to queue bound with "error"; message with key "info" -> goes to "info" queue.
+
+Fanout Exchange: broadcasts messages to ALL queues bound to the exchange (ignores routing key entirely). Perfect for notifications or real-time broadcasts.
+
+Topic Exchange: routes messages based on pattern matching of the routing key. Routing keys are dot-separated words. "*.created" matches order.created, user.created (but not order.created.success - "*" matches exactly one word segment). "user.#" matches all events starting with "user" (# matches zero or more words). Example: pattern "order.*" matches "order.created" but NOT "order.created.success"; pattern "order.#" also matches "order.created.success".
+
+Headers Exchange: routes based on message HEADERS, not routing key. Supports x-match: all (every header must match) or x-match: any (at least one header must match).
+
+3. QUEUE - the message buffer
+A Queue is a storage unit that holds messages until they're consumed. Think of it as a FIFO (first-in, first-out) message buffer.
+Messages stay in the queue until: a consumer retrieves and acknowledges them, the message expires (TTL), or the queue is deleted.
+Responsibilities: hold messages safely until processed, manage message order and delivery, support reliability (ack, persistence, DLQ), support scaling (multiple consumers).
+
+Queue Declaration example:
+await channel.assertQueue('orderQueue', { durable: true, exclusive: false, autoDelete: false, arguments: {} });
+
+Key Properties:
+Property     | Description
+Durable      | Survives broker restarts
+Exclusive    | Used only by one connection
+Auto-delete  | Deleted when no consumers remain
+TTL          | Message expiry time
+DLX          | For failed messages
+Lazy mode    | Stores on disk to save RAM
+
+QUEUE TYPES (Special Behavior Queues)
+RabbitMQ doesn't have "named types" like "direct queue" or "topic queue" - the EXCHANGE defines routing, but queue types here mean specialized behavior queues based on their arguments.
+
+1. Standard Queue (Default) - the most common queue type. FIFO order preserved (except when using priority). Messages stored in memory or disk (depending on mode). Can have multiple consumers (for load balancing). Use case: general background jobs, microservices messaging.
+
+2. Priority Queue - messages can have a priority level (integer). Higher-priority messages are delivered first, even if others arrived earlier.
+Setup: await channel.assertQueue('priorityQueue', { arguments: { 'x-max-priority': 10 } });
+Producer: channel.sendToQueue('priorityQueue', Buffer.from('Urgent task'), { priority: 8 });
+Use case: payment alerts, urgent notifications, critical updates.
+
+3. Dead Letter Queue (DLQ) - stores failed messages that couldn't be processed successfully. Typically connected via a Dead Letter Exchange (DLX).
+await channel.assertQueue('mainQueue', { arguments: { 'x-dead-letter-exchange': 'dlx_exchange', 'x-dead-letter-routing-key': 'dead.msg' } });
+await channel.assertQueue('dlqQueue');
+await channel.bindQueue('dlqQueue', 'dlx_exchange', 'dead.msg');
+Use case: error handling, retries, message auditing.
+
+4. Lazy Queue - stores messages on disk immediately instead of memory. Reduces RAM usage when message volume is high. Slightly slower, but very memory efficient.
+await channel.assertQueue('lazyQueue', { arguments: { 'x-queue-mode': 'lazy' } });
+Use case: large queues, background workloads, high backlog systems.
+
+5. TTL Queue (Time-To-Live) - messages automatically expire after a certain time.
+await channel.assertQueue('ttlQueue', { arguments: { 'x-message-ttl': 10000 } }); // 10 seconds
+Use case: temporary notifications, caching, expiring tasks.
+
+6. Single Active Consumer Queue - only one consumer is active at a time. If it disconnects, another takes over. Ensures message order and sequential processing.
+await channel.assertQueue('sacQueue', { arguments: { 'x-single-active-consumer': true } });
+
+7. Stream Queue (Newer Feature) - hybrid between a queue and a Kafka topic. Messages retained for a configurable time (like Kafka). Consumers can replay messages by offset. Use case: event streaming, audit logging, replayable systems.
+
+BINDING - the connection between exchange and queue
+A Binding is the rule that connects an exchange to a queue. It defines which messages go into which queue, based on routing keys or headers. Without bindings, exchanges can't route anything - they'd just drop messages.
+You can have: one exchange bound to many queues, one queue bound to many exchanges, multiple bindings for flexible routing.
+Example: channel.bindQueue('emailQueue', 'order_exchange', 'order.email');
+Whenever a producer sends a message to exchange order_exchange with routing key order.email, it will be routed to emailQueue.
+Another example: Exchange "order_events" bound with key "order.created" to Queue "inventory" AND to Queue "email" (both receive the same message via the same routing key - one exchange can fan a single routing key out to multiple queues).
+
+CONSUMER
+A Consumer is an application or service that reads messages from a queue and processes them. It connects to RabbitMQ, subscribes to a queue, and waits for new messages to arrive.
+Consumers can: auto-acknowledge messages (less reliable), manually acknowledge after processing (recommended), NACK messages to requeue or send to DLQ.
+
+Example:
+channel.consume('orderQueue', (msg) => {
+  const order = JSON.parse(msg.content.toString());
+  console.log("Processing order:", order.orderId);
+  // simulate processing
+  channel.ack(msg);
+});
+Flow: RabbitMQ delivers message -> Consumer -> Consumer processes it -> Consumer sends ACK -> RabbitMQ removes message.
+
+ACK/NACK semantics:
+channel.ack(msg) -> remove message from queue permanently.
+channel.nack(msg, false, true) -> requeue message for retry.
+channel.nack(msg, false, false) -> drop message (or send to DLQ).
+(Consumer crash before ACK) -> RabbitMQ requeues automatically.
+
+Responsibilities: retrieve and process messages, send ACK/NACK, handle retries or DLQ, scale horizontally for parallel processing.
+
+BONUS INTERNAL COMPONENTS (Under the Hood)
+
+Channel: lightweight virtual connection inside a TCP connection. You can have multiple channels per connection. Used for publishing, consuming, and managing queues.
+Why? Opening/closing TCP connections is expensive; channels are cheap. Example: one app -> one TCP connection -> multiple channels for producers/consumers.
+
+Connection: a real TCP connection between your app and RabbitMQ broker. Established using the AMQP protocol (amqp://localhost:5672). RabbitMQ allows multiple concurrent connections from different apps or services.
+
+Virtual Host (vHost): logical namespace for isolation. Think of it like "databases" inside a DBMS. Each vHost has its own exchanges, queues, and permissions. Default vHost: /. Useful for multi-tenant systems or environment separation (/dev, /prod).
+
+Message (Payload + Metadata) structure example:
+{ "body": "{\"orderId\": 123}", "properties": { "contentType": "application/json", "deliveryMode": 2, "headers": { "region": "india" } } }
+
+Full flow diagram:
+PRODUCER -> [Connection + Channel] -> EXCHANGE -> (Bindings) -> QUEUE -> CONSUMER
+
+AMQP (Advanced Message Queuing Protocol)
+AMQP is the standard communication protocol used by RabbitMQ (and other brokers like Qpid, ActiveMQ). Just like HTTP defines how browsers talk to servers, AMQP defines how message producers, brokers, and consumers communicate. RabbitMQ is a message broker IMPLEMENTATION of this AMQP protocol.
+
+AMQP Defines:
+Layer                      | Purpose
+Connection Layer           | How clients connect/authenticate (TCP)
+Session Layer (Channels)   | How virtual channels are managed
+Messaging Layer            | How messages are routed, acknowledged, etc.
+
+So AMQP is not just about "sending messages" - it defines exactly how: messages are published (with routing key, exchange), brokers store and forward messages, consumers ACK/NACK messages, reliability/persistence/confirmations work.
+
+Example AMQP Command Flow:
+channel.publish("orders_exchange", "order.created", Buffer.from("data"));
+Under the hood, RabbitMQ translates it into AMQP frames like:
+Basic.Publish -> Exchange: 'orders_exchange' -> Routing key: 'order.created' -> Properties: delivery_mode=2 -> Body: 'data'
+And when the consumer receives it:
+Basic.Deliver -> Queue: 'orders' -> Consumer Tag: 1234 -> Body: 'data'
+All this communication happens as binary AMQP frames over the TCP connection.
+
+Why AMQP Exists: before AMQP, every message broker had its own proprietary protocol. AMQP provides: Interoperability (any AMQP-compliant client - Python, JS, Go, Java - can talk to any AMQP broker), Reliability (standard support for acknowledgments, delivery guarantees, transactions), Security (authentication, permissions, virtual hosts).
+
+Stack: Application Code (Producer/Consumer) -> Client Library (amqplib, pika, etc.) -> AMQP Protocol (frames, methods, acks) -> TCP Connection -> RabbitMQ Broker.
+
+SPOF IN RABBITMQ
+A standalone RabbitMQ node IS a SPOF by default. But you can make it highly available using clustering, mirrored queues, quorum queues, or federation/shovel setups.
+
+PERFORMANCE AND SCALABILITY
+RabbitMQ is fast, but not as fast as Kafka. Typical throughput: ~5K-10K msgs/sec/node (depends on hardware). For millions msgs/sec -> use Kafka instead.
+Ways to scale:
+- Horizontal Scaling: add more nodes (RabbitMQ cluster).
+- Sharding: divide queues among nodes.
+- Consumers Scaling: add more consumers for load balancing.
+
+CROSS-REFERENCE: see ../../05-Distributed-Systems/05_messaging_kafka_rabbitmq_sqs.md for the deeper technical treatment (exchanges/bindings/queues, ack/nack, prefetch, delivery/ordering semantics, retry with backoff+jitter, poison messages, and a Kafka/RabbitMQ/SQS decision table).

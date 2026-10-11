@@ -1,4 +1,4 @@
-// 🧠 1. JS Engine Overview (V8 Internals)
+// 🧠 1. JS Engine Overview (V8 Internals)   ---- IMP
 
 // V8 (used in Chrome & Node.js) is a JIT-compiled engine, not a simple interpreter.
 
@@ -26,7 +26,7 @@
 
 // There’s also a Garbage Collector managing memory in the background (heap cleanup, reference counting, etc.).
 
-// ⚙️ 2. Parsing & Code Preparation (The Compilation Phase)
+// ⚙️ 2. Parsing & Code Preparation (The Compilation Phase)   ---- IMP
 
 // When the JS engine loads a script, it goes through two phases before actual execution:
 
@@ -74,7 +74,7 @@
 // Now JS is ready to execute.
 // No machine code yet — it’s still platform-independent bytecode.
 
-// 🚀 3. Execution Context: The Heart of JS Execution
+// 🚀 3. Execution Context: The Heart of JS Execution   ---- IMP
 
 // Every time JavaScript runs code, it creates an Execution Context (EC) — an isolated environment with its own variables, scope, and this.
 
@@ -144,7 +144,7 @@
 //   ThisBinding: <value of this>
 // }
 
-// 🧩 4. Call Stack & Memory Heap
+// 🧩 4. Call Stack & Memory Heap   ---- IMP
 // Call Stack
 
 // A stack structure (LIFO) that tracks which function is currently running.
@@ -195,7 +195,7 @@
 
 // 0x001: { name: "Karan" }
 
-// 🧮 5. Lexical Environment vs Variable Environment
+// 🧮 5. Lexical Environment vs Variable Environment   ---- IMP
 // Lexical Environment
 
 // Contains:
@@ -220,7 +220,7 @@
 
 // var is in Variable Env (function scoped)
 
-// 🧠 6. Lexical Scoping & Scope Chain
+// 🧠 6. Lexical Scoping & Scope Chain   ---- IMP
 
 // Every function knows the scope in which it was defined, not called — this is lexical scoping.
 
@@ -248,7 +248,7 @@
 
 // So the Lexical Environment chain forms the scope chain — used for variable resolution.
 
-// ⚡ 7. Compilation vs Interpretation (in V8)
+// ⚡ 7. Compilation vs Interpretation (in V8)   ---- IMP
 
 // JavaScript is both compiled and interpreted.
 
@@ -320,7 +320,7 @@
 
 // Heap cleaned by GC.
 
-// 🧹 9. Garbage Collection (Simplified)
+// 🧹 9. Garbage Collection (Simplified)   ---- IMP
 
 // The heap is continuously monitored.
 // Objects not reachable via any reference chain from the root (global object) are marked and deleted.
@@ -917,7 +917,7 @@
 
 // That’s the story. Short, clean, and accurate.
 
-// 🧠 2. What is an Execution Context?
+// 🧠 2. What is an Execution Context?   ---- IMP
 
 // Say this in an interview:
 
@@ -951,7 +951,7 @@
 
 // Boom. Simple and true.
 
-// 🧮 3. Call Stack and Heap (Explain like this)
+// 🧮 3. Call Stack and Heap (Explain like this)   ---- IMP
 
 // “The call stack is where JavaScript keeps track of which function is currently executing. Each function call adds a frame to the stack, and when it returns, the frame is removed.”
 
@@ -961,7 +961,7 @@
 
 // “Each function call creates a stack frame (execution context) on the call stack, while the actual data like objects or closures live on the heap.”
 
-// 🧩 4. Lexical Environment & Scope Chain
+// 🧩 4. Lexical Environment & Scope Chain   ---- IMP
 
 // “Every execution context has a Lexical Environment, which maps variables and has a pointer to its parent environment.
 // That’s how scope works in JS — if a variable isn’t found in the current scope, JS looks up the chain.”
@@ -982,7 +982,7 @@
 
 // “When inner() executes, it doesn’t find x in its own scope, so it looks into its parent lexical environment — outer() — and finds it there. That’s closure and lexical scoping.”
 
-// 🧩 5. Compilation vs Interpretation (Short version)
+// 🧩 5. Compilation vs Interpretation (Short version)   ---- IMP
 
 // “V8 doesn’t just interpret JS — it uses a JIT (Just-In-Time) compilation process.
 // It parses the code → generates bytecode → executes it → and hot code gets optimized into machine code for performance.”
@@ -1074,7 +1074,7 @@
 
 
 
-// **1. What are Preload, Reconnect, Prefetch, and Prerender?**
+// **1. What are Preload, Reconnect, Prefetch, and Prerender?**   -- IMP
 
 // These are **Resource Hints** used to improve website loading performance.
 
@@ -1203,7 +1203,7 @@
 
 
 
-  // **7. If a user clicks a button multiple times to fetch data, how to cancel old API calls and use only the latest result?**
+  // **7. If a user clicks a button multiple times to fetch data, how to cancel old API calls and use only the latest result?** -- IMP
 
   // Use **AbortController** in modern JS or **RxJS switchMap** in React/Angular.
 
@@ -1514,7 +1514,7 @@ function* gen() {
 
 
 
-## 🧠 JavaScript Engine & Execution Model
+## 🧠 JavaScript Engine & Execution Model  ---- IMP
 
 ### Theory Q&A
 
@@ -1577,7 +1577,7 @@ foo(); // Creates new function execution context
 
 ---
 
-## 🧩 Scopes, Closures, and Hoisting
+## 🧩 Scopes, Closures, and Hoisting  ---- IMP
 
 ### Theory Q&A
 
@@ -1625,7 +1625,7 @@ let b = 10;
 
 ---
 
-## ⚙️ this, call, apply, and bind
+## ⚙️ this, call, apply, and bind  ---- IMP
 
 ### Theory Q&A
 
@@ -1678,7 +1678,7 @@ obj.arrow();   // undefined (inherits outer scope)
 
 ---
 
-## 🧱 Prototypes & Classes
+## 🧱 Prototypes & Classes  ---- IMP
 
 ### Theory Q&A
 
@@ -1727,7 +1727,7 @@ d.speak(); // Woof!
 
 ---
 
-## ⏳ Event Loop, Callbacks, Promises, async/await
+## ⏳ Event Loop, Callbacks, Promises, async/await  ---- IMP
 
 ### Theory Q&A
 
@@ -1797,7 +1797,7 @@ async function getData() {
 
 ---
 
-## 🧠 1. Execution Model & Internals
+## 🧠 1. Execution Model & Internals  ---- IMP
 
 **Q1. What is the difference between the Call Stack, Task Queue, and Microtask Queue?**
 
@@ -1850,7 +1850,7 @@ function factorial(n, acc = 1) {
 
 ---
 
-## 🧩 2. Scopes, Closures & Advanced Lexical Concepts
+## 🧩 2. Scopes, Closures & Advanced Lexical Concepts  ---- IMP
 
 **Q1. How do closures capture variables?**
 
@@ -1898,7 +1898,7 @@ const fn = outer(); // bigArray remains in memory
 
 ---
 
-## 🔄 3. `this` Binding Edge Cases
+## 🔄 3. `this` Binding Edge Cases  ---- IMP
 
 **Q1. What happens if you use `this` inside nested functions?**
 
@@ -1941,7 +1941,7 @@ new Arrow(); // ❌ TypeError: Arrow is not a constructor
 
 ---
 
-## 🧱 4. Prototype & Inheritance Tricks
+## 🧱 4. Prototype & Inheritance Tricks  ---- IMP
 
 **Q1. What is the difference between `Object.create()` and class inheritance?**
 
@@ -1981,7 +1981,7 @@ s.sayHi(); // Hi Karan
 
 ---
 
-## ⏳ 5. Async Internals & Event Loop Tricks
+## ⏳ 5. Async Internals & Event Loop Tricks  ---- IMP
 
 **Q1. Promise vs setTimeout execution order**
 
@@ -2040,7 +2040,7 @@ window.addEventListener('unhandledrejection', e => {
 
 ---
 
-## 🧩 6. Hidden/Tricky Language Behaviors
+## 🧩 6. Hidden/Tricky Language Behaviors  ---- IMP
 
 **Q1. What’s the output?**
 
@@ -2083,7 +2083,7 @@ Tricky case:
 
 ---
 
-## 🧩 7. Advanced Promises & Event Loop Race Conditions
+## 🧩 7. Advanced Promises & Event Loop Race Conditions  ---- IMP
 
 **Q1. Promise chain ordering**
 
@@ -2117,7 +2117,7 @@ async function getData() {
 
 ---
 
-## 🧩 8. Deep Concept: Event Delegation, Composition, and Custom Events
+## 🧩 8. Deep Concept: Event Delegation, Composition, and Custom Events  ---- IMP
 
 **Q1. What is Event Delegation?**
 Instead of attaching listeners to multiple child elements, you attach one to their common parent and use event bubbling.
@@ -2140,7 +2140,7 @@ document.addEventListener("myEvent", (e) => console.log(e.detail.msg));
 
 ---
 
-## 🧩 9. Generators & Advanced Iterators
+## 🧩 9. Generators & Advanced Iterators  ---- IMP
 
 **Q1. How do Generators differ from normal functions?**
 
@@ -2178,7 +2178,7 @@ function* fetchSequence() {
 
 ---
 
-## 🧩 1. Deep Memory, References & Garbage Collection
+## 🧩 1. Deep Memory, References & Garbage Collection  ---- IMP
 
 **Q1. Difference between Stack and Heap memory in JS**
 
@@ -2230,7 +2230,7 @@ const deep = structuredClone(obj);
 
 ---
 
-## 🧠 2. Type System, Coercion, and Hidden Conversions
+## 🧠 2. Type System, Coercion, and Hidden Conversions  ---- IMP
 
 **Q1. Why does `[] == ![]` return true?**
 
@@ -2268,7 +2268,7 @@ Symbol.for("id") === Symbol.for("id"); // true (global registry)
 
 ---
 
-## 🧩 3. Advanced Closures & Execution Context Traps
+## 🧩 3. Advanced Closures & Execution Context Traps  ---- IMP
 
 **Q1. How closures capture environment variables**
 
@@ -2313,7 +2313,7 @@ Because parentheses turn a `function declaration` into an **expression**, making
 
 ---
 
-## 🧩 4. Async Hell, Event Loop, and Scheduling
+## 🧩 4. Async Hell, Event Loop, and Scheduling  ---- IMP
 
 **Q1. Trick: Predict output**
 
@@ -2366,7 +2366,7 @@ await fetch('data.json'); // Works only in ES modules
 
 ---
 
-## 🧩 5. Object Internals & Hidden Properties
+## 🧩 5. Object Internals & Hidden Properties  ---- IMP
 
 **Q1. What’s the difference between enumerable, writable, and configurable?**
 
@@ -2408,7 +2408,7 @@ Object.prototype.hacked = true; // now EVERY object inherits it — dangerous
 
 ---
 
-## 🧩 6. Modules, Imports & Execution Order
+## 🧩 6. Modules, Imports & Execution Order  ---- IMP
 
 **Q1. Difference between CommonJS and ES Modules?**
 
@@ -2500,7 +2500,7 @@ console.log(Object.getPrototypeOf(f)); // Function.prototype
 
 ---
 
-## 🧩 9. Async Polyfills & Promise Algorithms
+## 🧩 9. Async Polyfills & Promise Algorithms  ---- IMP
 
 **Q1. How does Promise.all() differ from Promise.allSettled()?**
 
@@ -2541,7 +2541,7 @@ function allSettled(promises) {
 
 ---
 
-## 🧩 10. Rare Topics (Almost Nobody Knows Deeply)
+## 🧩 10. Rare Topics (Almost Nobody Knows Deeply)  ---- IMP
 
 **Q1. What are Realms in JavaScript?**
 
@@ -2629,7 +2629,7 @@ Nice — full deep-dive coming up. Below you’ll get **detailed theory + tricky
 
 ---
 
-# Promise.allSettled() — polyfill + nuances
+# Promise.allSettled() — polyfill + nuances  ---- IMP
 
 Theory
 
@@ -2683,7 +2683,7 @@ Edge notes:
 
 ---
 
-# Symbol.iterator — deep dive & tricks
+# Symbol.iterator — deep dive & tricks  ---- IMP
 
 Theory
 
@@ -2799,7 +2799,7 @@ Tricky implications
 
 ---
 
-# WeakMap memory tricks & private data patterns
+# WeakMap memory tricks & private data patterns  ---- IMP
 
 Theory
 
@@ -2854,7 +2854,7 @@ Pitfalls
 
 ---
 
-# Module execution order, cyclic imports, and live bindings
+# Module execution order, cyclic imports, and live bindings  ---- IMP
 
 Theory
 
@@ -2915,7 +2915,7 @@ Practical patterns to avoid cycle bugs
 
 ---
 
-# Extra tricky module examples (live binding + mutation)
+# Extra tricky module examples (live binding + mutation)  ---- IMP
 
 ```js
 // counter.js
@@ -2939,7 +2939,7 @@ If counter later mutates count, calls to getCount reflect it.
 
 # Bonus: other advanced snippets & gotchas
 
-## WeakMap vs Map memory illustration
+## WeakMap vs Map memory illustration  ---- IMP
 
 ```js
 // Map holds strong reference — prevents GC
@@ -2957,7 +2957,7 @@ k = null;
 // now the entry can be GC'd
 ```
 
-## Promise microtask reordering caveat
+## Promise microtask reordering caveat  ---- IMP
 
 ```js
 // nested then microtask order
@@ -2973,12 +2973,12 @@ Promise.resolve().then(() => {
 // Because inner then schedules another microtask that runs after the current microtask finishes.
 ```
 
-## Interoperability with CommonJS (Node) — synchronous require vs ESM async
+## Interoperability with CommonJS (Node) — synchronous require vs ESM async  ---- IMP
 
 * `require()` is synchronous and executes the module immediately, returning `module.exports`.
 * ESM is asynchronous in general (static linking, live bindings); Node supports both but conversion and interop can cause subtle timing differences.
 
-## StructuredClone vs JSON quirks
+## StructuredClone vs JSON quirks  ---- IMP
 
 ```js
 // JSON discards functions, undefined, symbols
@@ -2995,7 +2995,7 @@ Let’s break it down clearly — not just *what* multi-tenant architecture is, 
 
 ---
 
-## 💡 1. What is Multi-Tenant Architecture?
+## 💡 1. What is Multi-Tenant Architecture?  ---- IMP
 
 👉 **Multi-tenant** = “One application, multiple customers (tenants).”
 
@@ -3019,9 +3019,9 @@ Like Gmail — one big system, millions of users, but each person only sees thei
 
 ---
 
-## 🧩 3. Main Multi-Tenant Models
+## 🧩 3. Main Multi-Tenant Models  ---- IMP
 
-### 🏢 A. **Shared Database, Shared Schema (most common for SaaS MVPs)**
+### 🏢 A. **Shared Database, Shared Schema (most common for SaaS MVPs)**  ---- IMP
 
 * One database
 * Every table has a `tenant_id` column
@@ -3036,7 +3036,7 @@ SELECT * FROM users WHERE tenant_id = 't123';
 
 ---
 
-### 🧭 B. **Shared Database, Separate Schemas**
+### 🧭 B. **Shared Database, Separate Schemas**  ---- IMP
 
 * One database, each tenant has its own schema (`tenant1.users`, `tenant2.users`)
 
@@ -3045,7 +3045,7 @@ SELECT * FROM users WHERE tenant_id = 't123';
 
 ---
 
-### 🧰 C. **Separate Database per Tenant**
+### 🧰 C. **Separate Database per Tenant**  ---- IMP
 
 * Each tenant has its **own database** instance.
 
@@ -3070,7 +3070,7 @@ Without multi-tenancy → you’d need to deploy a separate instance per custome
 
 ---
 
-## 🚀 5. Real Example (Simplified Architecture)
+## 🚀 5. Real Example (Simplified Architecture)  ---- IMP
 
 ```
                  ┌────────────────────┐
@@ -3117,7 +3117,7 @@ Great — below is a compact, practical blueprint you can copy/paste and use imm
 
 ---
 
-## 1) Pick a tenancy model (quick summary)
+## 1) Pick a tenancy model (quick summary)  ---- IMP
 
 * **Shared DB, Shared Schema (recommended for most SaaS)**
   Single DB; every table has `tenant_id`. Cheap, simple, scale horizontally at app layer.
@@ -3130,7 +3130,7 @@ I'll assume **Shared DB + Shared Schema** below (you said core SaaS). If you wan
 
 ---
 
-## 2) Postgres schema principles (shared schema)
+## 2) Postgres schema principles (shared schema)  ---- IMP
 
 1. Add `tenant_id` (UUID / text) to every business table.
 2. Use **composite indexes** on `(tenant_id, id)` and `(tenant_id, some_query_col)` for queries.
@@ -3259,7 +3259,7 @@ You must resolve tenant for each request and enforce it in DB queries. Common so
 * Custom header (`x - tenant - id`)
   Use JWT approach for APIs.
 
-### Example: FastAPI dependency to extract tenant from JWT
+### Example: FastAPI dependency to extract tenant from JWT  ---- IMP
 
 ```python
 # deps.py
@@ -3300,7 +3300,7 @@ return db.query(Project).filter(Project.tenant_id == tenant_id).all()
 
 ---
 
-## 5) Enforce isolation at DB with Row Level Security (optional but recommended)
+## 5) Enforce isolation at DB with Row Level Security (optional but recommended)  ---- IMP
 
 RLS ensures SQL-level isolation. Example:
 
@@ -3391,7 +3391,7 @@ return { "tenant_id": str(tenant.id) }
 
 ---
 
-## 8) Indexing & common query patterns
+## 8) Indexing & common query patterns  ---- IMP
 
 * Index composite columns used in WHERE:
 
@@ -3401,7 +3401,7 @@ return { "tenant_id": str(tenant.id) }
 
 ---
 
-## 9) Caching & rate limiting (tenant-aware)
+## 9) Caching & rate limiting (tenant-aware)  ---- IMP
 
 * Redis keys prefixed by tenant: `cache: { tenant_id }: user: 123`
 * Rate-limit by tenant: use token-bucket keyed on `tenant_id` not global.

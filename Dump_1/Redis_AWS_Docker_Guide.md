@@ -4,7 +4,7 @@ We’ll go one by one:
 
 ---
 
-## 🧠 REDIS
+## 🧠 REDIS  ---- IMP
 
 ---
 
@@ -13,14 +13,14 @@ We’ll go one by one:
 Redis (**Remote Dictionary Server**) is an **in-memory data structure store** used as a **database, cache, and message broker**.
 It stores data in **RAM**, so it’s **super fast** compared to disk-based databases.
 
-### 🔹 Why use Redis in backend?
+### 🔹 Why use Redis in backend?  ---- IMP
 
 * 🔸 To **cache** frequently accessed data (like user sessions, JWTs, or API responses).
 * 🔸 To store **temporary data** (rate limits, OTPs, tokens).
 * 🔸 For **pub/sub messaging** between services (real-time notifications).
 * 🔸 To **reduce database load** (because data is served from RAM).
 
-### 🔹 Common Data Types
+### 🔹 Common Data Types  ---- IMP
 
 * `String` → key-value data (`user:1:name -> "John"`)
 * `Hash` → objects (`user:1 -> { name: John, age: 25 }`)
@@ -31,7 +31,7 @@ It stores data in **RAM**, so it’s **super fast** compared to disk-based datab
 ### 🔹 Installation (Local)
 
 ```bash
-# install redis server
+# install redis server  ---- IMP
 sudo apt install redis-server
 # start service
 sudo service redis-server start
@@ -74,28 +74,28 @@ redis.on("message", (channel, message) => {
 
 ---
 
-### 🔹 What is AWS?
+### 🔹 What is AWS?  ---- IMP
 
 AWS is a **cloud platform** providing infrastructure and services (servers, databases, storage, etc.) so you don’t need physical machines.
 
 ---
 
-### 🔹 1. EC2 (Elastic Compute Cloud)
+### 🔹 1. EC2 (Elastic Compute Cloud)  ---- IMP
 
 🧩 **Virtual servers in the cloud**
 
 **Use case:** Host backend apps, APIs, or websites.
 
 ```bash
-# Launch Ubuntu EC2 instance
+# Launch Ubuntu EC2 instance  ---- IMP
 # SSH into it
 ssh -i "mykey.pem" ubuntu@ec2-xx-xx-xx-xx.compute.amazonaws.com
-# Install Node, Git, Docker, etc. here
+# Install Node, Git, Docker, etc. here  ---- IMP
 ```
 
 ---
 
-### 🔹 2. S3 (Simple Storage Service)
+### 🔹 2. S3 (Simple Storage Service)  ---- IMP
 
 🧩 **Object storage service** for files, images, videos, backups.
 
@@ -128,7 +128,7 @@ s3.upload(params, (err, data) => {
 
 ---
 
-### 🔹 3. Lambda
+### 🔹 3. Lambda  ---- IMP
 
 🧩 **Serverless compute** — runs code without managing servers.
 
@@ -147,7 +147,7 @@ export const handler = async (event) => {
 
 ---
 
-### 🔹 4. RDS (Relational Database Service)
+### 🔹 4. RDS (Relational Database Service)  ---- IMP
 
 🧩 Managed SQL databases (PostgreSQL, MySQL, etc.)
 AWS handles scaling, backup, and patching.
@@ -169,15 +169,15 @@ AWS handles scaling, backup, and patching.
 
 ---
 
-## 🐳 DOCKER
+## 🐳 DOCKER  ---- IMP
 
 ---
 
-### 🔹 What is Docker?
+### 🔹 What is Docker?  ---- IMP
 
 Docker **packages applications and their dependencies** into **containers** — lightweight, portable environments that run anywhere.
 
-### 🔹 Why use it?
+### 🔹 Why use it?  ---- IMP
 
 * Works **same everywhere** (dev, test, prod)
 * No dependency issues
@@ -186,7 +186,7 @@ Docker **packages applications and their dependencies** into **containers** — 
 ### 🔹 Basic Example
 
 ```bash
-# Dockerfile for Node.js app
+# Dockerfile for Node.js app  ---- IMP
 FROM node:18
 WORKDIR /app
 COPY package*.json ./
@@ -200,7 +200,7 @@ CMD ["npm", "start"]
 # Build image
 docker build -t my-node-app .
 
-# Run container
+# Run container  ---- IMP
 docker run -d -p 3000:3000 my-node-app
 ```
 
@@ -210,11 +210,11 @@ docker run -d -p 3000:3000 my-node-app
 
 ---
 
-### 🔹 What is Git?
+### 🔹 What is Git?  ---- IMP
 
 A **version control system** to track changes in code.
 
-### 🔹 What is GitHub?
+### 🔹 What is GitHub?  ---- IMP
 
 A **remote repository hosting platform** for collaboration.
 
@@ -279,7 +279,7 @@ Visit: `http://localhost:3000/api-docs`
 
 ---
 
-### 🔹 What is Nginx?
+### 🔹 What is Nginx?  ---- IMP
 
 Nginx is a **web server** and **reverse proxy** used for:
 
@@ -486,7 +486,7 @@ During local development:
 ```bash
 # Example: run backend locally
 npm run dev
-# Or using Docker
+# Or using Docker  ---- IMP
 docker build -t my-mern-backend .
 docker run -p 3000:3000 my-mern-backend
 ```
@@ -524,20 +524,20 @@ Example (GitHub Actions YAML summary):
 
 ---
 
-### 🔹 STEP 4: AWS EC2 Deployment
+### 🔹 STEP 4: AWS EC2 Deployment  ---- IMP
 
 You create an EC2 instance (Ubuntu).
 SSH into it and install Docker + Nginx.
 You can deploy your Node app manually or automatically using CI/CD.
 
 ```bash
-# connect to EC2
+# connect to EC2  ---- IMP
 ssh -i "key.pem" ubuntu@ec2-your-public-ip.compute.amazonaws.com
 
 # pull your code from GitHub
 git clone https://github.com/yourname/mern-backend.git
 
-# build and run Docker container
+# build and run Docker container  ---- IMP
 docker build -t my-mern-app .
 docker run -d -p 3000:3000 my-mern-app
 ```
@@ -580,7 +580,7 @@ Now requests hitting yourdomain.com are forwarded to your Node.js app running on
 
 ---
 
-### 🔹 STEP 6: AWS S3 for File Storage
+### 🔹 STEP 6: AWS S3 for File Storage  ---- IMP
 
 Instead of storing files in your backend server, upload them to S3 and save only their URLs in MongoDB.
 This improves performance and scalability.
@@ -605,14 +605,14 @@ await s3.upload({
 
 ---
 
-### 🔹 STEP 7: AWS RDS (if using SQL)
+### 🔹 STEP 7: AWS RDS (if using SQL)  ---- IMP
 
 If your app uses MySQL or PostgreSQL instead of MongoDB, use RDS.
 You connect it the same way using a normal connection string, but AWS manages backups and scaling.
 
 ---
 
-### 🔹 STEP 8: Redis for Performance
+### 🔹 STEP 8: Redis for Performance  ---- IMP
 
 Add Redis caching to speed up DB-heavy routes.
 
@@ -665,7 +665,7 @@ Redis caches data, S3 stores files
 
 ---
 
-### 🔹 STEP 11: Optional - Lambda & Cron Jobs
+### 🔹 STEP 11: Optional - Lambda & Cron Jobs  ---- IMP
 
 For small periodic tasks (like sending daily reports or cleaning old files), use AWS Lambda with CloudWatch event triggers.
 
@@ -676,7 +676,7 @@ Example use:
 
 ---
 
-### 🔹 STEP 12: Scaling and Load Balancing
+### 🔹 STEP 12: Scaling and Load Balancing  ---- IMP
 
 When traffic increases:
 
@@ -714,7 +714,7 @@ All explained from your **Node.js + Express** background, no unnecessary theory,
 
 ---
 
-## 🧱 WHAT IS DOCKER COMPOSE?
+## 🧱 WHAT IS DOCKER COMPOSE?  ---- IMP
 
 Docker Compose is a tool to **define and run multi-container Docker applications**.
 You write everything in a single file (`docker-compose.yml`) — services, networks, volumes — and Docker runs them together.
@@ -766,10 +766,10 @@ mern-app/
 
 ---
 
-## 🧩 BACKEND DOCKERFILE (Express API)
+## 🧩 BACKEND DOCKERFILE (Express API)  ---- IMP
 
 ```Dockerfile
-# backend/Dockerfile
+# backend/Dockerfile  ---- IMP
 FROM node:18
 
 WORKDIR /app
@@ -792,10 +792,10 @@ Explanation:
 
 ---
 
-## 🧩 FRONTEND DOCKERFILE (React/Vite App)
+## 🧩 FRONTEND DOCKERFILE (React/Vite App)  ---- IMP
 
 ```Dockerfile
-# frontend/Dockerfile
+# frontend/Dockerfile  ---- IMP
 FROM node:18 AS build
 
 WORKDIR /app
@@ -855,12 +855,12 @@ Explanation:
 
 ---
 
-## 🧩 DOCKER COMPOSE FILE
+## 🧩 DOCKER COMPOSE FILE  ---- IMP
 
 Here’s the heart of your setup 👇
 
 ```yaml
-# docker-compose.yml
+# docker-compose.yml  ---- IMP
 version: "3.8"
 
 services:
@@ -1001,7 +1001,7 @@ const redis = new Redis({
 
 ---
 
-### 🔹 2. Docker Compose with Watch Mode (Development)
+### 🔹 2. Docker Compose with Watch Mode (Development)  ---- IMP
 
 If you want auto-reload during development:
 
@@ -1069,7 +1069,7 @@ For production, forward logs to **AWS CloudWatch** or use **Prometheus + Grafana
 
 ---
 
-### 🔹 5. SSL + HTTPS with Nginx (Production)
+### 🔹 5. SSL + HTTPS with Nginx (Production)  ---- IMP
 
 You can easily attach free SSL using **Let’s Encrypt** or **Certbot**.
 
@@ -1084,7 +1084,7 @@ This updates your Nginx config with HTTPS support automatically.
 
 ---
 
-## 🧠 HOW IT ALL CONNECTS (Concept Flow)
+## 🧠 HOW IT ALL CONNECTS (Concept Flow)  -- IMP
 
 ---
 
@@ -1103,7 +1103,7 @@ Here’s the mental map of how all these pieces integrate:
 
 ---
 
-## 🧭 FINAL DEPLOYMENT COMMAND FLOW (SUMMARY)
+## 🧭 FINAL DEPLOYMENT COMMAND FLOW (SUMMARY)  -- IMP
 
 1. Developer commits and pushes code to GitHub
 2. GitHub Actions runs CI pipeline (test + build + deploy via SSH)
@@ -1147,12 +1147,12 @@ Key components you’ll need:
 
 ---
 
-## 1) RUN MULTIPLE BACKEND INSTANCES (Docker)
+## 1) RUN MULTIPLE BACKEND INSTANCES (Docker)  ---- IMP
 
 You can run multiple backend containers on one host (different ports) or across many hosts. Example Docker Compose snippet (for local/multiple containers on same host):
 
 ```yaml
-# docker-compose.scale.yml
+# docker-compose.scale.yml  ---- IMP
 version: "3.8"
 
 services:
@@ -1169,13 +1169,13 @@ services:
     networks:
       - mern-net
 
-  # mongo, redis, nginx same as before...
+  # mongo, redis, nginx same as before...  ---- IMP
 ```
 
-# Note: `deploy.replicas` works with Docker Swarm or a managed orchestrator — with plain docker-compose this field is ignored.
+# Note: `deploy.replicas` works with Docker Swarm or a managed orchestrator — with plain docker-compose this field is ignored.  ---- IMP
 
 ```
-# Local quick-run (not production): spin three containers manually
+# Local quick-run (not production): spin three containers manually  ---- IMP
 docker build -t my-backend ./backend
 docker run -d --name backend1 -e PORT=3001 my-backend
 docker run -d --name backend2 -e PORT=3002 my-backend
@@ -1184,14 +1184,14 @@ docker run -d --name backend3 -e PORT=3003 my-backend
 
 ---
 
-## 2) NGINX AS LOAD BALANCER (Multiple Backends)
+## 2) NGINX AS LOAD BALANCER (Multiple Backends)  ---- IMP
 
 Use Nginx upstream blocks to balance between multiple backend containers/hosts.
 
 ```nginx
 # nginx/loadbalancer.conf
 upstream backend_pool {
-    # backend containers (container names or IPs)
+    # backend containers (container names or IPs)  ---- IMP
     server backend1:3000;
     server backend2:3000;
     server backend3:3000;
@@ -1226,7 +1226,7 @@ Important Nginx features:
 
 ---
 
-## 3) AWS ELB / ALB (Recommended for EC2)
+## 3) AWS ELB / ALB (Recommended for EC2)   -- IMP
 
 In production on AWS, use an Application Load Balancer (ALB) in front of your EC2 instances or ECS tasks. High level steps:
 
@@ -1246,7 +1246,7 @@ Health check endpoint: /api/health  -> must return 200 quickly
 
 ---
 
-## 4) SESSION MANAGEMENT — STICKY OR CENTRAL STORE?
+## 4) SESSION MANAGEMENT — STICKY OR CENTRAL STORE?  ---- IMP
 
 Problem: If you use stateless load balancing, the next request from the same user can hit a different backend instance. If session data sits in memory on one instance, the next instance won't know it.
 
@@ -1285,12 +1285,12 @@ Comments for notes:
 
 ---
 
-## 5) PM2 CLUSTER MODE (Single Host Scaling)
+## 5) PM2 CLUSTER MODE (Single Host Scaling)  ---- IMP
 
 If you have a powerful EC2 instance with many CPUs, use PM2 cluster mode to run multiple Node worker processes on the same host (utilizes all cores).
 
 ```bash
-# Start app with PM2 in cluster mode (auto-creates N processes)
+# Start app with PM2 in cluster mode (auto-creates N processes)  ---- IMP
 pm2 start npm --name "mern-backend" -- run start --watch -i max
 # or with a config file:
 ```
@@ -1407,7 +1407,7 @@ Operational tips:
 
 ---
 
-## 9) CACHE STRATEGIES (Redis)
+## 9) CACHE STRATEGIES (Redis)  ---- IMP
 
 Caching layers you should consider:
 
@@ -1460,7 +1460,7 @@ Instrument your app:
 
 ---
 
-## 13) INFRASTRUCTURE AS CODE (IaC)
+## 13) INFRASTRUCTURE AS CODE (IaC)  -- IMP
 
 Use IaC to make scaling reproducible:
 
@@ -1775,7 +1775,7 @@ Frontend should load, and `/api` calls will hit your backend.
 
 ---
 
-## 🔒 STEP 6 — Setup SSL (HTTPS) with Let’s Encrypt (Certbot)
+## 🔒 STEP 6 — Setup SSL (HTTPS) with Let’s Encrypt (Certbot)  ---- IMP
 
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
@@ -1810,19 +1810,19 @@ sudo ufw status
 
 ---
 
-## 🧰 STEP 8 — Setup MongoDB or Redis (optional if using managed services)
+## 🧰 STEP 8 — Setup MongoDB or Redis (optional if using managed services)  ---- IMP
 
 ### Option 1: Use DigitalOcean Managed MongoDB
 
 * Go to **DigitalOcean Dashboard → Databases → Create Database Cluster**
 * Choose **MongoDB** and note down connection string (use it in `.env`)
 
-### Option 2: Run MongoDB locally (Dockerized)
+### Option 2: Run MongoDB locally (Dockerized)  ---- IMP
 
 ```bash
 sudo apt install docker.io docker-compose -y
 
-# Create docker-compose.yml
+# Create docker-compose.yml  ---- IMP
 nano docker-compose.yml
 ```
 

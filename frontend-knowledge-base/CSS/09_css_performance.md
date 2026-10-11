@@ -90,6 +90,21 @@ transform, opacity
 
 **Q85. will-change Optimization:**
 
+**What is `will-change`?**
+
+`will-change` is a CSS property that lets you **warn the browser in advance** that an element is about to change (animate) in a specific way. The browser can then prepare optimizations *before* the change happens — most importantly, promoting the element to its **own GPU layer** so animations run on the compositor thread instead of triggering expensive layout/paint work on the main thread. The result is smoother, jank-free animations.
+
+**Common values:**
+- `will-change: transform;` — you plan to move/scale/rotate the element.
+- `will-change: opacity;` — you plan to fade it.
+- `will-change: transform, opacity;` — both (comma-separated list).
+- `will-change: scroll-position;` — element's scroll position will change.
+- `will-change: auto;` — the default; **removes** the hint and lets the browser decide normally.
+
+**Why not put it on everything?** Each hint costs memory (a new GPU layer per element). Applying it to `*` or too many elements forces the browser to reserve resources for elements that may never animate — this *hurts* performance instead of helping. It should be applied **sparingly, to specific elements, ideally just before the animation, and removed after** (see the cleanup example below).
+
+**Rule of thumb:** treat `will-change` as a targeted, temporary hint — not a permanent style. If in doubt, don't add it; the browser is usually good at optimizing `transform`/`opacity` animations on its own.
+
 ```css
 /* Hint browser to optimize */
 .animated-element {

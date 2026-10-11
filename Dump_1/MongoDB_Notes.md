@@ -10,7 +10,7 @@ Database
       └── Document 2
 ```
 
-### MongoDB vs RDBMS
+### MongoDB vs RDBMS  ---- IMP
 
 | Feature | MongoDB | RDBMS |
 |---------|---------|-------|
@@ -21,7 +21,7 @@ Database
 | Query Language | MongoDB Query Language | SQL |
 | Transactions | Multi-document (4.0+) | ACID compliant |
 
-### MongoDB vs MySQL
+### MongoDB vs MySQL  ---- IMP
 
 | Aspect | MongoDB | MySQL |
 |--------|---------|-------|
@@ -75,7 +75,7 @@ cursor.skip(5);       // Skip first 5 results
 cursor.sort({age: -1}); // Sort by age descending
 ```
 
-### Data Types in MongoDB
+### Data Types in MongoDB  ---- IMP
 
 ```javascript
 {
@@ -118,7 +118,7 @@ cursor.sort({age: -1}); // Sort by age descending
 }
 ```
 
-### ObjectId in MongoDB
+### ObjectId in MongoDB  ---- IMP
 ObjectId is a 12-byte unique identifier automatically generated for the `_id` field.
 
 **Structure (24 hex characters):**
@@ -150,7 +150,7 @@ db.collection.find(
 )
 ```
 
-### Introduction to JSON
+### Introduction to JSON  ---- IMP
 JSON (JavaScript Object Notation) is a lightweight data-interchange format.
 
 ```json
@@ -165,7 +165,7 @@ JSON (JavaScript Object Notation) is a lightweight data-interchange format.
 }
 ```
 
-### Introduction to BSON
+### Introduction to BSON  ---- IMP
 BSON (Binary JSON) is MongoDB's binary representation of JSON with additional data types.
 
 **What is BSON?**
@@ -505,6 +505,15 @@ MongoDB Compass is the official GUI for MongoDB.
 ### MongoDB Shell (mongosh)
 Interactive JavaScript shell for MongoDB.
 
+**What is `mongosh`?**
+
+`mongosh` (MongoDB Shell) is the **official command-line tool for connecting to and interacting with a MongoDB database**. It's a fully-featured **JavaScript environment (REPL)** — you type commands, hit enter, and get an immediate result — so you can run real JS (variables, loops, functions) alongside database commands.
+
+- **What you use it for:** connecting to a local or Atlas (cloud) database, browsing databases/collections, running queries, inserting/updating/deleting documents, creating indexes, and administering the server — all by hand, without writing an app.
+- **How it connects:** you give it a **connection string** (URI). `mongodb://localhost:27017` targets a local server on the default port `27017`; `mongodb+srv://...` targets a MongoDB Atlas cloud cluster.
+- **`mongosh` vs the driver:** `mongosh` is for **humans typing commands interactively** (debugging, quick checks, admin). Inside application code (Node.js, etc.) you instead use a **driver library** like `mongodb` or **Mongoose** — but the query syntax you learn in `mongosh` (`db.collection.find(...)`) is nearly identical.
+- **`mongosh` vs the old `mongo`:** `mongosh` is the modern replacement for the legacy `mongo` shell — it adds syntax highlighting, better autocomplete, and improved error messages.
+
 **Installation:**
 ```bash
 # Install mongosh
@@ -731,20 +740,39 @@ db.users.insertMany([
 //   }
 // }
 
-// Example 2: With ordered insertion (default)
+// Example 2: ORDERED insertion (this is the DEFAULT)
+// Documents are inserted one-by-one, IN ORDER. If any document fails
+// (e.g. a duplicate _id or a validation error), MongoDB STOPS immediately
+// and does NOT attempt any of the remaining documents after the failed one.
+// (Documents BEFORE the failure stay inserted — it is not rolled back.)
 db.products.insertMany([
   {name: "Product A", price: 10},
   {name: "Product B", price: 20},
   {name: "Product C", price: 30}
-], {ordered: true}) // Stops on first error
+], {ordered: true}) // Stops on the FIRST error; later docs are skipped
 
-// Example 3: Unordered insertion
+// Example 3: UNORDERED insertion
+// MongoDB attempts EVERY document regardless of failures. If one fails,
+// it records the error but CONTINUES trying to insert all the others.
+// Use this when you want "insert as many as possible" and can tolerate
+// some failing. It can also be slightly faster (docs may go in parallel).
 db.products.insertMany([
   {name: "Item 1", stock: 100},
   {name: "Item 2", stock: 200},
   {name: "Item 3", stock: 150}
-], {ordered: false}) // Continues after errors
+], {ordered: false}) // Continues after errors; inserts all valid docs
 ```
+
+**Ordered vs Unordered — quick summary:**
+
+| | `ordered: true` (default) | `ordered: false` |
+|---|---|---|
+| On an error | **Stops** at the first failure | **Continues** with the rest |
+| Remaining docs | Skipped | Still attempted |
+| Order preserved | Yes (sequential) | Not guaranteed |
+| Best for | You need all-or-until-error, order matters | Bulk load, "insert what you can" |
+
+> **Note:** Neither mode is a transaction — documents inserted *before* a failure remain in the database. For true all-or-nothing behavior, use a **multi-document transaction** instead.
 
 ### insert() (Deprecated)
 Legacy method that can insert one or multiple documents.
@@ -1458,9 +1486,9 @@ db.users.find({
 
 ---
 
-## 7. Operators {#operators}
+## 7. Operators {#operators}  ---- IMP
 
-## COMPARISON OPERATORS
+## COMPARISON OPERATORS  ---- IMP
 
 ### $eq (Equal)
 ```javascript
@@ -1594,7 +1622,7 @@ db.products.aggregate([
 
 ---
 
-## LOGICAL OPERATORS
+## LOGICAL OPERATORS  ---- IMP
 
 ### $and
 ```javascript
@@ -1694,7 +1722,7 @@ db.products.find({
 
 ---
 
-## ARITHMETIC OPERATORS (Aggregation)
+## ARITHMETIC OPERATORS (Aggregation)  ---- IMP
 
 ### $add
 ```javascript
@@ -1961,7 +1989,7 @@ db.products.aggregate([
 
 ---
 
-## FIELD UPDATE OPERATORS
+## FIELD UPDATE OPERATORS  ---- IMP
 
 ### $set
 ```javascript
@@ -2138,7 +2166,7 @@ db.orders.updateOne(
 
 ---
 
-## ARRAY UPDATE OPERATORS
+## ARRAY UPDATE OPERATORS  ---- IMP
 
 ### $push
 ```javascript
@@ -2683,7 +2711,7 @@ db.posts.updateOne(
 
 ---
 
-## ARRAY EXPRESSION OPERATORS (Aggregation)
+## ARRAY EXPRESSION OPERATORS (Aggregation)  ---- IMP
 
 ### $isArray
 ```javascript
@@ -3931,7 +3959,7 @@ db.users.aggregate([
 
 ---
 
-## STRING EXPRESSION OPERATORS (Aggregation)
+## STRING EXPRESSION OPERATORS (Aggregation)  ---- IMP
 
 ### $concat
 ```javascript
@@ -6042,7 +6070,7 @@ db.logs.aggregate([
 ])
 ```
 
-### Transactions (Multi-document ACID)
+### Transactions (Multi-document ACID)  ---- IMP
 ```javascript
 // Start a session
 const session = db.getMongo().startSession()
@@ -6686,7 +6714,7 @@ session.commitTransaction();
 - Use appropriate read/write concerns
 - Don't mix session and non-session operations
 
-### Indexes and Performance
+### Indexes and Performance  ---- IMP
 ```javascript
 // Create single field index
 db.users.createIndex({email: 1})
@@ -7292,7 +7320,7 @@ db.events.createIndex({userId: 1, timestamp: -1})
 - With index: O(log n) - Index scan (fast)
 - Speed improvement: 10x to 1000x faster for large collections
 
-### Schema Validation
+### Schema Validation  ---- IMP
 ```javascript
 // Create collection with validation
 db.createCollection("users", {
@@ -8902,7 +8930,7 @@ async function optimizedMigration() {
 | **`bulk.find().deleteOne()`** | Queue delete operation | Single document delete |
 | **`bulk.execute()`** | Execute all queued operations | Run all operations |
 
-### Aggregation Framework - Advanced Stages
+### Aggregation Framework - Advanced Stages  ---- IMP
 
 ```javascript
 // $facet - Multiple pipelines
@@ -11356,7 +11384,7 @@ db.collection1.aggregate([
 // Documents can have different fields - union will include all fields
 ```
 
-### Working with Embedded Documents vs References
+### Working with Embedded Documents vs References  ---- IMP
 
 ```javascript
 // Embedded documents approach
@@ -11434,7 +11462,7 @@ db.posts.aggregate([
 ])
 ```
 
-### Change Streams (Real-time Data)
+### Change Streams (Real-time Data)  ---- IMP
 ```javascript
 // Watch for changes
 const changeStream = db.orders.watch()
@@ -11848,9 +11876,9 @@ This completes the comprehensive MongoDB guide covering all major functions, ope
 
 ---
 
-## 1. Introduction to NoSQL and MongoDB {#introduction}
+## 1. Introduction to NoSQL and MongoDB {#introduction}  ---- IMP
 
-### What is NoSQL?
+### What is NoSQL?  ---- IMP
 
 **Definition**: NoSQL (Not Only SQL) refers to non-relational database management systems that provide mechanisms for storage and retrieval of data that is modeled in means other than tabular relations used in relational databases.
 
@@ -11882,7 +11910,7 @@ This completes the comprehensive MongoDB guide covering all major functions, ope
    - Examples: Neo4j, ArangoDB
    - Use case: Social networks, recommendation engines
 
-### Introduction to MongoDB
+### Introduction to MongoDB  ---- IMP
 
 **Definition**: MongoDB is a source-available, cross-platform document-oriented database program. It uses JSON-like documents with optional schemas and is classified as a NoSQL database.
 
@@ -12077,7 +12105,7 @@ db.getRole("customAppRole", { showPrivileges: true })
 // Complete list at: mongodb.com/docs/manual/reference/privilege-actions/
 ```
 
-### 13.5 Authentication Mechanisms
+### 13.5 Authentication Mechanisms  ---- IMP
 
 ```javascript
 // SCRAM (default, recommended)
@@ -12843,7 +12871,7 @@ db.users.findOne(
 )
 ```
 
-#### 4.6 Cursor Methods
+#### 4.6 Cursor Methods  ---- IMP
 
 **Definition**: Methods that modify the behavior of cursors returned by `find()`.
 
@@ -13320,7 +13348,7 @@ if (job) {
 
 ### Query Selectors
 
-#### 5.1 Comparison Operators
+#### 5.1 Comparison Operators  ---- IMP
 
 **$eq** - Equals
 ```javascript
@@ -13413,7 +13441,7 @@ db.products.find({
 })
 ```
 
-#### 5.2 Logical Operators
+#### 5.2 Logical Operators  ---- IMP
 
 **$and** - Logical AND
 ```javascript
@@ -13510,7 +13538,7 @@ db.products.find({
 })
 ```
 
-#### 5.3 Element Operators
+#### 5.3 Element Operators  ---- IMP
 
 **$exists** - Field exists or not
 ```javascript
@@ -13563,7 +13591,7 @@ db.users.find({
 })
 ```
 
-#### 5.4 Array Operators
+#### 5.4 Array Operators  ---- IMP
 
 **$all** - Array contains all specified elements
 ```javascript
@@ -13641,7 +13669,7 @@ db.users.find({
 })
 ```
 
-#### 5.5 String Operators
+#### 5.5 String Operators  ---- IMP
 
 **Regular Expressions**
 ```javascript
@@ -13716,7 +13744,7 @@ db.articles.find(
 ).sort({ score: { $meta: "textScore" } })
 ```
 
-#### 5.6 Evaluation Operators
+#### 5.6 Evaluation Operators  ---- IMP
 
 **$expr** - Use aggregation expressions in query
 ```javascript
@@ -13855,11 +13883,11 @@ db.users.find({
 
 ---
 
-## 6. Operators {#operators}
+## 6. Operators {#operators}  ---- IMP
 
-### Update Operators
+### Update Operators  ---- IMP
 
-#### 6.1 Field Update Operators
+#### 6.1 Field Update Operators  ---- IMP
 
 **$set** - Sets field value
 ```javascript
@@ -14095,7 +14123,7 @@ db.orders.updateOne(
 )
 ```
 
-#### 6.2 Array Update Operators
+#### 6.2 Array Update Operators  ---- IMP
 
 **$push** - Add element to array
 ```javascript
@@ -14362,7 +14390,7 @@ db.surveys.updateOne(
 
 ## 7. Advanced Queries {#advanced-queries}
 
-### Projection
+### Projection  ---- IMP
 
 **Definition**: Projection determines which fields are returned in the query results.
 
@@ -14424,7 +14452,7 @@ db.students.find(
 // Returns first matching array element
 ```
 
-### Cursor Methods (Advanced)
+### Cursor Methods (Advanced)  ---- IMP
 
 ```javascript
 // pretty() - Format output (shell only)
@@ -14477,11 +14505,11 @@ db.users.find().collation({ locale: "en", strength: 2 })
 
 ---
 
-## 8. MongoDB Aggregation Framework {#aggregation}
+## 8. MongoDB Aggregation Framework {#aggregation}  ---- IMP
 
 **Definition**: The aggregation framework provides a way to process data records and return computed results. It's MongoDB's equivalent to SQL's GROUP BY.
 
-### Basic Aggregation
+### Basic Aggregation  ---- IMP
 
 ```javascript
 // Basic aggregation pipeline
@@ -14498,7 +14526,7 @@ db.orders.aggregate([
 ])
 ```
 
-### 8.1 Aggregation Pipeline Stages
+### 8.1 Aggregation Pipeline Stages  ---- IMP
 
 #### $match
 
@@ -14540,7 +14568,7 @@ db.orders.aggregate([
 ])
 ```
 
-#### $group
+#### $group  ---- IMP
 
 **Definition**: Groups documents by a specified expression and outputs one document per group.
 
@@ -14859,7 +14887,7 @@ db.orders.aggregate([
 ])
 ```
 
-#### $lookup
+#### $lookup  ---- IMP
 
 **Definition**: Performs a left outer join with another collection.
 
@@ -15351,7 +15379,7 @@ db.documents.aggregate([
 ])
 ```
 
-### 8.2 Aggregation Pipeline Optimization
+### 8.2 Aggregation Pipeline Optimization  ---- IMP
 
 ```javascript
 // 1. Place $match early
@@ -15400,7 +15428,7 @@ db.orders.aggregate(
 )
 ```
 
-### 8.3 Aggregation Pipeline Limits
+### 8.3 Aggregation Pipeline Limits  ---- IMP
 
 ```javascript
 // 1. Result size limit: 16MB per document
@@ -15472,7 +15500,7 @@ db.orders.aggregate([
 
 ---
 
-## 9. Indexing {#indexing}
+## 9. Indexing {#indexing}  ---- IMP
 
 **Definition**: Indexes support efficient execution of queries. Without indexes, MongoDB must scan every document (collection scan).
 
@@ -15525,7 +15553,7 @@ db.users.createIndex(
 )
 ```
 
-### 9.2 Get Indexes
+### 9.2 Get Indexes  ---- IMP
 
 ```javascript
 // List all indexes
@@ -15563,7 +15591,7 @@ db.users.dropIndexes(["email_1", "age_-1"])
 
 ### 9.4 Index Types
 
-#### Single Field Indexes
+#### Single Field Indexes  ---- IMP
 
 **Definition**: Index on a single field.
 
@@ -15579,7 +15607,7 @@ db.users.find({ email: { $in: ["a@ex.com", "b@ex.com"] } })
 db.users.find().sort({ email: 1 })
 ```
 
-#### Compound Indexes
+#### Compound Indexes  ---- IMP
 
 **Definition**: Index on multiple fields.
 
@@ -15613,7 +15641,7 @@ db.users.find().sort({ lastName: 1, firstName: 1 })
 db.users.find().sort({ lastName: -1, firstName: 1 })
 ```
 
-#### Multikey Indexes
+#### Multikey Indexes  ---- IMP
 
 **Definition**: Indexes on array fields. MongoDB creates separate index entries for each element.
 
@@ -15646,7 +15674,7 @@ db.users.createIndex({ "addresses.city": 1 })
 db.users.find({ "addresses.city": "New York" })
 ```
 
-#### Text Indexes
+#### Text Indexes  ---- IMP
 
 **Definition**: Supports text search queries on string content.
 
@@ -15711,7 +15739,7 @@ db.articles.find({
 // - Text indexes do not store stop words
 ```
 
-#### Wildcard Indexes
+#### Wildcard Indexes  ---- IMP
 
 **Definition**: Index on all fields or fields matching a pattern.
 
@@ -15749,7 +15777,7 @@ db.products.createIndex(
 )
 ```
 
-#### Geospatial Indexes
+#### Geospatial Indexes  ---- IMP
 
 **Definition**: Indexes for geospatial coordinate data.
 
@@ -15834,7 +15862,7 @@ db.places.find({
 })
 ```
 
-#### Hashed Indexes
+#### Hashed Indexes  ---- IMP
 
 **Definition**: Index on hashed value of a field (useful for sharding).
 
@@ -15935,18 +15963,18 @@ db.currentOp({
 
 ---
 
-## 10. Transactions {#transactions}
+## 10. Transactions {#transactions}  ---- IMP
 
 **Definition**: Transactions are logical groups of operations that execute atomically (all or nothing).
 
-### 10.1 ACID Properties
+### 10.1 ACID Properties  ---- IMP
 
 - **Atomicity**: All operations succeed or all fail
 - **Consistency**: Database remains in valid state
 - **Isolation**: Concurrent transactions don't interfere
 - **Durability**: Committed changes persist
 
-### 10.2 Transaction Examples
+### 10.2 Transaction Examples  ---- IMP
 
 ```javascript
 // Start a session
@@ -16019,7 +16047,7 @@ try {
 }
 ```
 
-### 10.3 Transactions with Callback API
+### 10.3 Transactions with Callback API  ---- IMP
 
 ```javascript
 // Using withTransaction (recommended)
@@ -16044,7 +16072,7 @@ await session.withTransaction(async () => {
 session.endSession()
 ```
 
-### 10.4 Transaction Limitations
+### 10.4 Transaction Limitations  ---- IMP
 
 ```javascript
 // Limitations:
@@ -16293,7 +16321,7 @@ db.enrollments.aggregate([
 // - Relationship has its own properties
 ```
 
-### 11.2 Embedding vs Referencing
+### 11.2 Embedding vs Referencing  ---- IMP
 
 **When to Embed:**
 - Data is always accessed together
@@ -16310,7 +16338,7 @@ db.enrollments.aggregate([
 - Need to share data across documents
 - Document size approaching 16MB limit
 
-### 11.3 Schema Design Patterns
+### 11.3 Schema Design Patterns  ---- IMP
 
 #### Attribute Pattern
 ```javascript
@@ -16419,7 +16447,7 @@ db.products.createIndex({ "attributes.key": 1, "attributes.value": 1 })
 // - Update carefully to maintain consistency
 ```
 
-### 11.4 JSON Schema Validation
+### 11.4 JSON Schema Validation  ---- IMP
 
 **Definition**: Enforce document structure and data types.
 
@@ -16502,9 +16530,9 @@ db.runCommand({
 
 ---
 
-## 12. Replication and Sharding {#replication-sharding}
+## 12. Replication and Sharding {#replication-sharding}  ---- IMP
 
-### 12.1 MongoDB Replication
+### 12.1 MongoDB Replication  ---- IMP
 
 **Definition**: Replication provides redundancy and high availability by maintaining multiple copies of data across servers.
 
@@ -16596,7 +16624,7 @@ db.users.insertOne(
 )
 ```
 
-### 12.2 MongoDB Sharding
+### 12.2 MongoDB Sharding  ---- IMP
 
 **Definition**: Sharding distributes data across multiple servers for horizontal scaling.
 
@@ -16677,7 +16705,7 @@ sh.shardCollection("mydb.orders", { customerId: 1, orderDate: 1 })
 // - Better write distribution
 ```
 
-### 12.3 Change Streams
+### 12.3 Change Streams  ---- IMP
 
 **Definition**: Allow applications to access real-time data changes.
 

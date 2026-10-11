@@ -140,9 +140,9 @@ if (firstOccurrence !== -1) {
 
 ---
 
-## Data Types & Memory
+## Data Types & Memory  ---- IMP
 
-### Primitive vs. Non-Primitive Types
+### Primitive vs. Non-Primitive Types  ---- IMP
 
 | Feature | Primitive Types | Non-Primitive (Reference) Types |
 |---------|-----------------|---------------------------------|
@@ -932,7 +932,7 @@ Math.trunc(3.9); // 3 (Remove decimals)
 Math.random();   // 0 to 1
 ```
 
-### Logical Operators & Conditionals
+### Logical Operators & Conditionals  ---- IMP
 - `??` (Nullish Coalescing): Returns first arg if not `null`/`undefined`.
 - `||` (Short-circuit): Returns first truthy value.
 
@@ -1135,7 +1135,7 @@ console.log(formattedProducts);
 ]
 */
 
-## Data Types & Classes
+## Data Types & Classes  ---- IMP
 
 ### Type checking and Nan
 ```javascript
@@ -1237,9 +1237,9 @@ console.log(typeof personString); // Output: "string"
 // console.log(position); // Output: 12 - the search() method is used to find the position of the first occurrence of the searchTerm in the sentence string. It returns the index of the first character of the found substring. In this case, the searchTerm "powerful" is found at index 12 in the sentence string.
 
 // test - RegExp     L
-## Prototype Inheritance
+## Prototype Inheritance  ---- IMP
 
-### Prototypes & Chain
+### Prototypes & Chain  ---- IMP
 All JavaScript objects inherit properties and methods from a prototype. `Object.prototype` is at the top of the chain.
 
 ```javascript
@@ -1305,7 +1305,7 @@ try {
 // ------------------------------------------------------------
 // Function parameters are the names listed in the function definition. Function arguments are the real values passed to (and received by) the function.
 
-## Functions: Rest, Closures & Context
+## Functions: Rest, Closures & Context  ---- IMP
 
 ### Rest Parameters (...)
 ```javascript
@@ -1314,7 +1314,7 @@ function sum(...numbers) {
 }
 ```
 
-### Closures
+### Closures  ---- IMP
 ```javascript
 function createCounter() {
   let count = 0;
@@ -1335,7 +1335,7 @@ function fetchData(callback) {
 
 ## Asynchronous JavaScript
 
-### Promises
+### Promises  ---- IMP
 ```javascript
 const myPromise = new Promise((resolve, reject) => {
   setTimeout(() => resolve("Data"), 2000);
@@ -1344,7 +1344,7 @@ const myPromise = new Promise((resolve, reject) => {
 myPromise.then(data => console.log(data));
 ```
 
-#### Promise.all
+#### Promise.all  ---- IMP
 Waits for all promises to resolve.
 ```javascript
 Promise.all([p1, p2]).then(results => {
@@ -1362,7 +1362,7 @@ Promise.all([p1, p2]).then(results => {
 
 //////////////////////////////////////////////// L
 
-## Performance & Time Complexity
+## Performance & Time Complexity  ---- IMP
 
 ### Arrays
 - **Access (index)**: $O(1)$
@@ -1790,7 +1790,7 @@ console.log(stringToObject("a.b.c", "Hello"));
 ////////////////////////////////////////////////
 ## Full Stack & Utility Patterns
 
-### Fetch vs Axios
+### Fetch vs Axios  ---- IMP
 - **Fetch**: Native API, returns promise, requires manual `.json()` parsing, no automatic error handling for non-2xx status codes.
 - **Axios**: Library, automatic transformations, simpler error handling, supports interceptors and request cancellation.
 

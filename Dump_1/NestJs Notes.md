@@ -1,5 +1,5 @@
 # 📘 COMPLETE NESTJS GUIDE FOR EXPRESS DEVELOPERS
-# Every Import, Decorator, and Concept Explained
+# Every Import, Decorator, and Concept Explained  ---- IMP
 # ================================================================
 > [!TIP]
 > **Confused by the 10,000+ lines?** Follow the **[Master Full-Stack Preparation Flow](file:///c:/Users/nikit/Downloads/Nikita/Prepare/Knowledge-base/Dump_1/Master_FullStack_Interview_Guide.md)** for a structured learning path!
@@ -32,7 +32,7 @@ IMP
 
 ## 1️⃣ CORE DECORATORS & IMPORTS
 
-### @Module() - FROM '@nestjs/common'
+### @Module() - FROM '@nestjs/common'  ---- IMP
 
 **What it is:**
 A class decorator that defines a module - the fundamental building block of NestJS applications.  --- IMP
@@ -151,7 +151,7 @@ export class UserController {
 
 <a id="http"></a>
 
-## 2️⃣ HTTP METHOD DECORATORS
+## 2️⃣ HTTP METHOD DECORATORS  ---- IMP
 
 ### @Get(), @Post(), @Put(), @Patch(), @Delete()
 
@@ -217,7 +217,7 @@ export class UserController {
 
 <a id="params"></a>
 
-## 3️⃣ PARAMETER DECORATORS - FROM '@nestjs/common'
+## 3️⃣ PARAMETER DECORATORS - FROM '@nestjs/common'  ---- IMP
 
 ### @Param() - Extract Route Parameters
 
@@ -397,7 +397,7 @@ export class UserController {
 
 <a id="validation"></a>
 
-## 4️⃣ VALIDATION & TRANSFORMATION
+## 4️⃣ VALIDATION & TRANSFORMATION  ---- IMP
 
 ### PipeTransform - FROM '@nestjs/common'
 
@@ -482,7 +482,7 @@ export interface ArgumentMetadata {
 
 ---
 
-### ValidationPipe - FROM '@nestjs/common'
+### ValidationPipe - FROM '@nestjs/common'  ---- IMP
 
 **What it is:**
 Built-in pipe that validates DTOs using class-validator decorators.
@@ -549,7 +549,7 @@ async function bootstrap() {
 
 ---
 
-### class-validator Decorators - FROM 'class-validator'
+### class-validator Decorators - FROM 'class-validator'  ---- IMP
 
 **What they are:**
 Decorators for validating DTO properties.
@@ -606,7 +606,7 @@ export class CreateUserDto {
 
 <a id="guards"></a>
 
-## 5️⃣ GUARDS & AUTHORIZATION
+## 5️⃣ GUARDS & AUTHORIZATION  ---- IMP
 
 ### CanActivate - FROM '@nestjs/common'
 
@@ -702,7 +702,7 @@ export class AuthGuard implements CanActivate {
 
 ---
 
-### @UseGuards() - FROM '@nestjs/common'
+### @UseGuards() - FROM '@nestjs/common'  ---- IMP
 
 **What it is:**
 Decorator to apply guards to controllers or methods.
@@ -792,7 +792,7 @@ deleteUser() {}
 
 <a id="interceptors"></a>
 
-## 6️⃣ INTERCEPTORS
+## 6️⃣ INTERCEPTORS  ---- IMP
 
 ### NestInterceptor - FROM '@nestjs/common'    --- IMP
 
@@ -904,7 +904,7 @@ const controller = context.getClass(); // Reference to the controller class
 
 ---
 
-### RxJS Operators - FROM 'rxjs' and 'rxjs/operators'
+### RxJS Operators - FROM 'rxjs' and 'rxjs/operators'  ---- IMP
 
 **What they are:**
 Operators for transforming observables (used in interceptors).
@@ -1056,9 +1056,9 @@ findAll() {}
 
 ---
 
-## 7️⃣ MIDDLEWARE
+## 7️⃣ MIDDLEWARE  ---- IMP
 
-### NestMiddleware - FROM '@nestjs/common'
+### NestMiddleware - FROM '@nestjs/common'  ---- IMP
 
 **What it is:**
 Interface for creating class-based middleware (similar to Express middleware).
@@ -1093,7 +1093,7 @@ import { Request, Response, NextFunction } from 'express';
 
 ---
 
-### MiddlewareConsumer - FROM '@nestjs/common'
+### MiddlewareConsumer - FROM '@nestjs/common'  ---- IMP
 
 **What it is:**
 Helper class for applying middleware to routes in a module.
@@ -1247,7 +1247,7 @@ host.getType()                     // 'http' | 'ws' | 'rpc'
 
 ---
 
-### HttpException and Built-in Exceptions - FROM '@nestjs/common'
+### HttpException and Built-in Exceptions - FROM '@nestjs/common'  ---- IMP
 
 **What they are:**  
 `HttpException` is the base class for all built-in HTTP exceptions in NestJS. Use it to throw custom errors with specific status codes and messages. The subclasses (like `BadRequestException`) are specialized versions that automatically set the correct HTTP status code.
@@ -1348,7 +1348,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 <a id="lifecycle"></a>
 
-## 8️⃣ LIFECYCLE HOOKS
+## 8️⃣ LIFECYCLE HOOKS  ---- IMP
 
 ### Lifecycle Hook Interfaces - FROM '@nestjs/common'   --- IMP
 
@@ -1606,7 +1606,7 @@ Exclude, Expose, Transform, Type
 Observable, of, throwError
 ```
 
-### FROM 'rxjs/operators'
+### FROM 'rxjs/operators'  ---- IMP
 ```typescript
 tap, map, catchError, timeout, retry, debounceTime
 ```
@@ -1694,7 +1694,7 @@ END OF COMPLETE NESTJS IMPORT & CONCEPT GUIDE
 
 # ❓ NestJS Interview Questions & Answers   --- IMP
 
-### What is NestJS?
+### What is NestJS?  ---- IMP
 Nest (NestJS) is a framework for building efficient, scalable Node.js server-side applications. It uses progressive JavaScript and is built with and fully supports TypeScript.
 
 ### Who developed NestJS? Why did they develop NestJS?
@@ -1718,13 +1718,13 @@ $ nest generate module users
 $ nest g resource users
 ```
 
-### What’s the difference between NestJS and Angular?
+### What’s the difference between NestJS and Angular?  ---- IMP
 Angular is a framework for building client-side applications. NestJS is a framework for building server-side applications. NestJS is heavily inspired by Angular and shares similar concepts like modules, decorators, and dependency injection.
 
 ### Is it possible to use other languages like C++, Ruby or Python with NestJS?
 NestJS itself runs on Node.js and relies on JavaScript/TypeScript. However, you can build separate services in other languages and have them communicate with your NestJS application via HTTP, gRPC, or other protocols (Microservices).
 
-### What are the main components of a NestJS application?
+### What are the main components of a NestJS application?  ---- IMP
 - **Modules**: Organize related components into single blocks.
 - **Controllers**: Handle incoming requests and return responses.
 - **Services**: Handle business logic and data interaction.
@@ -1758,25 +1758,25 @@ findOne(@Param("id") id: number): string {
 }
 ```
 
-### What is the role of the @Body() decorator?
+### What is the role of the @Body() decorator?  ---- IMP
 Extracts the entire body of the incoming HTTP request, commonly used in POST/PUT requests.
 
-### What is an interceptor in NestJS?
+### What is an interceptor in NestJS?  ---- IMP
 A class annotated with `@Injectable()` that implements `NestInterceptor`. It can intercept requests/responses to add logic before/after execution (AOP).
 
-### What are pipes in NestJS?
+### What are pipes in NestJS?  ---- IMP
 Classes used for validation or transformation of data before it reaches the route handler. Examples: `ParseIntPipe`, `ValidationPipe`.
 
-### What are guards in NestJS?
+### What are guards in NestJS?  ---- IMP
 Functions that determine whether a request will be handled by the route handler based on certain conditions (permissions, roles). Implements `CanActivate`.
 
-### What are middlewares in NestJS?
+### What are middlewares in NestJS?  ---- IMP
 Functions called before the route handler, with access to request/response objects and the `next()` function.
 
-### Explain Dependency Injection in NestJS.
+### Explain Dependency Injection in NestJS.  ---- IMP
 A design pattern where a class receives its dependencies from external sources. NestJS manages this via its IoC container. It promotes modularity and testability.
 
-### What’s the difference between @Injectable() and @Inject()?
+### What’s the difference between @Injectable() and @Inject()?  ---- IMP
 - `@Injectable()`: Marks a class as a provider for the DI system.
 - `@Inject()`: Manually specifies a dependency to be injected (useful for non-class providers or string tokens).
 
@@ -1798,20 +1798,20 @@ Using `async`/`await` and `Promises`. NestJS also has deep integration with **Rx
 ### Explain the purpose of @InjectRepository().
 Used with TypeORM to inject a repository instance for a specific entity into a service.
 
-### Explain the purpose of @nestjs/jwt.
+### Explain the purpose of @nestjs/jwt.  ---- IMP
 Provides JWT functionality (generation, verification, decoding) for authentication and authorization.
 
-### Difference between Authentication and Authorization?
+### Difference between Authentication and Authorization?  ---- IMP
 - **Authentication**: Verifying who the user is.
 - **Authorization**: Verifying what the user has permission to do.
 
-### Why is token expiration important?
+### Why is token expiration important?  ---- IMP
 Security. Limits the window of opportunity for a stolen token to be used.
 
 ### Describe the mechanism for token refresh.
 Issuing a long-lived "refresh token" alongside the short-lived "access token". The refresh token is used to obtain a new access token without re-authentication.
 
-### What are Custom Providers in NestJS?
+### What are Custom Providers in NestJS?  ---- IMP
 Providers that aren't just classes, but values, factories, or async factories.
 ```typescript
 {
@@ -1827,10 +1827,10 @@ Use `@nestjs/swagger`. Configure in `main.ts` using `SwaggerModule.setup()`.
 - `@ApiProperty()`: Adds metadata to DTO properties for Swagger.
 - `@ApiOperation()`: Provides summary/description for controller methods in Swagger.
 
-### Purpose of Dockerfile in NestJS?
+### Purpose of Dockerfile in NestJS?  ---- IMP
 To create a container image that includes the code, runtime, and dependencies, ensuring consistent execution across environments.
 
-### How to use Docker Compose with NestJS?
+### How to use Docker Compose with NestJS?  ---- IMP
 To manage multi-container setups (e.g., App + Postgres) using a `docker-compose.yml` file.
 
 ### Purpose of @nestjs/passport?
@@ -1842,10 +1842,10 @@ Using the `FileInterceptor` and the `@UploadedFile()` decorator, powered by **Mu
 ### What databases are supported?
 TypeORM supports MySQL, Postgres, MongoDB, SQLite, etc. Mongoose for MongoDB. Prisma and Sequelize are also supported.
 
-### What is a Circular Dependency and how to fix it?
+### What is a Circular Dependency and how to fix it?  ---- IMP
 When two classes depend on each other. Fixed using `forwardRef()` or the `ModuleRef` class.
 
-### How does NestJS handle CORS?
+### How does NestJS handle CORS?  ---- IMP
 Uses underlying platform (Express/Fastify) capabilities via `app.enableCors()`.
 
 ### Explain soft deletes.
@@ -1860,7 +1860,7 @@ Version control for database schema changes. Allows applying/reverting changes c
 ### Purpose of ExecutionContext?
 Provides info about the current request, response, and specific handler being called. Used in guards/interceptors.
 
-### Various types of Modules in NestJS?
+### Various types of Modules in NestJS?  ---- IMP
 - **Feature Modules**: Group related features.
 - **Shared Modules**: Export providers for use in other modules.
 - **Global Modules**: Available everywhere without importing.
@@ -1873,7 +1873,7 @@ Provides info about the current request, response, and specific handler being ca
 - Helmet/CORS/Rate Limiting
 - HTTPS
 
-### What is the difference between DI and IoC?
+### What is the difference between DI and IoC?  ---- IMP
 IoC is a general principle where control is inverted to a framework. DI is a specific pattern to implement IoC by "injecting" dependencies at runtime.
 
 ### How to implement Caching?
@@ -1888,12 +1888,12 @@ Using `@nestjs/schedule` (wrapper for `node-cron`). Uses `@Cron()` decorators.
 ### How to implement versioning?
 Using `app.enableVersioning()`. Supports URI, Header, and Media Type versioning.
 
-### GraphQL in NestJS.
+### GraphQL in NestJS.  ---- IMP
 Use `@nestjs/graphql`.
 - `@Resolver()`: Maps to GraphQL resolver logic.
 - `@Scalar()`: Defines custom primitive types (e.g., Date).
 
-### What is Serialization and Deserialization?
+### What is Serialization and Deserialization?  ---- IMP
 
 - **Serialization**: Converting objects to a storage/transmission format (like JSON).
 - **Deserialization**: Reconstructing objects from that data.
@@ -1935,7 +1935,7 @@ const userInstance = plainToInstance(UserEntity, rawData);
 
 ---
 
-### Loose vs Tight Coupling?
+### Loose vs Tight Coupling?  ---- IMP
 - **Tight**: High interdependence; hard to change.
 - **Loose**: Low interdependence; easy to maintain. NestJS achieves this via Modules and DI.
 
@@ -2127,7 +2127,7 @@ downloadFile(): StreamableFile {
 
 **DTOs (Data Transfer Objects)** combined with **ValidationPipe** are the core of NestJS request security.
 
-### 🔹 1. Why DTOs for Validation?
+### 🔹 1. Why DTOs for Validation?  ---- IMP
 1. **Type Safety**: TypeScript interface at compile time.
 2. **Auto-validation**: `class-validator` decorators enforce rules at runtime.
 3. **Data Sanitization**: Whitelisting helps strip extra/malicious fields from the request object.
@@ -2146,7 +2146,7 @@ export class CreateUserDto {
 }
 ```
 
-### 🔹 3. Enabling Global Validation
+### 🔹 3. Enabling Global Validation  ---- IMP
 ```typescript
 // main.ts
 app.useGlobalPipes(new ValidationPipe({
@@ -2168,7 +2168,7 @@ Caching is essential for large-scale SaaS (Software as a Service - software deli
 NestJS provides a unified API for various cache stores.
 ```bash
 npm install @nestjs/cache-manager cache-manager
-# For Redis
+# For Redis  ---- IMP
 npm install cache-manager-redis-yet
 ```
 
@@ -2192,7 +2192,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 export class AppModule {}
 ```
 
-### 🔹 3. Automatic Caching (Interceptors)
+### 🔹 3. Automatic Caching (Interceptors)  ---- IMP
 Apply to controllers or specific routes to automatically cache GET responses.
 
 **How it works (Deep-Dive):**
@@ -2215,7 +2215,7 @@ findAll() {
 }
 ```
 
-### 🔹 4. Manual Caching (Service level)
+### 🔹 4. Manual Caching (Service level)  ---- IMP
 Inject the `CACHE_MANAGER` to have full control.
 ```typescript
 @Injectable()
@@ -2242,7 +2242,7 @@ export class UserService {
 ## 🔟 MICROSERVICES & LEAD-LEVEL ARCHITECTURE (Mastery Hub) --- VIMP
 
 
-### 🚀 1. NestJS Microservices: The Essentials
+### 🚀 1. NestJS Microservices: The Essentials  ---- IMP
 NestJS has a built-in module for microservices that abstracts away the underlying transport layer.
 
 **Core Concept:** Instead of `NestFactory.create()`, you use `NestFactory.createMicroservice()`.
@@ -2262,7 +2262,7 @@ NestJS has a built-in module for microservices that abstracts away the underlyin
 
 ---
 
-### 🐰 2. RabbitMQ in NestJS (The SaaS Favorite)
+### 🐰 2. RabbitMQ in NestJS (The SaaS Favorite)  ---- IMP
 RabbitMQ is better than standard HTTP for SaaS because it handles **retries, dead-letter queues, and decoupling**.
 
 **Setup Snippet:**
@@ -2320,7 +2320,7 @@ export class EmailService {
 
 ---
 
-### 🏗️ 4. Lead-Level SaaS Architecture
+### 🏗️ 4. Lead-Level SaaS Architecture  ---- IMP
 For a Lead role, you must know **Multi-tenancy**.
 
 1. **Shared Database, Shared Schema**: Add `tenant_id` to every table. (Cheapest, easiest to scale).
@@ -2352,7 +2352,7 @@ As a Lead, you aren't just coding; you are protecting the codebase.
 ### Q: Why NestJS over Express for a large SaaS?
 **A:** "Express is great for small APIs, but for a 5-year project, you need structure. NestJS provides **DI (Dependency Injection)**, **Modules**, and **Typescript** out-of-the-box. It prevents the 'Spaghetti Code' problem that happens in large Express apps."
 
-### Q: How do you handle failure in Microservices?
+### Q: How do you handle failure in Microservices?  ---- IMP
 **A:** "We use **Retries** in RabbitMQ/BullMQ. If a service is down, the message stays in the queue until it's back up. For real-time failures, we implement the **Circuit Breaker Pattern** (using libraries like `opossum`) to stop calling a failing service and prevent a massive crash."
 
 ### Q: How do you optimize a slow NestJS API?
@@ -2497,7 +2497,7 @@ export class PostController {
 
 ## 1. Introduction & Core Concepts { #introduction }
 
-### What is Next.js ?
+### What is Next.js ?  ---- IMP
   Next.js is a React framework that provides:
 - ** Server - Side Rendering(SSR) ** - Pages rendered on server
 - ** Static Site Generation(SSG) ** - Pre - built HTML at build time
@@ -2506,7 +2506,7 @@ export class PostController {
 - ** Automatic Code Splitting ** - Only load what's needed
 - ** Image & Font Optimization ** - Built -in optimizations
 
-### App Router vs Pages Router
+### App Router vs Pages Router  ---- IMP
   - ** App Router ** (app directory) - New, recommended since Next.js 13 +
 - ** Pages Router ** (pages directory) - Legacy, still supported
 
@@ -2873,7 +2873,7 @@ export default function Nav() {
 }
 ```
 
-### useRouter Hook
+### useRouter Hook  ---- IMP
 Programmatic navigation:
 
 ```tsx
@@ -2900,7 +2900,7 @@ export default function LoginButton() {
 }
 ```
 
-### usePathname Hook
+### usePathname Hook  ---- IMP
 The `usePathname` hook is a Client Component hook that lets you read the current URL's **pathname**.
 
   ** Example: Highlighting Active Links **
@@ -2958,7 +2958,7 @@ export default function Navigation() {
 }
 ```
 
-### useSearchParams Hook
+### useSearchParams Hook  ---- IMP
 A Client Component hook that lets you read the current URL's **query parameters**. It returns a read-only version of the `URLSearchParams` interface.
 
   ** Example: Reading and Updating Search Params **
@@ -3043,9 +3043,9 @@ Next.js automatically prefetches visible links:
 
 ---
 
-## 5. Server vs Client Components { #components }
+## 5. Server vs Client Components { #components }  ---- IMP
 
-### Server Components(Default)
+### Server Components(Default)  ---- IMP
 All components in `app/` are Server Components by default:
 
 ```tsx
@@ -3212,7 +3212,7 @@ export default function Page() {
 
 ## 6. Data Fetching { #data - fetching }
 
-### Server Components(Recommended)
+### Server Components(Recommended)  ---- IMP
 Fetch data directly in Server Components:
 
 ```tsx
@@ -3249,7 +3249,7 @@ const res = await fetch('https://api.example.com/posts', {
 });
 ```
 
-#### 2. Dynamic Data(SSR)
+#### 2. Dynamic Data(SSR)  ---- IMP
   ```tsx
 // Fetched on every request
 const res = await fetch('https://api.example.com/posts', {
@@ -3257,7 +3257,7 @@ const res = await fetch('https://api.example.com/posts', {
 });
 ```
 
-#### 3. Revalidated Data(ISR)
+#### 3. Revalidated Data(ISR)  ---- IMP
   ```tsx
 // Cached, revalidated every 60 seconds
 const res = await fetch('https://api.example.com/posts', {
@@ -3462,7 +3462,7 @@ export default function Posts() {
 
 ## 7. Data Mutation & Actions { #data - mutation }
 
-### Server Actions
+### Server Actions  ---- IMP
 Server - side mutations without API routes:
 
 ```tsx
@@ -3500,7 +3500,7 @@ export default function CreatePostPage() {
 }
 ```
 
-### Server Actions with useFormState
+### Server Actions with useFormState  ---- IMP
 Handle form state:
 
 ```tsx
@@ -3567,7 +3567,7 @@ export async function createPost(prevState: any, formData: FormData) {
 }
 ```
 
-### Server Actions with useFormStatus
+### Server Actions with useFormStatus  ---- IMP
 Show pending state:
 
 ```tsx
@@ -3642,7 +3642,7 @@ export default function TodoList({ todos }) {
 }
 ```
 
-### Route Handlers(API Routes)
+### Route Handlers(API Routes)  ---- IMP
 Alternative to Server Actions:
 
 ```tsx
@@ -3667,11 +3667,11 @@ export async function POST(request: Request) {
 
 ---
 
-## 8. Caching & Revalidation { #caching }
+## 8. Caching & Revalidation { #caching }  ---- IMP
 
 Next.js has multiple caching layers:
 
-### 1. Request Memoization
+### 1. Request Memoization  ---- IMP
 Automatic deduplication of identical requests:
 
 ```tsx
@@ -3733,9 +3733,9 @@ Client - side cache of visited routes(30 seconds default ):
 <Link href="/about">About</Link>
 ```
 
-### Revalidation Strategies
+### Revalidation Strategies  ---- IMP
 
-#### 1. Time - based Revalidation
+#### 1. Time - based Revalidation  ---- IMP
   ```tsx
 // Revalidate every 60 seconds
 const res = await fetch('https://api.example.com/posts', {
@@ -3743,7 +3743,7 @@ const res = await fetch('https://api.example.com/posts', {
 });
 ```
 
-#### 2. On - Demand Revalidation
+#### 2. On - Demand Revalidation  ---- IMP
 On-demand revalidation allows you to update cached data immediately when a change occurs, rather than waiting for an Revalidation timer (ISR). You can manually trigger Next.js to purge the specific cache.
 
 - ** revalidatePath **: Yeh poore route ka cache clear kar deta hai.Agar tumne `/blog` pe kuch naya post dala, toh`revalidatePath('/blog')` karne se Next.js blog page ko piche(background) mein rebuild kar lega.
@@ -3767,7 +3767,7 @@ export async function createPost() {
 }
 ```
 
-#### 3. Tag - based Revalidation
+#### 3. Tag - based Revalidation  ---- IMP
   ```tsx
 // Fetch with tags
 const res = await fetch('https://api.example.com/posts', {
@@ -3881,7 +3881,7 @@ export default function Error({
       - Catches errors in Server Components, Client Components, and data fetching
         - `reset()` function re-renders the segment
 
-### Error Boundary Hierarchy
+### Error Boundary Hierarchy  ---- IMP
   ```
 app/
 ├── error.tsx              → Catches errors in root layout
@@ -3994,7 +3994,7 @@ app/
         └── page.tsx
 ```
 
-### Error Handling in Server Actions
+### Error Handling in Server Actions  ---- IMP
   ```tsx
 'use server';
 
@@ -4018,7 +4018,7 @@ export async function createPost(formData: FormData) {
 }
 ```
 
-### Error Handling in Route Handlers
+### Error Handling in Route Handlers  ---- IMP
   ```tsx
 // app/api/posts/route.ts
 import { NextResponse } from 'next/server';
@@ -4036,7 +4036,7 @@ export async function GET() {
 }
 ```
 
-### Loading States with Suspense
+### Loading States with Suspense  ---- IMP
   ```tsx
 // app/blog/page.tsx
 import { Suspense } from 'react';
@@ -4086,7 +4086,7 @@ export default function Loading() {
 </Suspense>
 ```
 
-### Streaming with Suspense
+### Streaming with Suspense  ---- IMP
 Stream different parts independently:
 
 ```tsx
@@ -4126,7 +4126,7 @@ export default function Dashboard() {
 
 ## 10. Styling(CSS) { #styling }
 
-### 1. CSS Modules
+### 1. CSS Modules  ---- IMP
 Scoped CSS files:
 
 ```tsx
@@ -4393,7 +4393,7 @@ export default function ProfilePage() {
 }
 ```
 
-### Image Props
+### Image Props  ---- IMP
 
   ```tsx
 <Image
@@ -4427,7 +4427,7 @@ export default function ProfilePage() {
 />
 ```
 
-### Fill Container Pattern
+### Fill Container Pattern  ---- IMP
   ```tsx
 <div style={{ position: 'relative', width: '100%', height: '400px' }}>
   <Image
@@ -4682,9 +4682,9 @@ export default function Article() {
 
 ---
 
-## 13. Route Handlers (API Routes) {#route-handlers}
+## 13. Route Handlers (API Routes) {#route-handlers}  ---- IMP
 
-### Basic Route Handler
+### Basic Route Handler  ---- IMP
 ```tsx
 // app/api/hello/route.ts
 import { NextResponse } from 'next/server';
@@ -4694,7 +4694,7 @@ export async function GET() {
 }
 ```
 
-### All HTTP Methods
+### All HTTP Methods  ---- IMP
 ```tsx
 // app/api/posts/route.ts
 import { NextResponse } from 'next/server';
@@ -4737,7 +4737,7 @@ export async function PATCH(request: Request) {
 }
 ```
 
-### Dynamic Route Handlers
+### Dynamic Route Handlers  ---- IMP
 ```tsx
 // app/api/posts/[id]/route.ts
 export async function GET(
@@ -4855,7 +4855,7 @@ return new Response(stream, {
 });
 ```
 
-### CORS
+### CORS  ---- IMP
 ```tsx
 export async function GET(request: Request) {
   const response = NextResponse.json({ data: 'value' });
@@ -4879,7 +4879,7 @@ export async function OPTIONS(request: Request) {
 }
 ```
 
-### Middleware in Route Handlers
+### Middleware in Route Handlers  ---- IMP
 ```tsx
 // lib/auth.ts
 export function withAuth(handler: Function) {
@@ -5038,7 +5038,7 @@ module.exports = {
 };
 ```
 
-### Middleware for Advanced Proxying
+### Middleware for Advanced Proxying  ---- IMP
 ```tsx
 // middleware.ts
 import { NextResponse } from 'next/server';
@@ -5095,9 +5095,9 @@ vercel--prod
 }
 ```
 
-### Docker
+### Docker  ---- IMP
 ```dockerfile
-# Dockerfile
+# Dockerfile  ---- IMP
 FROM node: 18 - alpine AS base
 
 # Dependencies
@@ -5241,10 +5241,10 @@ npm install next @14.0.0
 
 ### Codemods (Automated Migration)
 ```bash
-# Upgrade from Pages to App Router
+# Upgrade from Pages to App Router  ---- IMP
 npx @next/codemod@latest app-router-recipe
 
-# Upgrade from Pages Router API routes
+# Upgrade from Pages Router API routes  ---- IMP
 npx @next/codemod@latest app-dir-api-routes
 
 # New Link component
@@ -5261,14 +5261,14 @@ npx @next/codemod@latest next-image-to-legacy-image
 - `ImageResponse` moved from `next / server` to `next / og`
 - Turbopack improvements
 
-#### Next.js 12 → 13 (App Router)
+#### Next.js 12 → 13 (App Router)  ---- IMP
 - New `app / ` directory
 - Server Components by default
 - New routing system
 - `next / link` no longer needs ` < a > ` tag
 - `next / image` uses native lazy loading
 
-### Migration Example: Pages → App Router
+### Migration Example: Pages → App Router  ---- IMP
 
 **Before (Pages Router):**
 ```tsx
@@ -5630,7 +5630,7 @@ export default function ContactForm() {
 
 ## 18. Fast Refresh {#fast-refresh}
 
-### What is Fast Refresh?
+### What is Fast Refresh?  ---- IMP
 Fast Refresh preserves component state while editing:
 
 ```tsx
@@ -5738,7 +5738,7 @@ export default function Component() {
 
 ---
 
-## 19. Next.js vs React {#comparison}
+## 19. Next.js vs React {#comparison}  ---- IMP
 
 ### Next.js Advantages Over React
 
@@ -5769,7 +5769,7 @@ function App() {
   // app/blog/[slug]/page.tsx → /blog/:slug
   ```
 
-#### 2. **Server-Side Rendering (SSR)**
+#### 2. **Server-Side Rendering (SSR)**  ---- IMP
 **React:**
 ```tsx
 // Complex SSR setup with Express
@@ -5952,7 +5952,7 @@ npx create - react - app my - app
 # Then manually add:
 # - Routing(react - router - dom)
 # - API layer
-# - SSR setup
+# - SSR setup  ---- IMP
 # - Image optimization
 # - SEO tools
   ```
@@ -6031,7 +6031,7 @@ If you need **only** client-side rendering:
 
 ## 20. Additional Advanced Topics
 
-### Middleware
+### Middleware  ---- IMP
 ```tsx
 // middleware.ts
 import { NextResponse } from 'next/server';
@@ -6195,7 +6195,7 @@ app.prepare().then(() => {
 
 **Note:** Custom servers disable many Next.js optimizations. Use sparingly.
 
-## 10. SWR (Stale-While-Revalidate)
+## 10. SWR (Stale-While-Revalidate)  ---- IMP
 
 SWR is a React Hooks library for data fetching. The name "SWR" is derived from `stale -while-revalidate`, a HTTP cache invalidation strategy.
 
@@ -6320,13 +6320,13 @@ The App Router represents the future of Next.js with Server Components, improved
 
 ## 🎨 LEAD REACT PATTERNS (SaaS Scale) --- IMP
 
-### 🚀 1. State Management Strategy
+### 🚀 1. State Management Strategy  ---- IMP
 As a Lead, you must choose the right tool for the job.
 - **Server State**: Use **React Query (TanStack Query)** or **SWR**. Don't put API data in Redux!
 - **Client State**: Use **Zustand** for simple, scalable global state. Use **Redux Toolkit** only if the state is extremely complex with many transitions.
 - **Form State**: Use **React Hook Form** + **Zod** for high-performance validation.
 
-### 🧩 2. Component Architecture
+### 🧩 2. Component Architecture  ---- IMP
 - **Compound Components**: For flexible UI components (like Tabs, Selects).
 - **Control Props**: Allows parent components to \"drive\" the internal state of children.
 - **Design System**: Use **Tailwind CSS** or **Styled Components** with a strict theme. Enforce a components/ui folder for reusable atomic elements.
@@ -6356,7 +6356,7 @@ eact-virtuoso for rendering lists with 10k+ items.
 
 ## ⚡ CORE JAVASCRIPT: ASYNC & DATA FETCHING --- IMP
 
-### 🔹 1. Axios vs Fetch (Interview Deep-Dive)
+### 🔹 1. Axios vs Fetch (Interview Deep-Dive)  ---- IMP
 
 | Feature | `fetch` (Native Web API) | `axios` (Third-party Library) |
 | :--- | :--- | :--- |
@@ -6404,7 +6404,7 @@ axios.interceptors.request.use(config => {
 
 ---
 
-### 🔹 2. Promises vs Async/Await (The Core)
+### 🔹 2. Promises vs Async/Await (The Core)  ---- IMP
 
 **What's the difference?**
 - **Promises**: The primitive mechanism. Uses `.then()` and `.catch()`. Can lead to "Promise Chaining" which is still hard to read.

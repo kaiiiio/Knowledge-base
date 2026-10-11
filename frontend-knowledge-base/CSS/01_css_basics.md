@@ -595,6 +595,38 @@ html { font-size: 16px; }
 }
 ```
 
+**Can a child escape its parent's stacking context?**
+
+**No — not directly.** Once the parent creates a stacking context, its children are "trapped" inside it. The child's `z-index` (even `9999`) only competes with its *siblings* inside the parent — it can never place itself above an element that sits outside the parent and beats the parent's own `z-index`. The whole parent (and everything in it) is treated as one unit when compared with the outside world.
+
+```css
+/* .parent has z-index: 1, another box .sibling-outside has z-index: 2 */
+/* .child z-index: 9999 STILL renders below .sibling-outside, */
+/* because the parent (z-index:1) as a whole is below .sibling-outside (z-index:2). */
+```
+
+**The only real fix: don't create the trap in the first place.** Remove whatever makes the parent form a stacking context so the child joins the *root* (page-level) stacking context and can compete freely.
+
+Things that create a stacking context on the parent (remove/avoid these if the child must escape):
+- `position: relative | absolute` **combined with** any `z-index` value (not `auto`)
+- `position: fixed` or `position: sticky` (always create one)
+- `opacity` less than `1`
+- `transform`, `filter`, `perspective`, `clip-path`, `mask` (any value other than `none`)
+- `will-change` naming one of the above properties
+- `isolation: isolate`
+- being a flex/grid **child** with a `z-index` set
+- `mix-blend-mode` other than `normal`
+
+```css
+/* Fix: parent no longer creates a context, so .child joins the root context */
+.parent {
+    position: static;   /* or drop z-index so it stays z-index: auto */
+    /* opacity: 1; transform: none;  ← keep these neutral too */
+}
+```
+
+**Practical pattern:** For things that MUST sit above everything (modals, tooltips, dropdowns), render them **outside** the parent in the DOM — e.g. as a direct child of `<body>` via a React **portal** (`ReactDOM.createPortal`). Then they live in the root stacking context and no parent can trap them.
+
 **Common z-index Scale:**
 ```css
 :root {

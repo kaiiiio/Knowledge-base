@@ -12,9 +12,9 @@ A comprehensive guide to how JavaScript code executes in V8 engine, covering mem
 
 ---
 
-## V8 Engine Architecture
+## V8 Engine Architecture  ---- IMP
 
-### **Core Components**
+### **Core Components**  ---- IMP
 IMP
 ```
 Source Code
@@ -136,7 +136,7 @@ const user = { name: "Karan" };
 
 ## Execution Context IMP
 
-### **What is an Execution Context?**
+### **What is an Execution Context?**  ---- IMP
 
 > **Definition:** Runtime container tracking everything needed to run code
 
@@ -146,7 +146,7 @@ const user = { name: "Karan" };
 3. **ThisBinding** - Value of `this`
 4. **Outer reference** - Link to parent scope
 
-### **Types of Execution Contexts**
+### **Types of Execution Contexts**  ---- IMP
 
 1. **Global Execution Context (GEC)**
    - Created when script first runs
@@ -159,9 +159,9 @@ const user = { name: "Karan" };
 
 3. **Eval Execution Context** (rarely used)
 
-### **Creation vs Execution Phases**
+### **Creation vs Execution Phases**  ---- IMP
 
-#### **Creation Phase (Hoisting)**
+#### **Creation Phase (Hoisting)**  ---- IMP
 
 ```javascript
 let a = 10;
@@ -183,7 +183,7 @@ a = 10 (initialized)
 greet() → creates new FEC
 ```
 
-### **Scope Chain & Lexical Environment**
+### **Scope Chain & Lexical Environment**  ---- IMP
 
 > **Key:** Functions remember the scope where they were **defined**, not called
 
@@ -262,7 +262,7 @@ console.log(result);
    - GEC popped
    - Heap cleaned by GC
 
-### **JIT Optimization (TurboFan)**
+### **JIT Optimization (TurboFan)**  ---- IMP
 
 **Example:**
 ```javascript
@@ -287,9 +287,9 @@ for (let i = 0; i < 1_000_000; i++) {
 
 ---
 
-## Garbage Collection
+## Garbage Collection  ---- IMP
 
-### **Generational GC Strategy**
+### **Generational GC Strategy**  ---- IMP
 
 > **Hypothesis:** Most objects die young
 
@@ -304,7 +304,7 @@ for (let i = 0; i < 1_000_000; i++) {
    - Infrequent major GC (Mark-Compact)
    - Concurrent/incremental marking
 
-### **Mark-and-Sweep Algorithm**
+### **Mark-and-Sweep Algorithm**  ---- IMP
 
 1. **Mark Phase**
    - Start from roots (global object, stack)
@@ -322,7 +322,7 @@ for (let i = 0; i < 1_000_000; i++) {
 
 ## Performance Optimization
 
-### **Hidden Classes (Maps)**
+### **Hidden Classes (Maps)**  ---- IMP
 
 > **Why:** JS objects are dynamic, but V8 optimizes using hidden classes
 
@@ -354,7 +354,7 @@ function makeUser4() {
 
 **Key:** Consistent object construction order = same hidden class = faster property access
 
-### **Inline Caches (ICs)**
+### **Inline Caches (ICs)**  ---- IMP
 
 - Cache property access patterns
 - **Monomorphic** (one shape) → fast
@@ -403,7 +403,7 @@ function makeUser4() {
 
 ## Interview Questions
 
-### **Core Engine & Execution**
+### **Core Engine & Execution**  ---- IMP
 
 ### Q1: Explain the difference between Stack and Heap ---- IMP
 
@@ -450,7 +450,7 @@ var y = 20;
 4. **Hidden Classes** make object property access fast
 5. **Deoptimization** falls back if assumptions fail
 
-### Q5: Explain hoisting
+### Q5: Explain hoisting  ---- IMP
 
 **Answer:**
 During the creation phase, the engine:
@@ -612,7 +612,7 @@ const results = await Promise.allSettled([
 // Returns: [{ status: 'fulfilled', value: ... }, ...]
 ```
 
-### Q14: How does JavaScript handle asynchronous operations?
+### Q14: How does JavaScript handle asynchronous operations?  ---- IMP
 
 **Answer:**
 Uses:
@@ -644,7 +644,7 @@ Sort converts elements to **strings** unless compare function provided.
 
 ### **Browser & Rendering**
 
-### Q16: What happens when we hit a URL in the browser? What is CRP?
+### Q16: What happens when we hit a URL in the browser? What is CRP?  ---- IMP
 
 **Answer:**
 
@@ -676,7 +676,7 @@ CSS and JS that block browser from rendering until loaded.
 - Inline critical CSS
 - Lazy-load scripts
 
-### Q19: Event Capturing vs Delegation vs Bubbling
+### Q19: Event Capturing vs Delegation vs Bubbling  ---- IMP
 
 **Answer:**
 - **Capturing:** Event goes from root → target
@@ -696,7 +696,7 @@ document.getElementById('parent').addEventListener('click', (e) => {
 
 ### **OOP & Prototypes**
 
-### Q20: Difference between Prototypal and Classical Inheritance
+### Q20: Difference between Prototypal and Classical Inheritance  ---- IMP
 
 **Answer:**
 - **Classical (OOP):** Copy-based (Java, C#)
@@ -731,7 +731,7 @@ const car = new Car("Tesla");
 car.start();
 ```
 
-### Q23: What is the use of the `new` operator?
+### Q23: What is the use of the `new` operator?  ---- IMP
 
 **Answer:**
 Creates instance of constructor function and sets up prototype chain.
@@ -924,7 +924,7 @@ Headers carry **metadata**:
 
 ### **Advanced Concepts**
 
-### Q37: What are Closure, Event Loop, Hoisting, and Currying?
+### Q37: What are Closure, Event Loop, Hoisting, and Currying?  ---- IMP
 
 **Answer:**
 
@@ -972,7 +972,7 @@ for (let item of arr) await fetchData(item);
 await Promise.all(arr.map(fetchData));
 ```
 
-### Q40: What happens when you forget to handle Promise rejection?
+### Q40: What happens when you forget to handle Promise rejection?  ---- IMP
 
 **Answer:**
 Uncaught rejections throw a **global unhandledrejection** event in browsers and may terminate Node.js processes.
@@ -998,7 +998,7 @@ console.log(true + true);  // 2
 console.log("5" - 3);      // 2
 ```
 
-### Q42: Why does [] == ![] return true?
+### Q42: Why does [] == ![] return true?  ---- IMP
 
 **Answer:**
 - `![]` → `false` (array is truthy)
@@ -1035,7 +1035,7 @@ Symbol.for("id") === Symbol.for("id");   // true (global registry)
 
 ### **Advanced Closures & Scope**
 
-### Q45: Why is var problematic inside loops?
+### Q45: Why is var problematic inside loops?  ---- IMP
 
 **Answer:**
 `var` has **function scope**, not block scope.
@@ -1071,7 +1071,7 @@ for (let i = 0; i < 3; i++) {
 
 ### **Event Loop & Task Scheduling**
 
-### Q47: Predict the output
+### Q47: Predict the output  ---- IMP
 
 **Answer:**
 ```javascript
@@ -1089,7 +1089,7 @@ console.log("E");
 - Microtasks (run first): Promises, queueMicrotask → `C` `D`
 - Macrotasks (run after): setTimeout → `B`
 
-### Q48: Difference between microtask & macrotask?
+### Q48: Difference between microtask & macrotask?  ---- IMP
 
 **Answer:**
 
@@ -1099,7 +1099,7 @@ console.log("E");
 | Executed **before** repaint | Executed **after** repaint |
 | Higher priority | Lower priority |
 
-### Q49: What is requestIdleCallback?
+### Q49: What is requestIdleCallback?  ---- IMP
 
 **Answer:**
 Allows browser to execute code **when it's idle**, without blocking UI.
@@ -1115,7 +1115,7 @@ requestIdleCallback(() => {
 
 ### **Memory Management**
 
-### Q50: Why can WeakMap and WeakSet prevent memory leaks?
+### Q50: Why can WeakMap and WeakSet prevent memory leaks?  ---- IMP
 
 **Answer:**
 They hold **weak references** — garbage collector can remove the object even if it's in a WeakMap/Set.
@@ -1127,7 +1127,7 @@ wm.set(obj, "data");
 obj = null; // object removed, weakmap entry gone
 ```
 
-### Q51: Difference between shallow copy and deep copy?
+### Q51: Difference between shallow copy and deep copy?  ---- IMP
 
 **Answer:**
 - **Shallow copy:** Copies reference for nested objects
@@ -1190,7 +1190,7 @@ o.a = 5;    // ❌ Fails silently (non-strict) or throws TypeError (strict)
 
 ### **Generators & Iterators**
 
-### Q54: How do Generators differ from normal functions?
+### Q54: How do Generators differ from normal functions?  ---- IMP
 
 **Answer:**
 Generators can **pause execution** and **resume later** using `yield`.
@@ -1274,9 +1274,9 @@ document.dispatchEvent(event);
 
 ---
 
-## Multi-Tenancy Architecture (SaaS Fundamentals)
+## Multi-Tenancy Architecture (SaaS Fundamentals)  ---- IMP
 
-### **What is Multi-Tenancy?**
+### **What is Multi-Tenancy?**  ---- IMP
 
 > **Definition:** "One application, multiple customers (tenants)."
 
@@ -1299,7 +1299,7 @@ Each **tenant** (company, user group, or organization) uses the **same app insta
 
 ---
 
-### **Multi-Tenant Models**
+### **Multi-Tenant Models**  ---- IMP
 
 #### **A. Shared Database, Shared Schema** (Most Common for SaaS MVPs)
 
@@ -1472,7 +1472,7 @@ def list_projects(
 
 ---
 
-### **Row-Level Security (RLS) in PostgreSQL**
+### **Row-Level Security (RLS) in PostgreSQL**  ---- IMP
 
 RLS ensures SQL-level isolation:
 

@@ -525,7 +525,7 @@ navigator.geolocation.clearWatch(watchId);
 
 ---
 
-## Q25. What are Web Workers in HTML5?
+## Q25. What are Web Workers in HTML5?   -- IMP
 
 **Answer:**
 

@@ -272,6 +272,13 @@ HTML5 introduced many new input types for better user experience and validation.
 <input type="image" src="submit.png" alt="Submit">
 ```
 
+**What is the `value` attribute?**
+- The `value` sets the **text label shown on the button** (what the user actually reads).
+- Example: `<input type="submit" value="Submit Form">` renders a button that says **Submit Form**. Change it to `value="Send"` and the button reads **Send**.
+- For `type="submit"` / `type="reset"`, if you omit `value`, the browser shows a default label (usually "Submit" and "Reset").
+- Note: for **other** input types (text, radio, checkbox, hidden), `value` means something different — it is the **data sent to the server**, not a visible label. On buttons specifically, `value` = the caption.
+- Tip: the modern `<button>` element is preferred over `<input type="button">` because you put the label between the tags (`<button>Click Me</button>`) and can include icons/HTML inside.
+
 ### Hidden Input:
 ```html
 <!-- Hidden field (not visible to user) -->
@@ -540,6 +547,37 @@ The `<meta>` tag provides metadata about the HTML document. Metadata is not disp
     </a>
 </body>
 ```
+
+### Types of Links Explained:
+
+**1. External link (absolute URL)**
+```html
+<a href="https://example.com">Visit Example</a>
+```
+- Called an **external / absolute link**. The `href` contains the **full URL** including protocol (`https://`) and domain (`example.com`).
+- Points to a **different website**. Works from any page because the address is complete on its own.
+
+**2. Internal link (relative URL)**
+```html
+<a href="/about">About Us</a>
+```
+- Called an **internal / relative link**. The `href` is a **path within your own site** — no domain, no `https://`.
+- The browser resolves it against the current site's domain (e.g. becomes `https://yoursite.com/about`).
+- **Relative vs Absolute:**
+  - **Absolute** = full address, works from anywhere → `https://example.com/about`
+  - **Relative** = partial path, resolved from the current page/site:
+    - `/about` → from the site **root** (leading slash)
+    - `about.html` → a file in the **same folder** as the current page
+    - `../contact.html` → **up one folder** (`../` = parent directory)
+
+**3. Anchor link (same page jump)**
+```html
+<a href="#section2">Go to Section 2</a>
+```
+- An **anchor link** (also called a *fragment* or *jump link*). The `#` means "jump to an element **on this same page**".
+- `#section2` scrolls to the element whose `id="section2"`, like `<h2 id="section2">...</h2>`.
+- Used for "back to top" links and table-of-contents navigation on long pages.
+- `href="#"` alone jumps to the **top** of the page.
 
 ### Comparison Table:
 

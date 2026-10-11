@@ -1,0 +1,159 @@
+SHARDING - Notes (from L21_Sharding_Notes.pdf, TechByAni HLD-Notes)
+
+WHY SHARDING EXISTS
+App starts small, one DB is enough. As users grow: scale up (bigger CPU/RAM/SSD). Works up to a point. Then: queries slow down, writes pile up, storage hits limits, replication lag becomes insane. One machine cannot handle everything. So you split data across multiple machines = sharding.
+
+WHAT SHARDING IS
+Sharding = horizontal slicing of data into multiple independent DBs. Each shard = separate DB instance with own CPU/RAM/storage/query capacity. All shards together = full dataset.
+Different from:
+- Simple partitioning: SQL lets you partition a big table into chunks, but all partitions still live in ONE database instance - storage/CPU still limited by that box.
+- Replication: copies the SAME data to multiple machines for read scaling/fault tolerance. Sharding splits data so each record exists on only one primary shard.
+
+TERMINOLOGY
+- Shard: one physical DB containing a subset of data.
+- Shard key: field(s) that decide which shard a row goes to (e.g. user_id, tenant_id).
+- Shard map/metadata: mapping from shard key -> shard location.
+- Router/Coordinator: component that uses the shard key and routes queries to the correct shard. Could be: in app code, a separate service, or built into the DB (e.g. MongoDB config servers + mongos).
+
+TWO CORE DECISIONS WHEN SHARDING
+1. Shard key - what decides where a row goes (which column: user_id, account_id, city_id).
+2. Distribution strategy - how to map values to shards (range rules, hash rule, directory/lookup table).
+Get either wrong -> unbalanced shards, "hot" shards serving almost all traffic, queries that must hit every shard.
+
+CHOOSING A SHARD KEY (most important decision)
+1. High cardinality - must have LOTS of unique values. Boolean field (is_active) = only 2 values = BAD. User IDs/order IDs = millions of values = GOOD.
+2. Uniform distribution - shard key should spread rows evenly. Not skewed (e.g. not 90% users in one country).
+3. Stability - key shouldn't change often. If email is shard key and user changes email, you must move the row to another shard.
+4. Matches query patterns - most frequent queries answered from ONE shard. Example: "get all orders for this user" -> shard by user_id. Queries hitting all shards become expensive.
+
+Good shard key example: UserID -> evenly spread across shards.
+Bad shard key example: country_code when 85% users from one country -> massive hotspot on one shard.
+Bad shard key example: boolean is_active -> only 2 possible values -> effectively 2 shards, pointless.
+
+SHARDING STRATEGIES
+
+1. Range-based sharding
+Group rows based on contiguous value ranges (e.g. order_id 0-5M -> Shard1, 5-10M -> Shard2).
+Pros: simple to reason about, great for range queries ("orders between 3M-4M", "logs from 1st-3rd April" if ranged by time).
+Cons: real traffic rarely uniform by range; time-based ranges create a hot "latest" shard - all new inserts target it.
+Works well: multi-tenant SaaS where you manually assign ranges per customer (Tenant A -> IDs 1-1M, Tenant B -> 1M-2M) - each tenant mostly lives in its own range -> better balance.
+
+2. Hash-based sharding (most common / usually default)
+Apply hash function on shard key, map hash to shard: shard_id = hash(key) % NUM_SHARDS.
+Pros: very good at spreading load evenly, new users naturally scattered across all shards.
+Cons (classic modulo hashing): if you go from 3->4 shards, hash%3 becomes hash%4, almost every key maps to a different shard -> needs huge data reshuffle.
+Fix: consistent hashing - instead of simple %N, maps both shard IDs and keys to points on a logical ring. When you add/remove a shard, only keys falling into its section move.
+Interview line: "We'll use hash-based sharding with consistent hashing so that when we add shards, only a fraction of keys need to move."
+
+3. Directory/lookup-table sharding
+Keep a mapping table that tells you where each key lives (user_id 42 -> Shard1, user_id 99 -> Shard3).
+Pros: super flexible - can move a heavy user/tenant to a dedicated shard, can manually rebalance specific keys/ranges.
+Cons: every request needs an extra lookup -> added latency; directory becomes a critical dependency and potential single point of failure; needs its own replication/caching/HA.
+Usage: good for "special cases" (very high-volume tenants) or when you need fine-grained control. In interviews, rarely your first answer because of complexity.
+
+4. Geo-sharding
+Split by region: India -> Shard1 (Mumbai), Europe -> Shard2 (Frankfurt), US -> Shard3 (Ohio).
+Pros: users hit nearest data center, fewer cross-region writes.
+Cons: complicated global queries, user movement between regions tricky.
+
+REPLICATION + SHARDING (they always go together)
+Sharding solves scale. Replication solves read-scaling and availability. Each shard typically has its own primary + replicas (its own mini HA cluster).
+
+SHARDING CHALLENGES - HOTSPOTS
+Even with decent sharding, some shards get hammered. Example: shard by creator_id in a short-video app - one creator becomes mega-star -> all their likes/comments/video views hit the same shard.
+Causes: "celebrity/whale" keys (a few keys generate massive traffic), time-based shards where all writes go to latest shard, skewed business usage (one tenant uses app heavily).
+Detect: monitor metrics like QPS, CPU usage, request volume per shard - if one shard shows higher load than others -> hotspot.
+
+WAYS TO HANDLE HOTSPOTS
+1. Move hot key(s) to their own shard(s) - e.g. create a "VIP shard" for the top 100 creators. Directory-based mapping handy here.
+2. Compound shard keys - e.g. hash(creator_id, day) instead of just creator_id. A single creator's data is split by time across multiple shards. Trade-off: reading "all history" for one creator may now be cross-shard.
+3. Automatic shard splitting/rebalancing - some systems support splitting hot ranges and moving partitions between nodes in the background. Detect "shard X too large/too hot" -> split its range or move some partitions to other machines.
+
+CROSS-SHARD QUERIES
+If a query filter doesn't match the shard key, it may need to hit many or all shards.
+Example: posts by author_id -> get posts by author 123 -> one shard. Top 5 posts across the whole platform -> data scattered across all shards. This is called scatter-gather: scatter request to N shards, wait for all responses, merge/sort/aggregate, return.
+Problems: latency, more chance of partial failures, complex error handling and timeouts.
+
+HOW TO DEAL WITH CROSS-SHARD QUERIES
+1. Cache heavy global queries (e.g. "trending posts", "top creators", "global stats") - store in Redis/in-memory cache for a short TTL (30s, 1min, 5min).
+2. Precompute with background workers - periodic jobs read from shards, compute metrics, push results to a central summary table/cache.
+3. Denormalize/duplicate data - denormalize frequently accessed fields.
+4. Accept slow rare queries.
+Interview tip: if you find yourself saying "we'll query all shards and aggregate" for very common requests, that's a red flag. Try to: change data model, or change shard key, or use caching/precompute/denormalization instead.
+
+CONSISTENCY & TRANSACTIONS IN A SHARDED WORLD
+On a single DB, multi-row transactions are easy (BEGIN; UPDATE...; UPDATE...; COMMIT - either both succeed or both fail). When the two accounts are on DIFFERENT shards, life gets tricky.
+
+Two-Phase Commit (2PC):
+- Prepare phase: coordinator asks each shard "can you commit this? lock resources and say yes/no."
+- Commit phase: if everyone says yes, coordinator sends COMMIT; else ABORT.
+Problems: slow (extra round trip, locking), fragile (if coordinator or shard crashes at bad time you get stuck half-way), hard to operate at huge scale. Most large systems avoid 2PC except for niche cases.
+
+What to do instead:
+1. Avoid cross-shard transactions - put all strongly-related data for a user/entity on the SAME shard (user profile, user balance, user settings, user's own documents -> same shard keyed by user_id). Then most transactions are single-shard and can use normal DB transactions.
+2. Eventual consistency is often fine - for secondary views (counters, feed copies), okay if different shards show slightly different values for a few seconds. Rule of thumb: use strong consistency where money/critical invariants are involved and keep those flows "local" to a shard; use eventual consistency elsewhere.
+3. Use Sagas for multi-shard workflows - a Saga is a series of local transactions, each with a compensating action. Example: transfer wallet balance between two users on different shards - Shard A: deduct 100 from User X; Shard B: add 100 to User Y; if step 2 fails -> run compensating step on Shard A: refund 100 to User X. No global lock, but system is eventually consistent. You might temporarily see "money removed here but not yet added there."
+If a design needs FREQUENT cross-shard transactions, that's often a sign you picked a bad shard key or split your data along the wrong boundary.
+
+ROUTING - how does the app know which shard to hit?
+1. Routing in the app layer - app receives request with user_id, calculates shard_id = hash(user_id) % N (or queries directory), opens/uses pooled connection to that shard.
+2. Routing via a proxy layer - a middleware (custom router) sits between app and DB. App thinks there's "one big database." Router parses queries, figures out shard, forwards them.
+
+OPERATIONAL CONCERNS
+- Schema changes: same migration must be applied across ALL shards; use migration tooling that runs per-shard.
+- Backups & restores: need backup policy per shard; restoring a single shard must still be possible.
+- Monitoring & alerting: per-shard metrics (QPS, errors, latencies, resource usage); detect hotspots and unbalanced shards early.
+- Failure handling: combine sharding with replication (each shard has replicas for HA); on primary failure, promote replica, routing layer must know the new primary.
+
+SHARDING IN MODERN DATABASES (you rarely implement low-level plumbing from scratch)
+- Cassandra-like systems: use a partitioner + token ranges, conceptually similar to consistent hashing.
+- DynamoDB-like systems: hash partition key -> internal partitions; system splits/merges partitions as data/traffic grow.
+- MongoDB: you pick a shard key; Mongo chunks data into ranges of that key (or its hash) and a balancer moves chunks across shards.
+- Relational: Vitess, Citus sit in front of MySQL/Postgres and handle query routing, cross-shard joins/aggregations, live resharding. Cloud providers (AWS Aurora) also provide distributed SQL with built-in sharding.
+
+SHARDING IN A SYSTEM DESIGN INTERVIEW
+Don't start with sharding immediately. First show you understand single DB + vertical scaling + replication. Introduce sharding when numbers justify it:
+- Storage limit: "We expect 2TB today but 20TB in 2 years, that's pushing single-instance comfort zone -> sharding."
+- Write throughput: "Peak 50k-100k writes/sec is too high for one primary, we should split writes across multiple primaries using sharding."
+- Read throughput: "Even with read replicas, 100M DAUs may overload a single primary; shards distribute both read and write pressure."
+Narrative formula: estimate data volume & QPS -> explain why one DB (plus replicas) is not enough -> propose sharding as the next step. Also explicitly say: "We won't shard on day 1. We'll start with one DB, then add sharding once metrics show we're close to limits."
+
+MIGRATING AN EXISTING SYSTEM TO SHARDING
+1. Decide shard key & strategy (e.g. user_id + hash).
+2. Create new shard cluster (shards + routing layer).
+3. Backfill data - background job reads from old DB, writes to correct shards.
+4. Dual-write phase - new writes go to BOTH old DB and shards; reads still from old DB; validate data correctness.
+5. Switch reads - switch app to read from shards. If stable, eventually decommission old monolithic DB (or keep as archival).
+Mentioning this shows you understand operational reality, not just theory.
+
+DO WE NEED TO SHARD MOST OF THE TIME? -> NO
+Real AWS limits (Postgres RDS & Aurora):
+- Aurora PostgreSQL storage scales up to 256 TB. Most startups will NEVER reach 256TB of actual structured transactional data.
+- RDS PostgreSQL (non-Aurora) storage limit: max 64 TiB. Still massive.
+- Compute limits: RDS & Aurora let you scale up to 128 vCPUs + 768 GB RAM - a monster machine. (For reference: a typical Indian startup often runs on 8 vCPUs, 32GB RAM. Moving from 8GB->768GB RAM means 96x more in-memory cache & index capacity. 768GB RAM means your entire working set, indexes, hot rows stay in memory -> insanely fast reads.)
+- IOPS limits (disk speed): RDS/Aurora supports up to ~256,000 IOPS and 4,000 MB/sec throughput (~4GB/s disk read/write) - datacenter-grade hardware, not a normal server.
+
+WHAT THESE REAL NUMBERS ACTUALLY MEAN (worked cases)
+Case 1 - Storage: if you have 100GB, 1TB, 2TB, even 10TB -> WAY below the 64TB/256TB limit. Sharding is NOT needed for storage.
+Case 2 - Reads: with 768GB RAM + 4GB/s disk throughput + 15 read replicas + ElastiCache(Redis) in front -> you can easily handle millions of reads/sec without sharding. That's why even Instagram & Airbnb didn't shard in early days.
+Case 3 - Writes: a single RDS primary can do around 10k-20k writes/sec (depending on workload). That's already enough for: mid-size social network, large e-commerce, multi-tenant SaaS, large fintech backends, streaming platforms, gaming apps. Again: no sharding needed unless you have insane write traffic.
+
+WHEN you actually start thinking about sharding (even with real RDS limits):
+1. Write throughput exceeds ~20k writes/sec (primary becomes bottleneck).
+2. Storage approaches tens of TBs AND keeps growing fast.
+3. Indexes get so large that even 768GB RAM can't hold hot data.
+4. Replication lag becomes unacceptable.
+5. Maintenance operations (backups, VACUUM, ANALYZE) become too heavy.
+These limits are VERY high. Most apps will never reach this stage.
+
+Conclusion: with actual AWS limits like 64-256TB storage, 768GB RAM, 256k IOPS, and 15 read replicas - most systems never need sharding. You only shard when writes, storage, or latency exceed what even the biggest RDS instance can handle. Until then, sharding adds unnecessary complexity.
+
+SHARDING & SPOF
+Sharding does NOT automatically eliminate SPOF.
+- If a shard has only 1 DB instance, it IS a SPOF - but only for that shard's users, not the entire system.
+- When you use RDS for each shard, AWS gives you: automatic replication, automatic failover, automatic backups, Multi-AZ, read replicas -> so each shard becomes a high-availability mini-cluster, NOT a SPOF.
+- Replication lag causes stale reads, not downtime.
+- If one shard fails entirely: only that shard's users are impacted, rest of the system stays healthy - this is intentional failure isolation.
+- This combination (Sharding + RDS replication) is exactly how real companies scale relational databases.
+
+CROSS-REFERENCE: see ../../05-Distributed-Systems/02_replication_and_partitioning.md for the deeper technical treatment (range vs hash partitioning, consistent hashing with virtual nodes in JavaScript, hot keys, local vs global secondary indexes).

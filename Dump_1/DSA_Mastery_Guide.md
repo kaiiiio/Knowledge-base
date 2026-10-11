@@ -1269,12 +1269,16 @@ Count frequency of each value, then reconstruct sorted array.
 ```python
 def counting_sort(arr):
     max_val = max(arr)
+    # [0] * n = ek naya list of n zeros. Size max_val+1 isliye taaki index 0 se
+    # max_val tak har number ka apna counter-slot mil jaye (INDEX hi number represent karta hai, value nahi).
     count = [0] * (max_val + 1)
     for num in arr:
-        count[num] += 1
+        count[num] += 1  # jitni baar 'num' aaya, uske apne index pe count badhta jayega
 
     output = []
     for i in range(len(count)):
+        # count[i] = ye number (i) kitni baar tha -> utni baar hi output me daalo.
+        # [i] * count[i]: agar count[i]=2 to [i,i]. extend = list ke andar list ko merge karta hai (append nahi karta).
         output.extend([i] * count[i])
     return output
 
@@ -4478,7 +4482,7 @@ Would you like me to continue next with **Dinic’s Algorithm + Minimum Cut**, w
 
 ////////////////////////////////////////////////////////////Extra
 
-## 🧠 **What is Method Overloading in C++?**
+## 🧠 **What is Method Overloading in C++?**  ---- IMP
 
 **Definition:**
 👉 **Method Overloading** (also called **Function Overloading**) in C++ means **defining multiple functions with the same name but different parameter lists** (different number or types of arguments).
@@ -4490,7 +4494,7 @@ The **compiler decides which version to call at compile time** — this is known
 ## 📘 **Example 1: Basic Method Overloading**
 
 ```cpp
-#include <iostream>
+#include <iostream>  ---- IMP
 using namespace std;
 
 class Print {
@@ -4531,7 +4535,7 @@ String: Nikita
 
 ---
 
-## ⚙️ **How It Works (Under the Hood)**
+## ⚙️ **How It Works (Under the Hood)**  ---- IMP
 
 During **compilation**, the C++ compiler **creates a unique function signature** for each overloaded method based on:
 
@@ -4599,7 +4603,7 @@ Compiler can’t distinguish them because parameters are identical.
 
 ---
 
-## 🧱 **Overloading vs Overriding**
+## 🧱 **Overloading vs Overriding**  ---- IMP
 
 | Concept       | Method Overloading        | Method Overriding               |
 | ------------- | ------------------------- | ------------------------------- |

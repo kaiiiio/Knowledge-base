@@ -79,6 +79,23 @@ The operational half of a fullstack role:
 - **Deployment & Scaling** - Vercel vs self-hosted, ISR across replicas, WebSockets, graceful shutdown
 - **System-Design Scenarios** - Blog, checkout, fresh-but-fast feed, stale-data and slow-API debugging walkthroughs
 
+### 8. [Oral Interview Speaking Guide](08_oral_interview_speaking_guide.md) 🗣️
+For explaining out loud — no code, just speech:
+- **The D-W-E-T formula** - Definition → Why → Example → Trade-off, then STOP
+- **20 most likely questions** with speakable 30-second answers
+- **Analogies bank** - kitchen/restaurant/security-guard analogies for every concept
+- **Follow-up trees** - predict the interviewer's next question
+- **Time-buying phrases** and anti-patterns to kill
+- **System design spoken template** + daily practice drills
+
+### 9. [Internals MCQ Drills](09_internals_mcq_drills.md) ✅
+Tricky MCQs on how things work: rendering/hydration, caching, actions/handlers, React internals, Node event loop, plus a 20-question true/false speed round — all with reasoning.
+
+### 10. [MEGA MCQ Bank](10_mega_mcq_bank.md) 🏆
+225 questions across the whole fullstack surface (company-screening style): Next.js (60 full MCQs), then rapid-fire React internals, JavaScript, Node/Express/HTTP, databases/Redis/queues, auth/security/AI-LLM, and ORMs/migrations/indexing (Prisma, TypeORM, Liquibase). Rapid format doubles as oral practice.
+
+> ⭐ **IMP markers**: concept sections you must be able to explain orally are tagged `⭐ IMP` in files 01–07. Revise those headings first.
+
 ## 🎯 Quick Reference
 
 ### Data Fetching Methods

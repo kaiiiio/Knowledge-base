@@ -1,9 +1,0 @@
-{
-    "items": [
-        "job1",
-        "job2"
-    ],
-    "front": "job1",
-    "back": "job2",
-    "operation": "Enqueue 'job2'"
-}

@@ -23,3 +23,7 @@ Study in numeric order — later lessons assume the vocabulary of earlier ones (
 - 5.2's replication trade-offs are what 5.3's consensus algorithms exist to solve safely.
 - 5.4 and 5.5 are the applied layer — what you actually build day to day (sagas, outbox, queues) on top of 5.1–5.3's theory.
 - 5.6 is the failure lens that cuts across everything: read it last, then re-skim the others asking "what breaks under partition, clock skew, and overload?"
+
+## Curated external resource
+
+[TechByAni HLD-Notes](https://github.com/techbyaniofficial/HLD-Notes) (Aniket Bhatnagar) covers CAP, sharding, consistent hashing, and messaging (Kafka/RabbitMQ/EDA/webhooks) as slide decks — a fast second-pass format once a topic here feels shaky. Local offline copy: [../00-External-Resources/HLD-Notes-TechByAni/](../00-External-Resources/HLD-Notes-TechByAni/). Full cross-reference table lives in [../04-System-Design-HLD/README.md](../04-System-Design-HLD/README.md#curated-external-resource-techbyani-hld-notes).

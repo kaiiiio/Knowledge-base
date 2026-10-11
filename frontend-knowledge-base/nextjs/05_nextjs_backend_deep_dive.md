@@ -17,7 +17,7 @@ How the Next.js server layer actually works — runtimes, route handlers, server
 ---
 
 <a name="request-flow"></a>
-## 1. How a Request Flows Through Next.js
+## 1. How a Request Flows Through Next.js ⭐ IMP
 
 Understanding the pipeline is the foundation for every "why is this cached / slow / not updating" question.
 
@@ -52,7 +52,7 @@ Key facts interviewers probe:
 ---
 
 <a name="runtimes"></a>
-## 2. Runtimes: Node.js vs Edge
+## 2. Runtimes: Node.js vs Edge ⭐ IMP
 
 Next.js server code runs in one of two runtimes, chosen per route:
 
@@ -62,7 +62,7 @@ export const runtime = 'nodejs'; // default
 export const runtime = 'edge';
 ```
 
-| | Node.js runtime | Edge runtime |
+| | Node.js runtime | Edge runtime | - IMP
 |---|---|---|
 | APIs | Full Node.js (fs, net, crypto, streams, native addons) | Web-standard subset (fetch, Request/Response, WebCrypto, TextEncoder) |
 | Cold start | Slower (bigger runtime) | Very fast (V8 isolates, no container boot) |
@@ -190,7 +190,7 @@ This is the standard pattern for **LLM token streaming** and server-sent events.
 ---
 
 <a name="server-actions"></a>
-## 4. Server Actions Internals
+## 4. Server Actions Internals ⭐ IMP
 
 Server Actions are **not magic RPC** — knowing the mechanics is a differentiator.
 
@@ -270,7 +270,7 @@ Arguments and return values must be serializable by React's RSC serializer: prim
 ---
 
 <a name="caching-layers"></a>
-## 5. The Four Caching Layers
+## 5. The Four Caching Layers ⭐ IMP
 
 The single most asked App Router backend topic. There are **four distinct caches**:
 
@@ -318,7 +318,7 @@ export async function createPost(data: FormData) {
   revalidateTag('posts'); // purges data cache → route cache re-renders on next hit
 }
 ```
-
+<!-- IMP -->
 `revalidateTag`/`revalidatePath` are **on-demand invalidation** — they mark entries stale; the next request re-renders (and in `revalidatePath`'s case also purges the full route cache and, when called in a server action, the client router cache).
 
 ### Next 15 default change
@@ -333,7 +333,7 @@ Next 15: `fetch` **uncached by default** (`no-store` semantics); GET route handl
 ---
 
 <a name="middleware"></a>
-## 6. Middleware In Depth
+## 6. Middleware In Depth ⭐ IMP
 
 One `middleware.ts` at the project root; runs before every matched request.
 
@@ -390,7 +390,7 @@ export const config = {
 ---
 
 <a name="database"></a>
-## 7. Database Integration Patterns
+## 7. Database Integration Patterns ⭐ IMP
 
 ### The serverless connection problem
 
@@ -470,7 +470,7 @@ Server components fetching per-item data (`<PostCard>` each querying its author)
 ---
 
 <a name="streaming"></a>
-## 8. Streaming, Suspense & the RSC Payload
+## 8. Streaming, Suspense & the RSC Payload ⭐ IMP
 
 ### What the RSC payload is
 

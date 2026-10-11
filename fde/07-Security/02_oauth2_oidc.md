@@ -25,6 +25,32 @@ The four roles:
 
 ---
 
+### The origin story — why PKCE was invented (say this when asked "why does PKCE exist")
+
+Plain Authorization Code flow *looks* secure: the browser never sees the access token, only a short-lived authorization code, and the backend exchanges that code for tokens over a direct server-to-server call. So what was actually broken?
+
+**Confidential vs. public clients.** When you register an app with an OAuth provider, you declare a type:
+- **Confidential client** (Spring Boot, ASP.NET, any server-side app) — has a backend that can safely hold a `client_secret`. During token exchange it proves its identity with that secret; nobody can extract it because the server never ships to the user's device.
+- **Public client** (Android, iOS, SPA, Flutter) — the app itself ships to the user's device. A `client_secret` embedded in it is not a secret: anyone can decompile the APK, open browser dev tools, or read the JS bundle and pull it out. So public clients have **no way to prove their identity** with a secret at all.
+
+That's fine for identity — but it left one question unanswered: when an authorization code comes back, **how does the provider know it's being redeemed by the same app that started the flow**, if that app can't hold a secret?
+
+**The historical exploit (Android, pre-PKCE).** Authorization code delivery on mobile used **custom URI schemes** — e.g. `photoapp://callback`. The problem: **any app can register the same custom scheme.** A legitimate PhotoApp registers `photoapp://callback`; a malicious app registers the *exact same scheme*. When the OAuth provider redirects back after login, the Android OS has two apps claiming that scheme and no reliable way to pick the right one. If the malicious app wins, it receives the authorization code meant for the real app — the **Authorization Code Interception Attack**. The attacker's app then redeems that code for the victim's access token.
+
+**PKCE's fix.** Instead of proving identity with a long-lived shared secret (which public clients can't hold), the client proves **possession of a one-time value it generated for this specific flow**:
+1. Before starting the flow, the client generates a random `code_verifier` (43–128 chars) and keeps it *only in memory* — never sent anywhere yet.
+2. It derives `code_challenge = BASE64URL(SHA256(code_verifier))` and sends **only the challenge** in the authorization request. SHA-256 is one-way — nobody who intercepts the challenge can reverse it back into the verifier.
+3. When exchanging the code for tokens, the client finally sends the real `code_verifier`.
+4. The provider hashes the received verifier and checks it matches the `code_challenge` stored against that authorization request.
+
+If an attacker's malicious app intercepts the authorization code (exactly like the historical Android attack), it still cannot redeem it — it never had the `code_verifier`, which lived only in the legitimate app's memory. Redemption fails, no tokens issued.
+
+**"But iOS/Android now use Universal Links / App Links, which fix custom-URI hijacking at the OS level — why does PKCE still exist?"** Because OAuth2 is a **protocol-level, platform-independent** spec — it cannot assume Android's or iOS's current link-verification mechanism exists, will stay secure, or applies to every future client (new browsers, new device classes, new attack techniques). This is also why the current **OAuth 2.0 Security Best Current Practice (RFC 9700)** and OAuth 2.1 now mandate PKCE for public clients unconditionally, and — see Q3 below — for confidential clients too, for an entirely separate reason (authorization code injection, not interception).
+
+**One-sentence summary to say out loud:** "PKCE replaces a long-lived shared secret with a one-time, self-generated proof — the client shows it holds the same random value at the end of the flow that it committed to (as a hash) at the start, so a stolen authorization code is useless to anyone who wasn't the one that started that specific flow."
+
+---
+
 ### Q2. Walk through Authorization Code + PKCE end-to-end with the actual HTTP requests.
 
 **Answer:**

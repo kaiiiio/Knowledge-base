@@ -1,0 +1,102 @@
+REDIS - Notes (from L23_Redis.pdf, TechByAni HLD-Notes)
+
+WHY REDIS EXISTS
+App shows user's profile. Every time a user opens the app -> fetch from database. App grows to 1 million users. Suddenly: DB gets hammered, queries take 300-500ms, users complain app is slow.
+But wait - most users are requesting the SAME data again and again. What if you could store the result temporarily in RAM, so next time someone asks, you return it in 0.5ms instead of 500ms? That "super-fast temporary memory layer" is Redis.
+
+WHAT IS REDIS?
+Redis (REmote DIctionary Server) is an in-memory, extremely fast key-value data store used as: Cache, Message broker, Distributed locking system, Stream processing engine.
+Popular because it's insanely fast, supports rich data structures, and solves real performance bottlenecks in modern systems.
+
+WHY IS REDIS SO FAST?
+- In-memory storage - everything stored in RAM -> extremely fast.
+- Single-threaded event loop - no locks, no race conditions, no thread switching overhead.
+- Simple data structures - Redis uses highly optimized C-level implementations (sds strings, dict, skiplist, intset, ziplist/quicklist, etc.)
+Together -> Redis is usually 100x+ faster than databases like MySQL or MongoDB.
+
+MAJOR LIMITATION: DURABILITY
+Because Redis operates primarily from RAM, it doesn't give the same strong "once I commit, it's on disk forever" guarantee that traditional databases give. It does provide persistence mechanisms (Append-Only File / AOF) which greatly reduce risk of losing data - but they don't match the durability of fully disk-based systems.
+This is a conscious design decision: Redis prioritizes speed over absolute safety.
+If you really need Redis-like behavior with stronger durability, there are cloud variants (like AWS MemoryDB) that add disk-backed persistence while accepting a small performance hit.
+
+CORE REDIS DATA STRUCTURES
+Redis goes beyond simple strings - rich collection of structures, each optimized for a use case:
+- Strings (basic values, counters)
+- Hashes (like JSON objects or dictionaries)
+- Lists (ideal for queues)
+- Sets (unique collections)
+- Sorted Sets (think priority queues or leaderboards)
+- Time series structures (for monitoring metrics or events)
+- Geospatial indexes (location-based queries)
+- Bloom Filters (space-efficient membership tests with possible false positives)
+
+Redis isn't limited to storing data - it also supports communication patterns:
+- Pub/Sub (real-time messaging)
+- Streams (lightweight log-based messaging, similar to Kafka-lite)
+Because of these, Redis can sometimes replace more complex systems like Kafka, SNS, or SQS for smaller/simpler workloads.
+
+REDIS DEPLOYMENT MODELS / CONFIGURATIONS
+Redis can operate in several configurations depending on durability, performance, and scaling needs. At its core, Redis stays lightweight - even its clustering approach is intentionally minimal so you decide how to distribute your data.
+
+1. Single-Node Setup (the simplest form)
+A standalone Redis server. One machine, no replicas. All reads/writes go to one server. Easiest to run. No failover.
+
+2. Replication / High Availability Setup
+A main instance is paired with replicas. Replicas synchronize from the main node and can take over during failures. Main handles writes. Replicas can take traffic for reads. Provides fault tolerance but NOT horizontal scaling for writes.
+
+3. Redis Cluster Setup
+Redis Cluster partitions data across multiple masters using hash slots. Each master can also have its own replica.
+1. Keyspace split - Redis divides all data into 16,384 hash slots.
+2. Slot hashing - key slot = CRC16(key) % 16384.
+3. Masters own slots - each master node is assigned a range of slots; replicas exist for HA.
+4. Cluster gossip - each node has partial knowledge of other nodes through a lightweight gossip mechanism. This enables limited rerouting when a request lands on the wrong master (client -> wrong node -> redirect -> correct node).
+5. Client discovers topology - client runs CLUSTER SLOTS / CLUSTER SHARDS, builds a local slot -> node map.
+6. Client-side routing - client computes slot for each key, sends command directly to the correct master. Redis has NO proxy.
+7. Failover - if master dies -> replicas vote -> one is promoted. Cluster updates slot ownership. Clients get MOVED and refresh routing.
+8. Writes go to master - masters handle writes, replicas sync asynchronously.
+9. If something changes (failover, rebalancing), a node will respond: MOVED <slot> <correct-node>. Client refreshes its internal slot map.
+
+IMPORTANT LIMITATION: REDIS CLUSTER IS VERY SIMPLE
+Redis Cluster is intentionally minimalistic.
+Good for: large datasets that don't fit on one node, high availability, horizontal read/write scaling (across masters).
+Not good at: multi-key operations across different slots, complex joins/transactions, moving lots of data automatically.
+Redis expects all keys involved in a request to live on the SAME node. That means the way you design key names determines scalability. (Use hash tags like {user:42}:profile to force related keys into the same slot.)
+
+REDIS AS A CACHE
+Redis is commonly deployed as a fast in-memory cache to reduce load on primary databases and speed up responses.
+Each Redis key represents a cached item. Example: a user profile stored under user:42 containing fields like name, email, lastLogin.
+Redis Cluster can spread keys across multiple nodes, allowing the cache to scale horizontally. Need more capacity/throughput -> add more nodes.
+Cached user profiles typically have a TTL (time to live). Redis ensures expired profiles are never returned. TTL helps Redis automatically evict old/unused profiles when memory is constrained.
+
+Caching user profiles in Redis does NOT fix the "hot key" issue: if one user profile (e.g. user:42) is requested extremely frequently, the node storing that key may become overloaded. This challenge exists in all distributed caches (Redis, Memcached, DynamoDB, etc.).
+
+HOW TO SOLVE/MITIGATE HOT KEYS IN REDIS
+A hot key is a single Redis key that receives massive, disproportionate traffic compared to others. This can overload the node that owns that slot.
+
+1. Add Replicas + Enable Replica Reads.
+
+2. Cache-Breaking Using Key Sharding (randomized keys)
+Instead of storing one hot key, store N copies of it under different keys: user:42:profile:1, user:42:profile:2, user:42:profile:3, user:42:profile:4. Requests spread across multiple slots -> multiple cluster nodes.
+
+3. Local In-App Cache (L1 cache)
+Add a small in-memory cache inside your application (e.g. Node.js memory, Java LRU map): first check local cache, only hit Redis if not found. TTL can be very short (e.g. 50-200ms).
+Benefit: thousands of requests hit your application memory instead of Redis.
+
+REDIS FOR RATE LIMITING
+Redis is perfect for implementing rate limiters. Because Redis supports atomic counters and time-based expiration, it can enforce request limits with very little overhead.
+You define a time window (TTL seconds) and a request limit (N requests). For each incoming request:
+- Increase a counter for that user/API/token.
+- If the count exceeds N -> reject or delay.
+- Apply a TTL so the counter automatically resets after TTL seconds.
+Flow: counter <= N -> service processes; counter > N -> server rejects (returns error to client).
+
+REDIS AS A DISTRIBUTED LOCK
+Redis can coordinate access to shared resources - can function as a simple mechanism to ensure only one process performs a sensitive operation at a time (useful in scenarios like ticket reservation, or preventing two users from updating the same record simultaneously).
+Only use a Redis lock when your main database CANNOT guarantee consistency on its own. If your primary datastore already enforces correctness, adding a distributed lock may create extra complexity and new edge cases.
+
+A minimal lock can be implemented using an atomic counter:
+A lock key starts at zero. When a process tries to acquire the lock: it performs INCR lock_key. If the result is 1, it successfully holds the lock. If the result is > 1, another process already owns it. Apply a TTL so the lock disappears automatically if something crashes. When done, the process deletes the key (DEL lock_key).
+This acts like a small shared counter where only the first incrementer wins.
+(Example scenario: Person A books a seat -> counter goes 0->1 -> lock acquired. Person B tries at the same time -> sees "lock acquired already" -> blocked.)
+
+CROSS-REFERENCE: see the Express KB's ../../../express-backend-knowledge-base/07_caching_layer/ for Redis implementation patterns, and ../../08-AI-Engineering/ or ../../05-Distributed-Systems/03_consensus_and_coordination.md for the Redlock distributed-lock debate and fencing tokens (this PDF's INCR-based lock is the simple version; the deep-dive covers why it's not fully safe under process pauses).

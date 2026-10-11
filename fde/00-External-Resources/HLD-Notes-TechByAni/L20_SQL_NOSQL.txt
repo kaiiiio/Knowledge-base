@@ -1,0 +1,90 @@
+SQL vs NoSQL - Notes (from L20._SQL_NOSQL.pdf, TechByAni HLD-Notes)
+
+SQL DATABASES
+SQL databases (relational databases) store data in tables, just like neatly arranged Excel sheets.
+Each table stores one type of information. Each row is one record. Each column is one property of that record. Primary keys uniquely identify rows. Foreign keys link tables together.
+SQL databases work best when your data has clear structure and relationships.
+
+Example: Online Store (Orders System)
+Customers Table: customer_id (PK), name, email -> 1/Aditi Kumar/aditi@mail.com, 2/Varun Singh/varun@mail.com, 3/Ishita Rao/ishita@mail.com
+Products Table: product_id (PK), product_name, price -> 101/Headphones/1500, 102/Mouse/700, 103/Keyboard/1800
+Orders Table: order_id, customer_id (FK), product_id (FK), order_date -> 5001/1/101/2024-05-01, 5002/3/103/2024-05-01, 5003/1/102/2024-05-01
+Here: a customer can place many orders. An order belongs to one customer. Each order contains one product (simple example). Foreign keys maintain these links.
+
+WHEN TO USE SQL
+- Your data is structured.
+- Tables have relationships (users -> orders, products -> categories).
+- You need correct, consistent data (payments, inventory, bookings).
+- You need complex queries (joins, filters, analytics).
+
+COMMON MISCONCEPTION: "SQL DOESN'T SCALE"
+People often assume SQL doesn't scale, but modern relational systems scale surprisingly well using: read replicas, sharding/table partitioning, connection pooling, caching layers (Redis, Memcached).
+Companies like Uber, Flipkart, PayPal, Spotify rely heavily on SQL foundations. Scalability is more about the system architecture than the database engine alone.
+
+NOSQL DATABASES
+NoSQL databases are designed for cases where traditional SQL tables don't fit well - especially when your data is flexible, nested, huge in volume, or accessed in unusual ways. Instead of strict tables and fixed schemas, NoSQL gives you freedom in how you store and structure data.
+Different NoSQL systems solve different problems, so NoSQL is not "one thing" - it's a collection of different database styles. Four major types: Document databases, Key-value stores, Wide-column stores, Graph databases.
+
+1. DOCUMENT DATABASES (e.g. MongoDB, Firestore)
+Store data as JSON-like documents. Each document can have its own structure, so fields don't need to be identical across records.
+When useful: when your data shape keeps changing; when you want to store nested/hierarchical data; when avoiding joins improves performance; when different users have different types of details.
+When to use: product catalog, user profiles with variable fields, blog/news posts with flexible structure, content-heavy apps.
+Example (Product Catalog):
+{ "_id": "p101", "name": "Running Shoes", "brand": "Puma", "sizes": [6,7,8,9], "images": ["img1.jpg","img2.jpg"], "specs": { "material": "Mesh", "weight": "280g", "warranty": "6 months" } }
+{ "_id": "p102", "name": "Bluetooth Speaker", "brand": "JBL", "battery_life": "12 hours", "waterproof": true, "features": ["Bass Boost", "USB-C", "Aux Support"] }
+Notice: p101 and p102 have completely different fields - impossible in a rigid SQL table without lots of NULL columns.
+
+2. KEY-VALUE STORES (Redis, DynamoDB, Memcached)
+Simplest form of database. You store values that can be fetched using a single key.
+When useful: caching, sessions, quick lookups, high-write systems, feature flags.
+Example: "session:uid_401" -> { "token": "ab2910xjq0pq", "expires_at": 1710001220 }; "product:101" -> "Running Shoes | Rs. 2999 | Puma"
+No filtering, no querying, no relationships. Trade-off: extremely fast, but no joins/no complex queries, you often duplicate data. Often used ALONGSIDE SQL (not instead of SQL).
+
+3. WIDE-COLUMN STORES (Cassandra, HBase)
+Optimized for huge write loads. Data stored in rows, but each row can have different columns - unlike SQL where every row must follow the same structure. Best suited for time-series and log-like data.
+When useful: analytics, logging events, IoT sensor readings, high-speed writes, massive scale.
+Example: Row key -> user ID. Columns -> timestamp : event data.
+user_2001: { "2024-06-10T10:01": "login", "2024-06-10T10:03": "view:item_110", "2024-06-10T10:05": "add_to_cart:item_110", "2024-06-10T10:08": "checkout" }
+Every new reading is just an APPEND, not an update.
+
+4. GRAPH DATABASES (Neo4j, Amazon Neptune)
+Store information as nodes and relationships. Perfect for exploring connections like: "Who knows whom?", "What product is similar to what?", "How are these entities connected?"
+Example structure: User A -posted-> Post1, User A -liked-> Post2, User B -posted-> Post2, User B -liked-> Post1, someone -commented-> Post3 (linked back into the graph).
+When useful: rarely in system design interviews, unless the question specifically needs deep relationship traversal. But they make sense when relationships THEMSELVES are the main data.
+Trade-off: great for deep relationship queries, but operationally heavy. Most companies still use SQL for relationships.
+
+SQL vs NoSQL COMPARISON TABLE
+Aspect | SQL | NoSQL
+Data Model | Tables with rows & columns | Documents, key-value, wide-column, graphs
+Schema | Fixed, structured | Flexible, fields can vary
+Relationships | Excellent support (joins, FK) | Limited or manual (embedding/denormalization)
+Consistency | Strong, ACID compliance | Often eventual (but improving)
+Query Power | Very powerful (joins, aggregations) | Depends on type; simpler in KV/document
+Best Use-Cases | Orders, payments, inventory, core business data | Product catalog, caching, logs, time-series, flexible data
+Scalability | Vertical + horizontal (modern SQL scales well) | Horizontal by design (especially Cassandra, DynamoDB)
+When to Choose | Data is structured, predictable, relational | Schema keeps changing, high write load, nested data
+Examples | PostgreSQL, MySQL, MariaDB, SQL Server | MongoDB, Redis, DynamoDB, Cassandra, Neo4j
+Role in Modern Systems | Source of truth, reliable state | Specialized workloads (cache, logs, documents)
+Modern Overlap | Supports JSON, full-text search, KV patterns | Many support SQL-like queries & transactions
+
+WHY "SQL vs NoSQL" IS NOT A MEANINGFUL DEBATE ANYMORE
+Modern databases have evolved so much that the old boundaries have become blurry.
+
+1. SQL databases now support NoSQL features
+PostgreSQL can store: JSON, JSONB, key-value style storage, document-style operations, full-text search. Many companies store entire documents inside SQL. So SQL is no longer "strict tables only."
+
+2. NoSQL databases now support SQL-like querying
+Modern NoSQL systems offer: aggregations, indexing, joins (limited but available), transactions (MongoDB has ACID transactions now). So NoSQL is no longer "schema-lite only."
+
+3. Real production systems use BOTH
+Almost every modern architecture uses: SQL as the source of truth (correct, reliable), NoSQL for speed or special workloads.
+Example: SQL for orders, Redis for caching, Cassandra for logs, MongoDB for product catalog, Postgres for payments. This mix is normal and expected.
+
+EXPERT TAKEAWAYS (quotable lines)
+"PostgreSQL is powerful enough to handle many NoSQL-style workloads - JSON documents, key-value patterns, and full-text search. That's why it's a great general-purpose default."
+"NoSQL databases still exist because they are optimized for very specific extremes: Redis for ultra-fast caching, Cassandra for massive write-heavy time-series data, and Neo4j for deep graph traversal. Postgres can do these, but it won't match a purpose-built NoSQL system at those limits."
+"For high-workload document use-cases, Postgres JSONB works well until you hit true extremes like huge documents, millions of writes per second, or constantly changing schemas. At that point, something like MongoDB is a better fit."
+"And if your current system is already using SQL and it's working well, you typically stick with SQL unless the workload clearly demands a specialized NoSQL engine."
+"So it isn't SQL vs NoSQL anymore. It's simply: what does the workload require? Modern systems use both."
+
+CROSS-REFERENCE: see ../../06-Databases-Deep-Dive/06_choosing_databases.md for the deeper technical treatment, and sql-knowledge-base/01_fundamentals/sql_vs_nosql.md in this knowledge base.

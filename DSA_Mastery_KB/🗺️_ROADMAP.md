@@ -1,5 +1,7 @@
 # 🗺️ The 5-Day "Zero to Hero" DSA Roadmap
 
+> ⚠️ **Superseded**: the file-path references below (`visual/...`, `practice/...`, `implementation/...`) point to sub-files that have since been merged into one consolidated `*_COMPLETE.md` per topic folder (e.g. everything under `04_trees/` is now in `04_trees/04_trees_COMPLETE.md`, organized under matching section headers). The content still exists — just search for the same filename as a `## heading` inside that folder's `_COMPLETE.md`. For the authoritative, in-depth 6-phase course plan, use [00_SYLLABUS.md](00_SYLLABUS.md) instead of this file.
+
 This is not a textbook. It is an **execution plan**.
 Follow this order strictly. Do not skip "The Foundation".
 
